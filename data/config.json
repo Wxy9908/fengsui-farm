@@ -4,7 +4,7 @@
   "maxComboSlots": 3,
   "offlineCapHours": 8,
   "dailyRewardGold": 50,
-  "debugTimeScale": 1,
+  "debugTimeScale": 10,
   "cookTimeByTier": { "1": 60, "2": 150, "3": 300, "4": 480 },
   "cookTimePerExtraIngredient": 20,
   "darkCuisineRefundRate": 0.5,

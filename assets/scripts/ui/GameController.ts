@@ -1237,6 +1237,7 @@ export class GameController extends Component {
 
     // —— 分区 2：升级（标题 svg y536~544 → cocos 100；卡中心 cocos 12-i×136）——
     this.makeSectionTitle(c, '升级', 100);
+    console.log('[调试] listUpgrades =', JSON.stringify(this.game.listUpgrades())); // 临时排查用，定位后删除
     this.game.listUpgrades().forEach((u, i) => {
       this.makeUpgradeCard(c, u, 12 - i * 136);
     });
