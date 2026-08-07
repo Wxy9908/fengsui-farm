@@ -1,0 +1,10 @@
+node_modules/
+dist-sim/
+library/
+temp/
+local/
+build/
+profiles/
+.creator/
+.vscode/
+.kimi-code/

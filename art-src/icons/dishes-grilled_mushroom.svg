@@ -1,0 +1,155 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9FD3E8"/><stop offset="0.55" stop-color="#BEE3D8"/><stop offset="1" stop-color="#D9F0E3"/>
+  </linearGradient>
+  <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#FFE98A"/><stop offset="0.7" stop-color="#FFDF5C"/><stop offset="1" stop-color="#FFDF5C" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#B5DCA0"/><stop offset="1" stop-color="#A3D18B"/>
+  </linearGradient>
+  <linearGradient id="hillNear" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8FC96E"/><stop offset="1" stop-color="#7CB95A"/>
+  </linearGradient>
+  <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8AD35C"/><stop offset="0.4" stop-color="#7EC850"/><stop offset="1" stop-color="#6DB544"/>
+  </linearGradient>
+  <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#F9EFD8"/>
+  </linearGradient>
+  <linearGradient id="paperDeep" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C2"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F8D464"/><stop offset="0.5" stop-color="#F2B830"/><stop offset="1" stop-color="#DF9E1E"/>
+  </linearGradient>
+  <linearGradient id="goldSoft" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#F5D47E"/>
+  </linearGradient>
+  <linearGradient id="woodV" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9C6A38"/><stop offset="1" stop-color="#7E5127"/>
+  </linearGradient>
+  <linearGradient id="woodWall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8B5F33"/><stop offset="1" stop-color="#6F4822"/>
+  </linearGradient>
+  <linearGradient id="woodSign" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#A0713D"/><stop offset="1" stop-color="#8B5A2B"/>
+  </linearGradient>
+  <linearGradient id="soilBed" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#A5764E"/><stop offset="0.5" stop-color="#96683F"/><stop offset="1" stop-color="#7E5636"/>
+  </linearGradient>
+  <radialGradient id="tomatoG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F2795F"/><stop offset="0.55" stop-color="#E8563F"/><stop offset="1" stop-color="#C23A28"/>
+  </radialGradient>
+  <radialGradient id="goldFruit" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F8DA6E"/><stop offset="1" stop-color="#E3A81F"/>
+  </radialGradient>
+  <radialGradient id="orangeG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F7A95C"/><stop offset="1" stop-color="#E0761A"/>
+  </radialGradient>
+  <radialGradient id="greenG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#8FD468"/><stop offset="1" stop-color="#4E9433"/>
+  </radialGradient>
+  <radialGradient id="potatoG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#D39E66"/><stop offset="1" stop-color="#A9713F"/>
+  </radialGradient>
+  <radialGradient id="pinkG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F6BFCB"/><stop offset="1" stop-color="#E8557A"/>
+  </radialGradient>
+  <radialGradient id="melonG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#57A85C"/><stop offset="1" stop-color="#2E7D32"/>
+  </radialGradient>
+  <radialGradient id="cabbageG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#E9F2C8"/><stop offset="1" stop-color="#9CBF6A"/>
+  </radialGradient>
+  <radialGradient id="mushroomCapG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#C8A87E"/><stop offset="1" stop-color="#8A6844"/>
+  </radialGradient>
+  <radialGradient id="chiliG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#E8604C"/><stop offset="1" stop-color="#A03020"/>
+  </radialGradient>
+  <radialGradient id="eggplantG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#B98FD6"/><stop offset="1" stop-color="#5E3A8E"/>
+  </radialGradient>
+  <radialGradient id="peanutG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F2DBB0"/><stop offset="1" stop-color="#B08A4E"/>
+  </radialGradient>
+  <radialGradient id="grapeG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#B39CE0"/><stop offset="1" stop-color="#5E35B1"/>
+  </radialGradient>
+  <radialGradient id="peachG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#FAD9C4"/><stop offset="1" stop-color="#F08A6B"/>
+  </radialGradient>
+  <radialGradient id="plateG" cx="0.4" cy="0.3" r="1">
+    <stop offset="0" stop-color="#FFFDF8"/><stop offset="1" stop-color="#E9DFC9"/>
+  </radialGradient>
+  <radialGradient id="bunG" cx="0.4" cy="0.3" r="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#EFE0C2"/>
+  </radialGradient>
+  <radialGradient id="breadG" cx="0.35" cy="0.3" r="1">
+    <stop offset="0" stop-color="#F0CE8E"/><stop offset="1" stop-color="#C98F4E"/>
+  </radialGradient>
+  <radialGradient id="jamG" cx="0.35" cy="0.3" r="1">
+    <stop offset="0" stop-color="#F2637F"/><stop offset="1" stop-color="#C21847"/>
+  </radialGradient>
+  <radialGradient id="potG" cx="0.4" cy="0.25" r="1.1">
+    <stop offset="0" stop-color="#5E5E66"/><stop offset="0.6" stop-color="#43434A"/><stop offset="1" stop-color="#2E2E33"/>
+  </radialGradient>
+  <radialGradient id="soupG" cx="0.4" cy="0.35" r="0.9">
+    <stop offset="0" stop-color="#F2836A"/><stop offset="1" stop-color="#D24A33"/>
+  </radialGradient>
+  <linearGradient id="awnRed" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#EE6B50"/><stop offset="1" stop-color="#D24A33"/>
+  </linearGradient>
+  <linearGradient id="awnCream" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#F3E4C2"/>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="3" dy="6" stdDeviation="6" flood-color="#4A3520" flood-opacity="0.28"/>
+  </filter>
+  <filter id="softSm" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="1.5" dy="3" stdDeviation="3" flood-color="#4A3520" flood-opacity="0.25"/>
+  </filter>
+  <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.29  0 0 0 0 0.21  0 0 0 0 0.13  0 0 0 0.5 0"/>
+  </filter>
+  <!-- 水彩质感套件（美术 v1.1）：晕染出血 + 手绘抖动描边 + 双层颜料不均 + 边缘沉色 -->
+  <filter id="bleed" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="2.2"/>
+  </filter>
+  <filter id="wcIcon" x="-12%" y="-12%" width="124%" height="124%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="11" result="wob"/>
+    <feDisplacementMap in="SourceGraphic" in2="wob" scale="3" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="5" result="pigL"/>
+    <feColorMatrix in="pigL" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 -0.35" result="pigLA"/>
+    <feComposite in="disp" in2="pigLA" operator="in" result="blotch1"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="2" seed="9" result="pigF"/>
+    <feColorMatrix in="pigF" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0.12 0.12 0 0.86" result="pigFA"/>
+    <feComposite in="blotch1" in2="pigFA" operator="in" result="blotch2"/>
+    <feMorphology in="blotch2" operator="erode" radius="1.5" result="er"/>
+    <feComposite in="blotch2" in2="er" operator="out" result="ring"/>
+    <feFlood flood-color="#3A2415" flood-opacity="0.3" result="poolC"/>
+    <feComposite in="poolC" in2="ring" operator="in" result="pool"/>
+    <feMerge>
+      <feMergeNode in="blotch2"/>
+      <feMergeNode in="pool"/>
+    </feMerge>
+  </filter>
+  <filter id="wcBg" x="-4%" y="-4%" width="108%" height="108%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.007" numOctaves="3" seed="23" result="wob"/>
+    <feDisplacementMap in="SourceGraphic" in2="wob" scale="4" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+    <feFlood flood-color="#FFF3D9" result="creamC"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="3" seed="17" result="washL"/>
+    <feColorMatrix in="washL" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.18 0.18 0.18 0 -0.22" result="washLA"/>
+    <feComposite in="creamC" in2="washLA" operator="in" result="washL2"/>
+    <feComposite in="washL2" in2="disp" operator="atop" result="w1"/>
+    <feFlood flood-color="#6B4423" result="brownC"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" seed="31" result="washD"/>
+    <feColorMatrix in="washD" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0.1 0.1 0 -0.12" result="washDA"/>
+    <feComposite in="brownC" in2="washDA" operator="in" result="washD2"/>
+    <feComposite in="washD2" in2="w1" operator="atop"/>
+  </filter>
+</defs><g opacity="0.32" filter="url(#bleed)"><g transform="translate(27.19999999999999,27.19999999999999) scale(4.2)"><ellipse cx="24" cy="41" rx="13" ry="3.38" fill="#4A3520" opacity="0.16"/><path d="M10 40 L38 12" fill="none" stroke="#C9A66B" stroke-width="2.5" stroke-linecap="round" /><path d="M14 30 Q14 21 22 21 Q30 21 30 30 Q22 33 14 30 Z" fill="url(#mushroomCapG)" stroke="#4A3520" stroke-width="1.8"/><path d="M22 21 Q22 14 29 14 Q36 14 36 21 Q29 24 22 21 Z" fill="#A97F5E" stroke="#4A3520" stroke-width="1.8"/><path d="M18 27 L20 25 M26 18 L28 16" fill="none" stroke="#5E3A20" stroke-width="1.3" stroke-linecap="round" /><ellipse cx="17" cy="24" rx="2.4" ry="1.5" fill="#E8CBA8" opacity="0.8"/></g></g><g filter="url(#wcIcon)"><g transform="translate(27.19999999999999,27.19999999999999) scale(4.2)"><ellipse cx="24" cy="41" rx="13" ry="3.38" fill="#4A3520" opacity="0.16"/><path d="M10 40 L38 12" fill="none" stroke="#C9A66B" stroke-width="2.5" stroke-linecap="round" /><path d="M14 30 Q14 21 22 21 Q30 21 30 30 Q22 33 14 30 Z" fill="url(#mushroomCapG)" stroke="#4A3520" stroke-width="1.8"/><path d="M22 21 Q22 14 29 14 Q36 14 36 21 Q29 24 22 21 Z" fill="#A97F5E" stroke="#4A3520" stroke-width="1.8"/><path d="M18 27 L20 25 M26 18 L28 16" fill="none" stroke="#5E3A20" stroke-width="1.3" stroke-linecap="round" /><ellipse cx="17" cy="24" rx="2.4" ry="1.5" fill="#E8CBA8" opacity="0.8"/></g></g></svg>

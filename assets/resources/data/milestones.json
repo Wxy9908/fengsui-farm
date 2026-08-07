@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "milestones": [
+    { "id": "recipe_5",  "type": "recipe", "threshold": 5,  "reward": 200,  "name": "食谱 x5" },
+    { "id": "recipe_10", "type": "recipe", "threshold": 10, "reward": 400,  "name": "食谱 x10" },
+    { "id": "recipe_15", "type": "recipe", "threshold": 15, "reward": 700,  "name": "食谱 x15" },
+    { "id": "recipe_20", "type": "recipe", "threshold": 20, "reward": 1000, "name": "食谱 x20" },
+    { "id": "recipe_25", "type": "recipe", "threshold": 25, "reward": 1500, "name": "食谱 x25" },
+    { "id": "recipe_30", "type": "recipe", "threshold": 30, "reward": 2000, "name": "食谱 x30" },
+    { "id": "recipe_35", "type": "recipe", "threshold": 35, "reward": 3000, "name": "食谱 x35" },
+    { "id": "recipe_39", "type": "recipe", "threshold": 39, "reward": 5000, "name": "食谱 x39" },
+    { "id": "crop_5",  "type": "crop", "threshold": 5,  "reward": 300,  "name": "作物 x5" },
+    { "id": "crop_10", "type": "crop", "threshold": 10, "reward": 800,  "name": "作物 x10" },
+    { "id": "crop_15", "type": "crop", "threshold": 15, "reward": 2000, "name": "作物 x15" }
+  ]
+}

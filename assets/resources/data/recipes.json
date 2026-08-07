@@ -1,0 +1,426 @@
+{
+  "version": 4,
+  "fallbackRecipeId": "dark_cuisine",
+  "recipes": [
+    {
+      "id": "dark_cuisine",
+      "name": "黑暗料理",
+      "ingredients": {},
+      "sellPrice": 1,
+      "tier": 0,
+      "desc": "试验失败的产物。至少……它也是一种'发现'。"
+    },
+    {
+      "id": "steamed_bun",
+      "name": "馒头",
+      "ingredients": {
+        "wheat": 1
+      },
+      "sellPrice": 6,
+      "tier": 1,
+      "desc": "朴实无华，但管饱。"
+    },
+    {
+      "id": "toast",
+      "name": "烤面包",
+      "ingredients": {
+        "wheat": 2
+      },
+      "sellPrice": 15,
+      "tier": 1,
+      "desc": "外脆内软，麦香扑鼻。"
+    },
+    {
+      "id": "wheat_bread",
+      "name": "全麦面包",
+      "ingredients": {
+        "wheat": 3
+      },
+      "sellPrice": 20,
+      "tier": 1,
+      "desc": "三倍麦香，沉甸甸的满足感。"
+    },
+    {
+      "id": "ketchup",
+      "name": "番茄酱",
+      "ingredients": {
+        "tomato": 1
+      },
+      "sellPrice": 20,
+      "tier": 1,
+      "desc": "浓缩的番茄精华，百搭。"
+    },
+    {
+      "id": "tomato_soup",
+      "name": "番茄浓汤",
+      "ingredients": {
+        "tomato": 2
+      },
+      "sellPrice": 35,
+      "tier": 1,
+      "desc": "两颗番茄的诚意，酸甜暖胃。"
+    },
+    {
+      "id": "mashed_potato",
+      "name": "土豆泥",
+      "ingredients": {
+        "potato": 1
+      },
+      "sellPrice": 32,
+      "tier": 1,
+      "desc": "细腻绵软，入口即化。"
+    },
+    {
+      "id": "potato_cake",
+      "name": "香煎土豆饼",
+      "ingredients": {
+        "potato": 2
+      },
+      "sellPrice": 65,
+      "tier": 1,
+      "desc": "两面金黄，隔壁小孩都馋哭了。"
+    },
+    {
+      "id": "tomato_flatbread",
+      "name": "番茄烤饼",
+      "ingredients": {
+        "wheat": 1,
+        "tomato": 1
+      },
+      "sellPrice": 26,
+      "tier": 1,
+      "desc": "麦香托底，番茄点睛。"
+    },
+    {
+      "id": "potato_bun",
+      "name": "土豆餐包",
+      "ingredients": {
+        "wheat": 1,
+        "potato": 1
+      },
+      "sellPrice": 40,
+      "tier": 1,
+      "desc": "咬开是绵密的土豆馅。"
+    },
+    {
+      "id": "tomato_potato_stew",
+      "name": "番茄炖土豆",
+      "ingredients": {
+        "tomato": 1,
+        "potato": 1
+      },
+      "sellPrice": 55,
+      "tier": 1,
+      "desc": "家常的味道，汤汁拌饭一绝。"
+    },
+    {
+      "id": "baked_corn",
+      "name": "烤玉米",
+      "ingredients": {
+        "corn": 1
+      },
+      "sellPrice": 100,
+      "tier": 2,
+      "desc": "炭火慢烤，粒粒金黄。"
+    },
+    {
+      "id": "popcorn",
+      "name": "爆米花",
+      "ingredients": {
+        "corn": 2
+      },
+      "sellPrice": 200,
+      "tier": 2,
+      "desc": "噼啪作响，看剧必备。"
+    },
+    {
+      "id": "pumpkin_soup",
+      "name": "南瓜浓汤",
+      "ingredients": {
+        "pumpkin": 2
+      },
+      "sellPrice": 400,
+      "tier": 2,
+      "desc": "整颗南瓜熬出的金黄浓汤。"
+    },
+    {
+      "id": "pumpkin_pie",
+      "name": "南瓜饼",
+      "ingredients": {
+        "pumpkin": 1,
+        "wheat": 1
+      },
+      "sellPrice": 220,
+      "tier": 2,
+      "desc": "软糯香甜，老少皆宜。"
+    },
+    {
+      "id": "corn_pumpkin_soup",
+      "name": "玉米南瓜粥",
+      "ingredients": {
+        "corn": 1,
+        "pumpkin": 1
+      },
+      "sellPrice": 330,
+      "tier": 2,
+      "desc": "暖暖的一碗，治愈人心。"
+    },
+    {
+      "id": "corn_tomato_salad",
+      "name": "玉米番茄沙拉",
+      "ingredients": {
+        "corn": 1,
+        "tomato": 1
+      },
+      "sellPrice": 125,
+      "tier": 2,
+      "desc": "清爽开胃，夏天的颜色。"
+    },
+    {
+      "id": "corn_potato_cake",
+      "name": "玉米土豆饼",
+      "ingredients": {
+        "corn": 1,
+        "potato": 1
+      },
+      "sellPrice": 140,
+      "tier": 2,
+      "desc": "玉米粒在饼里咯吱作响。"
+    },
+    {
+      "id": "harvest_soup",
+      "name": "丰收汤",
+      "ingredients": {
+        "tomato": 1,
+        "potato": 1,
+        "corn": 1
+      },
+      "sellPrice": 170,
+      "tier": 2,
+      "desc": "把田里的丰收一次性装进碗里。"
+    },
+    {
+      "id": "strawberry_jam",
+      "name": "草莓酱",
+      "ingredients": {
+        "strawberry": 1
+      },
+      "sellPrice": 520,
+      "tier": 3,
+      "desc": "把春天的味道封存进玻璃瓶。"
+    },
+    {
+      "id": "watermelon_juice",
+      "name": "西瓜汁",
+      "ingredients": {
+        "watermelon": 1
+      },
+      "sellPrice": 1000,
+      "tier": 3,
+      "desc": "不加一滴水的纯粹。"
+    },
+    {
+      "id": "berry_ice",
+      "name": "草莓西瓜冰",
+      "ingredients": {
+        "strawberry": 1,
+        "watermelon": 1
+      },
+      "sellPrice": 1600,
+      "tier": 3,
+      "desc": "梦幻联动，一口入夏。"
+    },
+    {
+      "id": "sauteed_carrot",
+      "name": "清炒胡萝卜",
+      "ingredients": {
+        "carrot": 1
+      },
+      "sellPrice": 55,
+      "tier": 2,
+      "desc": "油亮金黄，甜丝丝的家常味。"
+    },
+    {
+      "id": "carrot_potato_mash",
+      "name": "胡萝卜土豆泥",
+      "ingredients": {
+        "carrot": 1,
+        "potato": 1
+      },
+      "sellPrice": 90,
+      "tier": 2,
+      "desc": "双色绵软，小朋友的最爱。"
+    },
+    {
+      "id": "vinegar_cabbage",
+      "name": "醋溜白菜",
+      "ingredients": {
+        "cabbage": 1
+      },
+      "sellPrice": 135,
+      "tier": 2,
+      "desc": "酸脆爽口，下饭一绝。"
+    },
+    {
+      "id": "cabbage_pastry",
+      "name": "白菜盒子",
+      "ingredients": {
+        "cabbage": 1,
+        "wheat": 1
+      },
+      "sellPrice": 150,
+      "tier": 2,
+      "desc": "面皮烙得焦香，咬开全是清甜的白菜馅。"
+    },
+    {
+      "id": "grilled_mushroom",
+      "name": "烤香菇",
+      "ingredients": {
+        "mushroom": 1
+      },
+      "sellPrice": 300,
+      "tier": 2,
+      "desc": "炭火一烤，鲜味全锁在伞盖里。"
+    },
+    {
+      "id": "mushroom_corn_soup",
+      "name": "香菇玉米羹",
+      "ingredients": {
+        "mushroom": 1,
+        "corn": 1
+      },
+      "sellPrice": 420,
+      "tier": 2,
+      "desc": "鲜上加甜，一碗喝出山林和田野。"
+    },
+    {
+      "id": "chili_sauce",
+      "name": "辣椒酱",
+      "ingredients": {
+        "chili": 1
+      },
+      "sellPrice": 410,
+      "tier": 3,
+      "desc": "红亮亮一罐，蘸什么都带劲。"
+    },
+    {
+      "id": "spicy_potato_shreds",
+      "name": "香辣土豆丝",
+      "ingredients": {
+        "chili": 1,
+        "potato": 1
+      },
+      "sellPrice": 430,
+      "tier": 3,
+      "desc": "酸辣脆爽，筷子停不下来。"
+    },
+    {
+      "id": "braised_eggplant",
+      "name": "红烧茄子",
+      "ingredients": {
+        "eggplant": 1
+      },
+      "sellPrice": 820,
+      "tier": 3,
+      "desc": "酱香油润，拌饭能吃三大碗。"
+    },
+    {
+      "id": "eggplant_tomato",
+      "name": "茄子烧番茄",
+      "ingredients": {
+        "eggplant": 1,
+        "tomato": 1
+      },
+      "sellPrice": 820,
+      "tier": 3,
+      "desc": "紫的糯、红的酸，汤汁都不剩。"
+    },
+    {
+      "id": "salted_peanut",
+      "name": "盐水花生",
+      "ingredients": {
+        "peanut": 1
+      },
+      "sellPrice": 650,
+      "tier": 3,
+      "desc": "慢慢煮透，一颗接一颗。"
+    },
+    {
+      "id": "peanut_toast",
+      "name": "花生酱吐司",
+      "ingredients": {
+        "peanut": 1,
+        "wheat": 1
+      },
+      "sellPrice": 700,
+      "tier": 3,
+      "desc": "厚抹一层现磨花生酱，香浓到眯眼。"
+    },
+    {
+      "id": "grape_jam",
+      "name": "葡萄果酱",
+      "ingredients": {
+        "grape": 1
+      },
+      "sellPrice": 1400,
+      "tier": 4,
+      "desc": "紫宝石熬成的酱，抹什么都高级。"
+    },
+    {
+      "id": "grape_melon_drink",
+      "name": "葡萄西瓜饮",
+      "ingredients": {
+        "grape": 1,
+        "watermelon": 1
+      },
+      "sellPrice": 2500,
+      "tier": 4,
+      "desc": "紫与红的渐变杯，颜值与清甜并存。"
+    },
+    {
+      "id": "peach_can",
+      "name": "蜜桃罐头",
+      "ingredients": {
+        "peach": 1
+      },
+      "sellPrice": 2000,
+      "tier": 4,
+      "desc": "把夏天封进糖水，冬天也能尝到。"
+    },
+    {
+      "id": "peach_berry_tart",
+      "name": "蜜桃草莓挞",
+      "ingredients": {
+        "peach": 1,
+        "strawberry": 1
+      },
+      "sellPrice": 2670,
+      "tier": 4,
+      "desc": "酥皮托着双果，摆上桌就是节日。"
+    },
+    {
+      "id": "farmhouse_stew",
+      "name": "农家炖菜",
+      "ingredients": {
+        "carrot": 1,
+        "cabbage": 1,
+        "mushroom": 1
+      },
+      "sellPrice": 560,
+      "tier": 2,
+      "desc": "地里现摘的三样，咕嘟出一锅踏实。"
+    },
+    {
+      "id": "harvest_fruit_cup",
+      "name": "丰收果盅",
+      "ingredients": {
+        "strawberry": 1,
+        "grape": 1,
+        "peach": 1
+      },
+      "sellPrice": 4340,
+      "tier": 4,
+      "desc": "三种果子层层叠叠，丰收祭的压轴甜。"
+    }
+  ]
+}

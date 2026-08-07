@@ -1,0 +1,6 @@
+{
+  "engine": "cocos-creator",
+  "general": {
+    "design-resolution": { "width": 720, "height": 1280, "fit-height": true }
+  }
+}

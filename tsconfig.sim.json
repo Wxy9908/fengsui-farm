@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "CommonJS",
+    "outDir": "dist-sim",
+    "rootDir": ".",
+    "types": ["node"]
+  },
+  "include": ["assets/scripts/core/**/*.ts", "sim/**/*.ts"]
+}

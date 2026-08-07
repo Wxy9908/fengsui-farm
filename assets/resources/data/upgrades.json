@@ -1,0 +1,28 @@
+{
+  "version": 2,
+  "upgrades": [
+    { "line": "field", "level": 1, "effect": { "type": "fieldSlots", "value": 4 }, "cost": 0, "desc": "初始的 4 块田地。" },
+    { "line": "field", "level": 2, "effect": { "type": "fieldSlots", "value": 6 }, "cost": 200, "desc": "开垦新地，田地增至 6 块，种子店上架新作物。" },
+    { "line": "field", "level": 3, "effect": { "type": "fieldSlots", "value": 8 }, "cost": 600, "desc": "田地增至 8 块，解锁稀有作物。" },
+    { "line": "field", "level": 4, "effect": { "type": "fieldSlots", "value": 10 }, "cost": 1800, "desc": "田地增至 10 块。" },
+    { "line": "field", "level": 5, "effect": { "type": "fieldSlots", "value": 13 }, "cost": 5400, "desc": "向外圈开垦，田地增至 13 块。" },
+    { "line": "field", "level": 6, "effect": { "type": "fieldSlots", "value": 16 }, "cost": 12000, "desc": "向外圈开垦，田地增至 16 块。" },
+    { "line": "field", "level": 7, "effect": { "type": "fieldSlots", "value": 19 }, "cost": 24000, "desc": "全部 19 块田地开垦完毕。" },
+
+    { "line": "kitchen", "level": 1, "effect": { "type": "cookTimeMult", "value": 1.0 }, "cost": 0, "desc": "略显简陋的小厨房。" },
+    { "line": "kitchen", "level": 2, "effect": { "type": "cookTimeMult", "value": 0.85 }, "cost": 150, "desc": "添置新厨具，烹饪时间 -15%。" },
+    { "line": "kitchen", "level": 3, "effect": { "type": "cookTimeMult", "value": 0.7 }, "cost": 500, "desc": "专业级厨房，烹饪时间 -30%。" },
+    { "line": "kitchen", "level": 4, "effect": { "type": "cookTimeMult", "value": 0.6 }, "cost": 1500, "desc": "外婆的私房灶台，烹饪时间 -40%。" },
+    { "line": "kitchen", "level": 5, "effect": { "type": "cookTimeMult", "value": 0.5 }, "cost": 4500, "desc": "得心应手，烹饪时间 -50%。" },
+
+    { "line": "shop", "level": 1, "effect": { "type": "sellPriceMult", "value": 1.0 }, "cost": 0, "desc": "街边小摊。" },
+    { "line": "shop", "level": 2, "effect": { "type": "sellPriceMult", "value": 1.15 }, "cost": 150, "desc": "装修一新，售价 +15%。" },
+    { "line": "shop", "level": 3, "effect": { "type": "sellPriceMult", "value": 1.3 }, "cost": 500, "desc": "远近闻名的小店，售价 +30%。" },
+    { "line": "shop", "level": 4, "effect": { "type": "sellPriceMult", "value": 1.45 }, "cost": 1500, "desc": "口碑传开，售价 +45%。" },
+    { "line": "shop", "level": 5, "effect": { "type": "sellPriceMult", "value": 1.6 }, "cost": 4500, "desc": "丰穗招牌店，售价 +60%。" },
+
+    { "line": "convenience", "level": 1, "effect": { "type": "none", "value": 0 }, "cost": 0, "desc": "事事亲力亲为。" },
+    { "line": "convenience", "level": 2, "effect": { "type": "fertilize", "value": 1 }, "cost": 3000, "desc": "购置化肥，可对生长中的作物催熟（金币换时间）。" },
+    { "line": "convenience", "level": 3, "effect": { "type": "harvestAll", "value": 1 }, "cost": 6000, "desc": "一键收获全部成熟作物。" }
+  ]
+}

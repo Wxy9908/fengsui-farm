@@ -1,0 +1,168 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1280" viewBox="0 0 720 1280"><defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9FD3E8"/><stop offset="0.55" stop-color="#BEE3D8"/><stop offset="1" stop-color="#D9F0E3"/>
+  </linearGradient>
+  <radialGradient id="sun" cx="0.5" cy="0.5" r="0.5">
+    <stop offset="0" stop-color="#FFE98A"/><stop offset="0.7" stop-color="#FFDF5C"/><stop offset="1" stop-color="#FFDF5C" stop-opacity="0"/>
+  </radialGradient>
+  <linearGradient id="hillFar" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#B5DCA0"/><stop offset="1" stop-color="#A3D18B"/>
+  </linearGradient>
+  <linearGradient id="hillNear" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8FC96E"/><stop offset="1" stop-color="#7CB95A"/>
+  </linearGradient>
+  <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8AD35C"/><stop offset="0.4" stop-color="#7EC850"/><stop offset="1" stop-color="#6DB544"/>
+  </linearGradient>
+  <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#F9EFD8"/>
+  </linearGradient>
+  <linearGradient id="paperDeep" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFF8E7"/><stop offset="1" stop-color="#F3E4C2"/>
+  </linearGradient>
+  <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F8D464"/><stop offset="0.5" stop-color="#F2B830"/><stop offset="1" stop-color="#DF9E1E"/>
+  </linearGradient>
+  <linearGradient id="goldSoft" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFE9A8"/><stop offset="1" stop-color="#F5D47E"/>
+  </linearGradient>
+  <linearGradient id="woodV" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#9C6A38"/><stop offset="1" stop-color="#7E5127"/>
+  </linearGradient>
+  <linearGradient id="woodWall" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#8B5F33"/><stop offset="1" stop-color="#6F4822"/>
+  </linearGradient>
+  <linearGradient id="woodSign" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#A0713D"/><stop offset="1" stop-color="#8B5A2B"/>
+  </linearGradient>
+  <linearGradient id="soilBed" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#A5764E"/><stop offset="0.5" stop-color="#96683F"/><stop offset="1" stop-color="#7E5636"/>
+  </linearGradient>
+  <radialGradient id="tomatoG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F2795F"/><stop offset="0.55" stop-color="#E8563F"/><stop offset="1" stop-color="#C23A28"/>
+  </radialGradient>
+  <radialGradient id="goldFruit" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F8DA6E"/><stop offset="1" stop-color="#E3A81F"/>
+  </radialGradient>
+  <radialGradient id="orangeG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F7A95C"/><stop offset="1" stop-color="#E0761A"/>
+  </radialGradient>
+  <radialGradient id="greenG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#8FD468"/><stop offset="1" stop-color="#4E9433"/>
+  </radialGradient>
+  <radialGradient id="potatoG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#D39E66"/><stop offset="1" stop-color="#A9713F"/>
+  </radialGradient>
+  <radialGradient id="pinkG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F6BFCB"/><stop offset="1" stop-color="#E8557A"/>
+  </radialGradient>
+  <radialGradient id="melonG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#57A85C"/><stop offset="1" stop-color="#2E7D32"/>
+  </radialGradient>
+  <radialGradient id="cabbageG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#E9F2C8"/><stop offset="1" stop-color="#9CBF6A"/>
+  </radialGradient>
+  <radialGradient id="mushroomCapG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#C8A87E"/><stop offset="1" stop-color="#8A6844"/>
+  </radialGradient>
+  <radialGradient id="chiliG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#E8604C"/><stop offset="1" stop-color="#A03020"/>
+  </radialGradient>
+  <radialGradient id="eggplantG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#B98FD6"/><stop offset="1" stop-color="#5E3A8E"/>
+  </radialGradient>
+  <radialGradient id="peanutG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#F2DBB0"/><stop offset="1" stop-color="#B08A4E"/>
+  </radialGradient>
+  <radialGradient id="grapeG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#B39CE0"/><stop offset="1" stop-color="#5E35B1"/>
+  </radialGradient>
+  <radialGradient id="peachG" cx="0.35" cy="0.3" r="0.9">
+    <stop offset="0" stop-color="#FAD9C4"/><stop offset="1" stop-color="#F08A6B"/>
+  </radialGradient>
+  <radialGradient id="plateG" cx="0.4" cy="0.3" r="1">
+    <stop offset="0" stop-color="#FFFDF8"/><stop offset="1" stop-color="#E9DFC9"/>
+  </radialGradient>
+  <radialGradient id="bunG" cx="0.4" cy="0.3" r="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#EFE0C2"/>
+  </radialGradient>
+  <radialGradient id="breadG" cx="0.35" cy="0.3" r="1">
+    <stop offset="0" stop-color="#F0CE8E"/><stop offset="1" stop-color="#C98F4E"/>
+  </radialGradient>
+  <radialGradient id="jamG" cx="0.35" cy="0.3" r="1">
+    <stop offset="0" stop-color="#F2637F"/><stop offset="1" stop-color="#C21847"/>
+  </radialGradient>
+  <radialGradient id="potG" cx="0.4" cy="0.25" r="1.1">
+    <stop offset="0" stop-color="#5E5E66"/><stop offset="0.6" stop-color="#43434A"/><stop offset="1" stop-color="#2E2E33"/>
+  </radialGradient>
+  <radialGradient id="soupG" cx="0.4" cy="0.35" r="0.9">
+    <stop offset="0" stop-color="#F2836A"/><stop offset="1" stop-color="#D24A33"/>
+  </radialGradient>
+  <linearGradient id="awnRed" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#EE6B50"/><stop offset="1" stop-color="#D24A33"/>
+  </linearGradient>
+  <linearGradient id="awnCream" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#FFFDF5"/><stop offset="1" stop-color="#F3E4C2"/>
+  </linearGradient>
+  <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="3" dy="6" stdDeviation="6" flood-color="#4A3520" flood-opacity="0.28"/>
+  </filter>
+  <filter id="softSm" x="-40%" y="-40%" width="180%" height="180%">
+    <feDropShadow dx="1.5" dy="3" stdDeviation="3" flood-color="#4A3520" flood-opacity="0.25"/>
+  </filter>
+  <filter id="blur4"><feGaussianBlur stdDeviation="4"/></filter>
+  <filter id="blur8"><feGaussianBlur stdDeviation="8"/></filter>
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="2" stitchTiles="stitch"/>
+    <feColorMatrix type="matrix" values="0 0 0 0 0.29  0 0 0 0 0.21  0 0 0 0 0.13  0 0 0 0.5 0"/>
+  </filter>
+  <!-- 水彩质感套件（美术 v1.1）：晕染出血 + 手绘抖动描边 + 双层颜料不均 + 边缘沉色 -->
+  <filter id="bleed" x="-15%" y="-15%" width="130%" height="130%">
+    <feGaussianBlur stdDeviation="2.2"/>
+  </filter>
+  <filter id="wcIcon" x="-12%" y="-12%" width="124%" height="124%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.03" numOctaves="3" seed="11" result="wob"/>
+    <feDisplacementMap in="SourceGraphic" in2="wob" scale="3" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.02" numOctaves="3" seed="5" result="pigL"/>
+    <feColorMatrix in="pigL" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 -0.35" result="pigLA"/>
+    <feComposite in="disp" in2="pigLA" operator="in" result="blotch1"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.35" numOctaves="2" seed="9" result="pigF"/>
+    <feColorMatrix in="pigF" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.12 0.12 0.12 0 0.86" result="pigFA"/>
+    <feComposite in="blotch1" in2="pigFA" operator="in" result="blotch2"/>
+    <feMorphology in="blotch2" operator="erode" radius="1.5" result="er"/>
+    <feComposite in="blotch2" in2="er" operator="out" result="ring"/>
+    <feFlood flood-color="#3A2415" flood-opacity="0.3" result="poolC"/>
+    <feComposite in="poolC" in2="ring" operator="in" result="pool"/>
+    <feMerge>
+      <feMergeNode in="blotch2"/>
+      <feMergeNode in="pool"/>
+    </feMerge>
+  </filter>
+  <filter id="wcBg" x="-4%" y="-4%" width="108%" height="108%">
+    <feTurbulence type="fractalNoise" baseFrequency="0.007" numOctaves="3" seed="23" result="wob"/>
+    <feDisplacementMap in="SourceGraphic" in2="wob" scale="4" xChannelSelector="R" yChannelSelector="G" result="disp"/>
+    <feFlood flood-color="#FFF3D9" result="creamC"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.006" numOctaves="3" seed="17" result="washL"/>
+    <feColorMatrix in="washL" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.18 0.18 0.18 0 -0.22" result="washLA"/>
+    <feComposite in="creamC" in2="washLA" operator="in" result="washL2"/>
+    <feComposite in="washL2" in2="disp" operator="atop" result="w1"/>
+    <feFlood flood-color="#6B4423" result="brownC"/>
+    <feTurbulence type="fractalNoise" baseFrequency="0.01" numOctaves="3" seed="31" result="washD"/>
+    <feColorMatrix in="washD" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.1 0.1 0.1 0 -0.12" result="washDA"/>
+    <feComposite in="brownC" in2="washDA" operator="in" result="washD2"/>
+    <feComposite in="washD2" in2="w1" operator="atop"/>
+  </filter>
+
+  <linearGradient id="soilDry" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#CE9C64"/><stop offset="0.55" stop-color="#B0824F"/><stop offset="1" stop-color="#96683F"/>
+  </linearGradient>
+  <linearGradient id="soilWet" x1="0" y1="0" x2="0.6" y2="1">
+    <stop offset="0" stop-color="#8A5F3C"/><stop offset="0.55" stop-color="#744C2E"/><stop offset="1" stop-color="#5F3D22"/>
+  </linearGradient>
+  <linearGradient id="fadeDown" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#F3E4C2" stop-opacity="0"/><stop offset="1" stop-color="#F3E4C2"/>
+  </linearGradient>
+  <linearGradient id="fadeR" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#FFF8E7" stop-opacity="0"/><stop offset="1" stop-color="#FFF8E7"/>
+  </linearGradient>
+</defs><rect x="0" y="0" width="720" height="1280" rx="0" fill="#F3E4C2" stroke="none" stroke-width="0" /><rect x="-8" y="-8" width="736" height="1296" rx="0" fill="url(#paperDeep)" stroke="none" stroke-width="0" /><ellipse cx="360" cy="500" rx="420" ry="340" fill="#FFFFFF" opacity="0.25" filter="url(#blur8)"/><ellipse cx="360" cy="176" rx="400" ry="26" fill="#4A3520" opacity="0.22" filter="url(#blur8)"/><path d="M0 64 L90 64 L90 148 Q67.5 172 45 148 Q22.5 172 0 148 Z" fill="url(#awnCream)" stroke="#4A3520" stroke-width="2"/><path d="M4 68 L4 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><path d="M90 64 L180 64 L180 148 Q157.5 172 135 148 Q112.5 172 90 148 Z" fill="url(#awnRed)" stroke="#4A3520" stroke-width="2"/><path d="M94 68 L94 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/><path d="M180 64 L270 64 L270 148 Q247.5 172 225 148 Q202.5 172 180 148 Z" fill="url(#awnCream)" stroke="#4A3520" stroke-width="2"/><path d="M184 68 L184 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><path d="M270 64 L360 64 L360 148 Q337.5 172 315 148 Q292.5 172 270 148 Z" fill="url(#awnRed)" stroke="#4A3520" stroke-width="2"/><path d="M274 68 L274 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/><path d="M360 64 L450 64 L450 148 Q427.5 172 405 148 Q382.5 172 360 148 Z" fill="url(#awnCream)" stroke="#4A3520" stroke-width="2"/><path d="M364 68 L364 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><path d="M450 64 L540 64 L540 148 Q517.5 172 495 148 Q472.5 172 450 148 Z" fill="url(#awnRed)" stroke="#4A3520" stroke-width="2"/><path d="M454 68 L454 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/><path d="M540 64 L630 64 L630 148 Q607.5 172 585 148 Q562.5 172 540 148 Z" fill="url(#awnCream)" stroke="#4A3520" stroke-width="2"/><path d="M544 68 L544 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/><path d="M630 64 L720 64 L720 148 Q697.5 172 675 148 Q652.5 172 630 148 Z" fill="url(#awnRed)" stroke="#4A3520" stroke-width="2"/><path d="M634 68 L634 144" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" opacity="0.18"/><rect x="0" y="58" width="720" height="12" rx="0" fill="url(#woodV)" stroke="#5A3820" stroke-width="1.5" /><path d="M270 74 L282 108 M450 74 L438 108" fill="none" stroke="#6B4423" stroke-width="3" stroke-linecap="round" /><rect x="240" y="106" width="240" height="54" rx="10" fill="url(#woodSign)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="248" y="112" width="224" height="42" rx="7" fill="none" stroke="#F5E8C8" stroke-width="1.5" opacity="0.5"/><text x="360" y="143" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="27" fill="#FFF8E7" font-weight="bold" text-anchor="middle" opacity="1">丰穗小铺</text><g transform="translate(612 436)"><ellipse cx="0" cy="40" rx="62" ry="10" fill="#4A3520" opacity="0.18" filter="url(#blur4)"/><path d="M-52 2 Q-56 40 0 42 Q56 40 52 2 Z" fill="url(#woodSign)" stroke="#4A3520" stroke-width="2.2" filter="url(#softSm)"/><path d="M-48 16 Q0 28 48 16" fill="none" stroke="#6B4423" stroke-width="2" stroke-linecap="round" opacity="0.7"/><circle cx="-22" cy="-4" r="13" fill="url(#orangeG)" stroke="#4A3520" stroke-width="1.8"/><circle cx="4" cy="-12" r="14" fill="url(#tomatoG)" stroke="#4A3520" stroke-width="1.8"/><circle cx="26" cy="-2" r="12" fill="url(#goldFruit)" stroke="#4A3520" stroke-width="1.8"/><path d="M4 -24 q2 -6 8 -7" fill="none" stroke="#3E8E41" stroke-width="2.5" stroke-linecap="round" /><path d="M12 -26 q10 -6 14 2 q-10 4 -14 -2 Z" fill="url(#greenG)" stroke="#4A3520" stroke-width="1.2"/></g><rect x="14" y="12" width="264" height="58" rx="29" fill="#4A3520" stroke="none" stroke-width="0" opacity="0.82" filter="url(#softSm)"/><g><circle cx="48" cy="41" r="21" fill="#FFF8E7" stroke="#4A3520" stroke-width="2"/><path d="M29 39 Q30 19 48 19 Q66 19 67 39 Q59 29 48 29 Q37 29 29 39 Z" fill="#F5ECD4" stroke="#4A3520" stroke-width="1.5"/><circle cx="48" cy="17" r="6.5" fill="#F5ECD4" stroke="#4A3520" stroke-width="1.5"/><circle cx="41.5" cy="41" r="4.6" fill="none" stroke="#4A3520" stroke-width="1.3"/><circle cx="54.5" cy="41" r="4.6" fill="none" stroke="#4A3520" stroke-width="1.3"/><path d="M46.1 41 L49.9 41 M36.9 40 L31 38 M59.1 40 L65 38" fill="none" stroke="#4A3520" stroke-width="1.3" stroke-linecap="round" /><circle cx="41.5" cy="41" r="1.7" fill="#4A3520" /><circle cx="54.5" cy="41" r="1.7" fill="#4A3520" /><path d="M44 49 Q48 52.5 52 49" fill="none" stroke="#4A3520" stroke-width="1.6" stroke-linecap="round" /><circle cx="36.5" cy="47" r="2.8" fill="#F4A7B9" opacity="0.55"/><circle cx="59.5" cy="47" r="2.8" fill="#F4A7B9" opacity="0.55"/></g><circle cx="90" cy="41" r="13" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="2"/><text x="90" y="45.5" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="10.5" fill="#6B4423" font-weight="bold" text-anchor="middle" opacity="1">Lv4</text><rect x="110" y="35" width="100" height="12" rx="6" fill="#2E1D0E" stroke="none" stroke-width="0" opacity="0.55"/><rect x="110" y="35" width="68" height="12" rx="6" fill="url(#gold)" stroke="none" stroke-width="0" /><rect x="110" y="35" width="68" height="5" rx="2.5" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="216" y="45" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="11.5" fill="#FFE9A8" font-weight="normal" text-anchor="start" opacity="1">812/1200</text><rect x="542" y="14" width="164" height="48" rx="24" fill="#4A3520" stroke="none" stroke-width="0" opacity="0.82" filter="url(#softSm)"/><circle cx="572" cy="38" r="15" fill="url(#gold)" stroke="#8A5F10" stroke-width="2"/><text x="572" y="44.5" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="17" fill="#6B4423" font-weight="bold" text-anchor="middle" opacity="1">¥</text><text x="594" y="46.5" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="23" fill="#FFE9A8" font-weight="bold" text-anchor="start" opacity="1">251</text><circle cx="690" cy="38" r="12" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="1.8"/><path d="M690 32.5 L690 43.5 M684.5 38 L695.5 38" fill="none" stroke="#6B4423" stroke-width="2.4" stroke-linecap="round" /><path d="M70 196 L276 196 M444 196 L650 196" fill="none" stroke="#C9B891" stroke-width="2" stroke-linecap="round" /><text x="360" y="204" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="25" fill="#8B5A2B" font-weight="bold" text-anchor="middle" opacity="1">售卖</text><text x="360" y="238" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="19" fill="#8B5A2B" font-weight="bold" text-anchor="middle" opacity="1">卖出全部菜品，+239 金币</text><rect x="196" y="256" width="328" height="58" rx="29" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="222.24" y="262.96" width="275.52" height="20.88" rx="10.44" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="360" y="293.64" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="24" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">全部卖出</text><rect x="70" y="330" width="264" height="54" rx="27" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="91.12" y="336.48" width="221.76" height="19.439999999999998" rx="9.719999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="202" y="365.64" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="24" fill="#4A3520" font-weight="normal" text-anchor="middle" opacity="1">只卖菜品</text><rect x="386" y="330" width="264" height="54" rx="27" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="407.12" y="336.48" width="221.76" height="19.439999999999998" rx="9.719999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="518" y="365.64" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="24" fill="#4A3520" font-weight="normal" text-anchor="middle" opacity="1">每日奖励</text><g transform="translate(100 436) rotate(-2)"><path d="M-38 26 L-46 62 M38 26 L46 62" fill="none" stroke="#6B4423" stroke-width="4" stroke-linecap="round" /><rect x="-62" y="-46" width="124" height="76" rx="8" fill="url(#woodSign)" stroke="#4A3520" stroke-width="2.2" filter="url(#softSm)"/><rect x="-52" y="-36" width="104" height="56" rx="5" fill="#3E3225" stroke="#2E2418" stroke-width="1.5" /><text x="0" y="-12" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="17" fill="#F5D47E" font-weight="bold" text-anchor="middle" opacity="1">今日特价</text><text x="0" y="12" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="14" fill="#FFF8E7" font-weight="normal" text-anchor="middle" opacity="1">番茄浓汤 9折</text><path d="M-42 16 L-30 16 M30 16 L42 16" fill="none" stroke="#D9C9A8" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/></g><path d="M70 536 L276 536 M444 536 L650 536" fill="none" stroke="#C9B891" stroke-width="2" stroke-linecap="round" /><text x="360" y="544" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="25" fill="#8B5A2B" font-weight="bold" text-anchor="middle" opacity="1">升级</text><rect x="56" y="572" width="608" height="112" rx="16" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#soft)"/><rect x="64" y="580" width="592" height="30" rx="11" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.4"/><circle cx="112" cy="628" r="31" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="2.2"/><g transform="translate(94,610) scale(0.75)"><path d="M24 44 L24 14" fill="none" stroke="#8B5A2B" stroke-width="3" stroke-linecap="round" /><path d="M24 30 L15 22 M24 30 L33 22 M24 38 L15 30 M24 38 L33 30" fill="none" stroke="#A0713D" stroke-width="2" stroke-linecap="round" /><circle cx="15" cy="17" r="5.5" fill="url(#goldFruit)" stroke="#4A3520" stroke-width="1.5"/><circle cx="24" cy="11" r="5.5" fill="url(#goldFruit)" stroke="#4A3520" stroke-width="1.5"/><circle cx="33" cy="17" r="5.5" fill="url(#goldFruit)" stroke="#4A3520" stroke-width="1.5"/><ellipse cx="21.5" cy="9" rx="1.6" ry="2.4" fill="#FFF3C4" opacity="0.9"/></g><text x="156" y="618" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="23" fill="#4A3520" font-weight="bold" text-anchor="start" opacity="1">田地 Lv4→5</text><circle cx="170" cy="652" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="197" cy="652" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="224" cy="652" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="251" cy="652" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="278" cy="652" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><text x="302" y="658" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="16.5" fill="#8B5A2B" font-weight="normal" text-anchor="start" opacity="1">地块 10 → 13，解锁新作物</text><rect x="496" y="604" width="136" height="48" rx="24" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="506.88" y="609.76" width="114.24" height="17.28" rx="8.64" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="564" y="635.2" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">3000 金</text><rect x="56" y="708" width="608" height="112" rx="16" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#soft)"/><rect x="64" y="716" width="592" height="30" rx="11" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.4"/><circle cx="112" cy="764" r="31" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="2.2"/><ellipse cx="112" cy="771" rx="19" ry="8" fill="#43434A" stroke="#2E2E33" stroke-width="2"/><path d="M94 771 Q92 754 101 750 L123 750 Q132 754 130 771 Z" fill="url(#potG)" /><text x="156" y="754" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="23" fill="#4A3520" font-weight="bold" text-anchor="start" opacity="1">厨房 Lv1→2</text><circle cx="170" cy="788" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="197" cy="788" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="224" cy="788" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="251" cy="788" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><text x="302" y="794" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="16.5" fill="#8B5A2B" font-weight="normal" text-anchor="start" opacity="1">烹饪时间 -15%</text><rect x="496" y="740" width="136" height="48" rx="24" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="506.88" y="745.76" width="114.24" height="17.28" rx="8.64" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="564" y="771.2" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">150 金</text><rect x="56" y="844" width="608" height="112" rx="16" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#soft)"/><rect x="64" y="852" width="592" height="30" rx="11" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.4"/><circle cx="112" cy="900" r="31" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="2.2"/><circle cx="112" cy="900" r="17" fill="url(#gold)" stroke="#8A5F10" stroke-width="2"/><text x="112" y="906.46" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="17.85" fill="#6B4423" font-weight="bold" text-anchor="middle" opacity="1">¥</text><text x="156" y="890" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="23" fill="#4A3520" font-weight="bold" text-anchor="start" opacity="1">店铺 Lv1→2</text><circle cx="170" cy="924" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="197" cy="924" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="224" cy="924" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="251" cy="924" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><text x="302" y="930" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="16.5" fill="#8B5A2B" font-weight="normal" text-anchor="start" opacity="1">售价 +15%</text><rect x="496" y="876" width="136" height="48" rx="24" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="506.88" y="881.76" width="114.24" height="17.28" rx="8.64" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="564" y="907.2" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">150 金</text><rect x="56" y="980" width="608" height="112" rx="16" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#soft)"/><rect x="64" y="988" width="592" height="30" rx="11" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.4"/><circle cx="112" cy="1036" r="31" fill="url(#goldSoft)" stroke="#C98F1B" stroke-width="2.2"/><path d="M115 1020 L101 1039 L110 1039 L107 1053 L122 1033 L113 1033 Z" fill="url(#gold)" stroke="#8A5F10" stroke-width="1.8"/><text x="156" y="1026" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="23" fill="#4A3520" font-weight="bold" text-anchor="start" opacity="1">便利 Lv1→2</text><circle cx="170" cy="1060" r="8" fill="url(#gold)" stroke="#4A3520" stroke-width="1.5"/><circle cx="197" cy="1060" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="224" cy="1060" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><circle cx="251" cy="1060" r="8" fill="#E3D9C4" stroke="#4A3520" stroke-width="1.5"/><text x="302" y="1066" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="16.5" fill="#8B5A2B" font-weight="normal" text-anchor="start" opacity="1">一键收获全部作物</text><rect x="496" y="1012" width="136" height="48" rx="24" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="506.88" y="1017.76" width="114.24" height="17.28" rx="8.64" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="564" y="1043.2" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="20" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">800 金</text><rect x="0" y="1162" width="720" height="118" rx="0" fill="#6B4423" stroke="none" stroke-width="0" opacity="0.16"/><rect x="26" y="1180" width="164" height="66" rx="33" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="39.120000000000005" y="1187.92" width="137.76" height="23.759999999999998" rx="11.879999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="108" y="1222.36" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="26" fill="#4A3520" font-weight="normal" text-anchor="middle" opacity="1">田地</text><rect x="198" y="1180" width="164" height="66" rx="33" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="211.12" y="1187.92" width="137.76" height="23.759999999999998" rx="11.879999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="280" y="1222.36" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="26" fill="#4A3520" font-weight="normal" text-anchor="middle" opacity="1">厨房</text><rect x="370" y="1180" width="164" height="66" rx="33" fill="url(#gold)" stroke="#8A5F10" stroke-width="2.5" filter="url(#softSm)"/><rect x="383.12" y="1187.92" width="137.76" height="23.759999999999998" rx="11.879999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="452" y="1222.36" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="26" fill="#4A3520" font-weight="bold" text-anchor="middle" opacity="1">商店</text><rect x="542" y="1180" width="164" height="66" rx="33" fill="url(#paper)" stroke="#4A3520" stroke-width="2.5" filter="url(#softSm)"/><rect x="555.12" y="1187.92" width="137.76" height="23.759999999999998" rx="11.879999999999999" fill="#FFFFFF" stroke="none" stroke-width="0" opacity="0.35"/><text x="624" y="1222.36" font-family="'PingFang SC','Microsoft YaHei',sans-serif" font-size="26" fill="#4A3520" font-weight="normal" text-anchor="middle" opacity="1">图鉴</text><rect x="0" y="0" width="720" height="1280" filter="url(#grain)" opacity="0.05"/></svg>

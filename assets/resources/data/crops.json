@@ -1,0 +1,155 @@
+{
+  "version": 1,
+  "crops": [
+    {
+      "id": "wheat",
+      "name": "小麦",
+      "tier": 1,
+      "seedPrice": 3,
+      "sellPrice": 4,
+      "growTime": 60,
+      "unlock": { "type": "default" },
+      "desc": "最基础的作物，一分钟就熟，适合练手。"
+    },
+    {
+      "id": "tomato",
+      "name": "番茄",
+      "tier": 1,
+      "seedPrice": 6,
+      "sellPrice": 11,
+      "growTime": 300,
+      "unlock": { "type": "default" },
+      "desc": "酸甜多汁，是很多菜品的灵魂。"
+    },
+    {
+      "id": "potato",
+      "name": "土豆",
+      "tier": 1,
+      "seedPrice": 10,
+      "sellPrice": 20,
+      "growTime": 600,
+      "unlock": { "type": "default" },
+      "desc": "朴实耐放，怎么做都好吃。"
+    },
+    {
+      "id": "corn",
+      "name": "玉米",
+      "tier": 2,
+      "seedPrice": 20,
+      "sellPrice": 65,
+      "growTime": 1800,
+      "unlock": { "type": "level", "level": 3 },
+      "desc": "金黄的玉米粒，烤着吃最香。"
+    },
+    {
+      "id": "pumpkin",
+      "name": "南瓜",
+      "tier": 2,
+      "seedPrice": 35,
+      "sellPrice": 125,
+      "growTime": 3600,
+      "unlock": { "type": "level", "level": 3 },
+      "desc": "沉甸甸的大南瓜，能做汤能做饼。"
+    },
+    {
+      "id": "strawberry",
+      "name": "草莓",
+      "tier": 3,
+      "seedPrice": 80,
+      "sellPrice": 320,
+      "growTime": 7200,
+      "unlock": { "type": "level", "level": 5 },
+      "desc": "鲜红欲滴，甜点必备。"
+    },
+    {
+      "id": "watermelon",
+      "name": "西瓜",
+      "tier": 3,
+      "seedPrice": 150,
+      "sellPrice": 630,
+      "growTime": 14400,
+      "unlock": { "type": "level", "level": 5 },
+      "desc": "夏天的王者，一藤一瓜。"
+    },
+    {
+      "id": "carrot",
+      "name": "胡萝卜",
+      "tier": 2,
+      "seedPrice": 12,
+      "sellPrice": 35,
+      "growTime": 900,
+      "unlock": { "type": "level", "level": 6 },
+      "desc": "脆甜爽口，小兔子的最爱，外婆的第二爱。"
+    },
+    {
+      "id": "cabbage",
+      "name": "白菜",
+      "tier": 2,
+      "seedPrice": 25,
+      "sellPrice": 85,
+      "growTime": 2400,
+      "unlock": { "type": "level", "level": 6 },
+      "desc": "一层裹一层，裹住了整个秋天。"
+    },
+    {
+      "id": "mushroom",
+      "name": "香菇",
+      "tier": 2,
+      "seedPrice": 55,
+      "sellPrice": 190,
+      "growTime": 5400,
+      "unlock": { "type": "level", "level": 6 },
+      "desc": "雨后冒头的小伞，鲜掉眉毛。"
+    },
+    {
+      "id": "chili",
+      "name": "辣椒",
+      "tier": 3,
+      "seedPrice": 70,
+      "sellPrice": 250,
+      "growTime": 5400,
+      "unlock": { "type": "level", "level": 7 },
+      "desc": "一点就着火，提味全靠它。"
+    },
+    {
+      "id": "eggplant",
+      "name": "茄子",
+      "tier": 3,
+      "seedPrice": 140,
+      "sellPrice": 500,
+      "growTime": 10800,
+      "unlock": { "type": "level", "level": 7 },
+      "desc": "紫袍加身，红烧最下饭。"
+    },
+    {
+      "id": "peanut",
+      "name": "花生",
+      "tier": 3,
+      "seedPrice": 110,
+      "sellPrice": 410,
+      "growTime": 9000,
+      "unlock": { "type": "level", "level": 7 },
+      "desc": "埋在土里的宝贝，越嚼越香。"
+    },
+    {
+      "id": "grape",
+      "name": "葡萄",
+      "tier": 4,
+      "seedPrice": 240,
+      "sellPrice": 840,
+      "growTime": 14400,
+      "unlock": { "type": "level", "level": 8 },
+      "desc": "藤上垂下串串紫玛瑙。"
+    },
+    {
+      "id": "peach",
+      "name": "桃子",
+      "tier": 4,
+      "seedPrice": 350,
+      "sellPrice": 1250,
+      "growTime": 21600,
+      "unlock": { "type": "level", "level": 8 },
+      "desc": "粉扑扑的脸蛋，咬一口满嘴夏天。"
+    }
+  ]
+}

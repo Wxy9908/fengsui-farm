@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "levels": [
+    { "level": 1, "xp": 0, "rewardGold": 0, "unlocks": ["seed:wheat", "seed:tomato", "seed:potato", "upg:field:2"] },
+    { "level": 2, "xp": 250, "rewardGold": 50, "unlocks": ["upg:kitchen:2", "upg:shop:2"] },
+    { "level": 3, "xp": 600, "rewardGold": 80, "unlocks": ["seed:corn", "seed:pumpkin", "upg:field:3"] },
+    { "level": 4, "xp": 1150, "rewardGold": 120, "unlocks": ["upg:kitchen:3", "upg:shop:3"] },
+    { "level": 5, "xp": 2000, "rewardGold": 180, "unlocks": ["seed:strawberry", "seed:watermelon", "upg:field:4"] },
+    { "level": 6, "xp": 3300, "rewardGold": 260, "unlocks": ["seed:carrot", "seed:cabbage", "seed:mushroom", "upg:field:5", "upg:kitchen:4", "upg:shop:4"] },
+    { "level": 7, "xp": 5200, "rewardGold": 380, "unlocks": ["seed:chili", "seed:eggplant", "seed:peanut", "upg:field:6"] },
+    { "level": 8, "xp": 8000, "rewardGold": 550, "unlocks": ["seed:grape", "seed:peach", "upg:field:7", "upg:kitchen:5", "upg:shop:5"] },
+    { "level": 9, "xp": 12000, "rewardGold": 800, "unlocks": ["upg:convenience:2"] },
+    { "level": 10, "xp": 17500, "rewardGold": 1200, "unlocks": ["upg:convenience:3"] }
+  ]
+}

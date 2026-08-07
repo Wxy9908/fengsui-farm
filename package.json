@@ -1,0 +1,26 @@
+{
+  "name": "newgame",
+  "version": "0.1.0",
+  "private": true,
+  "description": "种田经营游戏（M1 原型）——Cocos Creator 3.x + TypeScript",
+  "scripts": {
+    "sim": "tsc -p tsconfig.sim.json && node dist-sim/sim/sim.js",
+    "balance": "tsc -p tsconfig.sim.json && node dist-sim/sim/balance.js",
+    "subset-font": "node sim/subset-font.js",
+    "sync-data": "node sim/sync-data.js",
+    "check-scene": "node sim/check-scene.js",
+    "gen-assets": "node sim/gen-assets.js",
+    "gen-mockups": "node sim/gen-mockups.js",
+    "gen-audio": "node sim/gen-audio.js",
+    "gen-bgm": "node sim/gen-bgm.js"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "fonteditor-core": "^2.6.3",
+    "typescript": "^5.0.0"
+  },
+  "creator": {
+    "version": "3.8.8"
+  },
+  "uuid": "31d31135-4f95-4764-9a9b-30b53cd0156c"
+}
