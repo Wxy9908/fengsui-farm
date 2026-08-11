@@ -7,9 +7,9 @@
       "tier": 1,
       "seedPrice": 3,
       "sellPrice": 4,
-      "growTime": 60,
+      "growTime": 45,
       "unlock": { "type": "default" },
-      "desc": "最基础的作物，一分钟就熟，适合练手。"
+      "desc": "最基础的作物，不到一分钟就熟，适合练手。"
     },
     {
       "id": "tomato",
@@ -17,7 +17,7 @@
       "tier": 1,
       "seedPrice": 6,
       "sellPrice": 11,
-      "growTime": 300,
+      "growTime": 225,
       "unlock": { "type": "default" },
       "desc": "酸甜多汁，是很多菜品的灵魂。"
     },
@@ -27,7 +27,7 @@
       "tier": 1,
       "seedPrice": 10,
       "sellPrice": 20,
-      "growTime": 600,
+      "growTime": 450,
       "unlock": { "type": "default" },
       "desc": "朴实耐放，怎么做都好吃。"
     },

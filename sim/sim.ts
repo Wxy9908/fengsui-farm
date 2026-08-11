@@ -84,12 +84,12 @@ log('组合 {小麦×1} → 馒头（1 个和 2 个出不同菜，数量也是�
 
 // ---------- 售卖换钱 ----------
 const income = game.sellDish('toast');
-assert.strictEqual(income, 15);
+assert.strictEqual(income, 17);
 const bunIncome = game.sellDish('steamed_bun');
-// 仿真固定日期 2026-07-21 的今日特价恰为馒头：6 × 1.2 = 7.2 → 7
-assert.strictEqual(bunIncome, 7, '当日特价菜（馒头）卖出价应 ×1.2');
-assert.strictEqual(game.xp, 123, '卖菜经验 = income/10 取整：15→2、6→1（馒头发现已 +50）');
-log(`卖出烤面包 +15、馒头 +6，当前金币 ${game.gold}`);
+// 仿真固定日期 2026-07-21 的今日特价恰为馒头：7 × 1.2 = 8.4 → 8
+assert.strictEqual(bunIncome, 8, '当日特价菜（馒头）卖出价应 ×1.2');
+assert.strictEqual(game.xp, 123, '卖菜经验 = income/10 取整：17→2、8→1（馒头发现已 +50）');
+log(`卖出烤面包 +17、馒头 +8（特价），当前金币 ${game.gold}`);
 
 // ---------- 剩余小麦直接卖 + 每日奖励 ----------
 assert.strictEqual(game.sellCrop('wheat', 1), 4);

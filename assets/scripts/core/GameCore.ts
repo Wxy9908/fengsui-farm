@@ -75,6 +75,8 @@ export class GameCore {
     for (const line of this.upgradeLines()) this.save.upgrades[line] ??= 1;
     // 数据腐蚀自愈：金币非有限数（如 NaN 被 JSON 存成 null）时重置为初始金，避免脏值无限传播
     if (!Number.isFinite(this.save.gold)) this.save.gold = this.data.config.startGold;
+    // 清理降级编译 bug 污染的存档键（[...new Set] 曾被编成 [].concat(set)，升级线名变成 "[object Set]"）
+    delete this.save.upgrades['[object Set]'];
     this.settleOffline();
     // 旧存档补发：已超门槛的里程碑在上线时一次性发放（事件入队，UI 逐个弹层）
     this.checkMilestones();
@@ -130,7 +132,9 @@ export class GameCore {
   }
 
   private upgradeLines(): string[] {
-    return [...new Set(this.data.upgrades.map((u) => u.line))];
+    // 注意：不能写 [...new Set(...)]——构建降级编译（downlevelIteration 关闭）会把 Set 展开编成 [].concat(set)，
+    // 把整个 Set 当成一个元素（商店升级卡曾因此显示「[object Set]」）。Array.from 编译产物安全。
+    return Array.from(new Set(this.data.upgrades.map((u) => u.line)));
   }
 
   private upgradeDef(line: string, level: number): UpgradeDef | undefined {

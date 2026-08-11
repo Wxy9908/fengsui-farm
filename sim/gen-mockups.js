@@ -621,6 +621,7 @@ img{width:270px;border-radius:12px;box-shadow:0 4px 16px #0008}</style></head>
 <body><h1>NewGame · M3 目标效果图（美术 v1.1 · 手绘水彩 · 奶油暖调 2.5D · 依据 docs/美术风格规范.md + 数据表设计 §8）</h1>
 <p>M3 目标效果图：含农场等级系统（等级徽章/经验条/种子等级门控）、金币水槽（化肥催熟/便利升级）、卖出收益预览、今日特价、首发内容量（作物 15 种 · 食谱 40 道）。作物与菜品图标与游戏内同源（sim/art-lib.js）。PNG 由 Edge 无头模式从同名 SVG 转换（命令见 sim/gen-mockups.js 尾部注释）。</p><div class="row">
 ${Object.keys(pages).map((k) => `<figure><img src="${k}.svg"><figcaption>${{ field: '田地页', kitchen: '厨房页', shop: '商店页', book: '图鉴页' }[k]}</figcaption></figure>`).join('\n')}
+<figure><img src="loading.svg"><figcaption>Loading 页（sim/gen-loading.js 生成，游戏名「丰穗小镇」）</figcaption></figure>
 </div></body></html>`;
 fs.writeFileSync(path.join(OUT, 'index.html'), gallery);
 console.log('✅ docs/mockups/index.html');

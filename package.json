@@ -2,7 +2,7 @@
   "name": "newgame",
   "version": "0.1.0",
   "private": true,
-  "description": "种田经营游戏（M1 原型）——Cocos Creator 3.x + TypeScript",
+  "description": "丰穗小镇——种田做饭的慢生活经营游戏（Cocos Creator 3.x + TypeScript）",
   "scripts": {
     "sim": "tsc -p tsconfig.sim.json && node dist-sim/sim/sim.js",
     "balance": "tsc -p tsconfig.sim.json && node dist-sim/sim/balance.js",

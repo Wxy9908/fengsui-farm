@@ -157,6 +157,30 @@ export class GameController extends Component {
     { key: 'book', name: '图鉴' },
   ];
 
+  /** 启动遮罩节点（loading 层；初始化完成后淡出销毁） */
+  private splash: Node | null = null;
+  /** 遮罩上的进度条填充 Graphics */
+  private splashFill: Graphics | null = null;
+  /** 遮罩上的百分比 Label */
+  private splashPct: Label | null = null;
+  /** 进度条显示值（平滑追赶 setSplashProgress 的目标值） */
+  private splashShown = 0;
+  /** 遮罩创建时刻（用于最短展示时长，防本地秒加载闪屏） */
+  private splashStartAt = 0;
+
+  /** loading 小贴士池（每次启动随机一条；文案只用快乐体覆盖字符） */
+  private static readonly SPLASH_TIPS = [
+    '小贴士：成熟的作物会微微发光，记得回来看看',
+    '小贴士：做菜比直接卖作物更赚钱',
+    '小贴士：1 个番茄是酱，2 个番茄是汤，数量也是配方',
+    '小贴士：商店每天都有今日特价，卖出多赚两成',
+    '小贴士：图鉴点亮越多，里程碑奖励的金币越多',
+  ];
+
+  onLoad() {
+    this.makeSplash();
+  }
+
   start() {
     // 音效通道（AudioSourceComponent 常驻，playOneShot 播放；WeChat 需首次触摸后才出声，属平台限制）
     const an = new Node('Audio');
@@ -165,7 +189,10 @@ export class GameController extends Component {
     this.stirSrc = an.addComponent(AudioSourceComponent); // 搅拌循环音（loop）
     this.bgmSrc = an.addComponent(AudioSourceComponent); // BGM 循环音（loop）
     this.loadData().then(async (data) => {
+      this.setSplashProgress(0.35);
       await this.loadIcons();
+      this.setSplashProgress(0.85);
+      if (this.splash) this.applyUiFont(this.splash); // 快乐体加载完成后遮罩文字同步换皮
       const oldSave = this.readSave();
       const offlineMs = oldSave ? Date.now() - oldSave.lastOnlineAt : 0;
       this.game = new GameCore(data, oldSave);
@@ -178,14 +205,153 @@ export class GameController extends Component {
       }
       this.setupPages();
       this.setupFields();
+      this.setSplashProgress(1);
       if (msgs.length > 0) {
         this.sayAll(msgs.join('；'));
         this.playSfx('offline'); // 回游问候（离线结算提示）
       }
       this.switchPage('field');
       this.refreshPanels();
+      this.hideSplash();
     });
   }
+
+  // ---------- 启动遮罩（loading 层） ----------
+
+  /**
+   * 启动遮罩：onLoad 第一帧盖上，盖住场景静态灰盒节点与初始化空窗。
+   * 视觉对齐 docs/mockups/loading.png（美术品牌 v1.0）：底图 bg/loading.jpg（Logo 牌匾 +
+   * 麦穗徽章 + 丰收篮主视觉 + 健康游戏忠告，93KB 进主包），动态件代码叠加——
+   * 随机小贴士 + 加载文案 + 木框金条进度条（百分比实时推进）。
+   * 底图加载前以奶油纸色兜底；初始化完成后由 hideSplash 淡出销毁。零场景改动。
+   */
+  private makeSplash() {
+    const canvas = this.node.scene?.getChildByName('Canvas');
+    if (!canvas) return;
+    const ut = canvas.getComponent(UITransform);
+    const W = ut?.contentSize.width ?? 720;
+    const H = ut?.contentSize.height ?? 1280;
+    const n = new Node('Splash');
+    n.layer = Layers.Enum.UI_2D;
+    n.parent = canvas;
+    n.addComponent(UITransform).setContentSize(W, H);
+    n.addComponent(BlockInputEvents); // 加载期间屏蔽触摸
+    const g = n.addComponent(Graphics);
+    g.fillColor = new Color(0xff, 0xf8, 0xe7); // 奶油纸兜底（底图加载前）
+    g.rect(-W / 2, -H / 2, W, H);
+    g.fill();
+    // 底图（与 mockup 同源烘焙）；失败则保持奶油底 + 动态件，不阻塞启动
+    resources.load('bg/loading/spriteFrame', SpriteFrame, (err, frame) => {
+      if (err || !frame || !n.isValid) return;
+      const bgNode = new Node('bg');
+      bgNode.layer = Layers.Enum.UI_2D;
+      bgNode.parent = n;
+      bgNode.setSiblingIndex(0); // 压在兜底色上、动态件下
+      bgNode.addComponent(UITransform).setContentSize(W, H);
+      const sp = bgNode.addComponent(Sprite);
+      sp.spriteFrame = frame;
+      sp.sizeMode = Sprite.SizeMode.CUSTOM;
+    });
+    const mkText = (str: string, y: number, size: number, color: Color, bold = false) => {
+      const t = new Node('label');
+      t.layer = Layers.Enum.UI_2D;
+      t.parent = n;
+      t.addComponent(UITransform).setContentSize(W - 80, size + 16);
+      t.setPosition(0, y);
+      const l = t.addComponent(Label);
+      l.string = str;
+      l.fontSize = size;
+      l.isBold = bold;
+      l.color = color;
+      l.horizontalAlign = Label.HorizontalAlign.CENTER;
+      return l;
+    };
+    // 坐标与 mockup 对齐（SVG y → Cocos y = 640 - y）：小贴士 y1010、加载文案 y1078、进度条中心 y1121
+    const tip = GameController.SPLASH_TIPS[Math.floor(Math.random() * GameController.SPLASH_TIPS.length)];
+    mkText(tip, -370, 24, new Color(0x8b, 0x5a, 0x2b));
+    mkText('外婆正在生火备料…', -438, 28, new Color(0x4a, 0x35, 0x20), true);
+    // 进度条（对齐 mockup：木框 496×50 + 奶油底槽 480×34 + 丰收黄填充 + 百分比居中）
+    const bar = new Node('bar');
+    bar.layer = Layers.Enum.UI_2D;
+    bar.parent = n;
+    bar.addComponent(UITransform).setContentSize(496, 50);
+    bar.setPosition(0, -481);
+    const frame = bar.addComponent(Graphics);
+    frame.fillColor = new Color(0x8b, 0x5a, 0x2b); // 木框
+    frame.roundRect(-248, -25, 496, 50, 25);
+    frame.fill();
+    frame.lineWidth = 3;
+    frame.strokeColor = new Color(0x4a, 0x35, 0x20);
+    frame.roundRect(-248, -25, 496, 50, 25);
+    frame.stroke();
+    frame.fillColor = new Color(0xf3, 0xe4, 0xc2); // 底槽
+    frame.roundRect(-240, -17, 480, 34, 17);
+    frame.fill();
+    frame.lineWidth = 2;
+    frame.roundRect(-240, -17, 480, 34, 17);
+    frame.stroke();
+    const fill = new Node('fill');
+    fill.layer = Layers.Enum.UI_2D;
+    fill.parent = bar;
+    fill.addComponent(UITransform).setContentSize(480, 34);
+    this.splashFill = fill.addComponent(Graphics);
+    this.splashPct = mkText('0%', -481, 22, new Color(0x4a, 0x35, 0x20), true);
+    this.splash = n;
+    this.splashStartAt = Date.now();
+    this.setSplashProgress(0.05);
+  }
+
+  /** 进度条目标值（0~1）：显示值以补间平滑追赶，视觉连续而非阶段跳变 */
+  private setSplashProgress(p: number) {
+    if (!this.splashFill) return;
+    const target = Math.min(1, p);
+    const state = { v: this.splashShown };
+    Tween.stopAllByTarget(state);
+    tween(state)
+      .to(Math.max(0.15, (target - state.v) * 1.2), { v: target }, {
+        onUpdate: () => {
+          this.splashShown = state.v;
+          this.drawSplashFill(state.v);
+        },
+      })
+      .start();
+  }
+
+  /** 画一帧进度填充（丰收黄圆角条 + 百分比） */
+  private drawSplashFill(v: number) {
+    const g = this.splashFill;
+    if (!g) return;
+    g.clear();
+    const w = Math.max(24, (480 - 12) * v);
+    g.fillColor = new Color(0xf2, 0xb8, 0x30);
+    g.roundRect(-234, -11, w, 22, 11);
+    g.fill();
+    if (this.splashPct) this.splashPct.string = `${Math.round(v * 100)}%`;
+  }
+
+  /** 初始化完成：进度补满 + 满最短展示时长（防本地秒加载闪屏）后，遮罩置顶淡出销毁 */
+  private hideSplash() {
+    const n = this.splash;
+    if (!n) return;
+    if (n.parent) n.setSiblingIndex(n.parent.children.length - 1); // 压过构建好的 UI，淡出过程不露底
+    const holdMs = Math.max(0, 1200 - (Date.now() - this.splashStartAt)); // 最短展示 1.2s，让进度条完整走完
+    this.scheduleOnce(() => {
+      this.setSplashProgress(1);
+      this.scheduleOnce(() => {
+        this.splash = null;
+        this.splashFill = null;
+        this.splashPct = null;
+        if (!n.isValid) return;
+        const op = n.getComponent(UIOpacity) ?? n.addComponent(UIOpacity);
+        n.removeComponent(BlockInputEvents);
+        tween(op)
+          .to(0.4, { opacity: 0 })
+          .call(() => n.destroy())
+          .start();
+      }, 0.35); // 等进度补间收尾再淡出
+    }, holdMs / 1000);
+  }
+
   /**
    * 动态地块面板：场景里 4 个静态按钮隐藏保留（兼容 check-scene 接线约定），
    * 实际交互由代码实例化的按钮接管，数量跟随存档 fields（田地升级可增至 10 块）。
@@ -1237,7 +1403,6 @@ export class GameController extends Component {
 
     // —— 分区 2：升级（标题 svg y536~544 → cocos 100；卡中心 cocos 12-i×136）——
     this.makeSectionTitle(c, '升级', 100);
-    console.log('[调试] listUpgrades =', JSON.stringify(this.game.listUpgrades())); // 临时排查用，定位后删除
     this.game.listUpgrades().forEach((u, i) => {
       this.makeUpgradeCard(c, u, 12 - i * 136);
     });

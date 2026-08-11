@@ -55,20 +55,20 @@ for (const r of allRecipes) {
 }
 console.log(dup === 0 ? `✅ 组合无重复多重集（共 ${seen.size} 条命中食谱）` : `❌ ${dup} 处重复`);
 
-// 2. 溢价校验（1.5~1.9）
+// 2. 溢价校验（1.7~2.2）
 if (inJson) {
   for (const r of allRecipes) {
     if (r.id === 'dark_cuisine') continue;
     const sum = Object.entries(r.ingredients).reduce((a, [k, n]) => a + price[k] * n, 0);
     const p = r.sellPrice / sum;
-    if (p < 1.5 || p > 1.9) console.log(`!! 溢价越界: ${r.id} ${p.toFixed(2)}`);
+    if (p < 1.7 || p > 2.2) console.log(`!! 溢价越界: ${r.id} ${p.toFixed(2)}`);
   }
-  console.log('✅ 溢价校验完成（无输出即全部在 1.5~1.9）');
+  console.log('✅ 溢价校验完成（无输出即全部在 1.7~2.2）');
 } else {
   for (const r of NEW_RECIPES) {
     const sum = Object.entries(r.ing).reduce((a, [k, n]) => a + price[k] * n, 0);
     const p = r.price / sum;
-    console.log(`${p < 1.5 || p > 1.9 ? '!!' : '  '} ${r.id}: ${sum}→${r.price} 溢价 ${p.toFixed(2)}`);
+    console.log(`${p < 1.7 || p > 2.2 ? '!!' : '  '} ${r.id}: ${sum}→${r.price} 溢价 ${p.toFixed(2)}`);
   }
 }
 

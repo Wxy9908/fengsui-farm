@@ -49,14 +49,14 @@ for (const c of data.crops) {
   );
 }
 
-console.log('\n-- 菜品溢价（售价 / 食材机会成本，目标 1.5~1.9）--');
+console.log('\n-- 菜品溢价（售价 / 食材机会成本，目标 1.7~2.2）--');
 const premiums: number[] = [];
 for (const r of data.recipes) {
   if (r.id === data.fallbackRecipeId) continue;
   const cost = ingCost(r);
   const p = r.sellPrice / cost;
   premiums.push(p);
-  const flag = p < 1.5 || p > 1.9 ? '  ⚠ 超出区间' : '';
+  const flag = p < 1.7 || p > 2.2 ? '  ⚠ 超出区间' : '';
   console.log(`  T${r.tier} ${r.name} 成本${cost} 售${r.sellPrice} 溢价 ${p.toFixed(2)}${flag}`);
 }
 premiums.sort((a, b) => a - b);

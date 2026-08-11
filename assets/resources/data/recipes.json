@@ -1,5 +1,5 @@
 {
-  "version": 4,
+  "version": 5,
   "fallbackRecipeId": "dark_cuisine",
   "recipes": [
     {
@@ -16,7 +16,7 @@
       "ingredients": {
         "wheat": 1
       },
-      "sellPrice": 6,
+      "sellPrice": 7,
       "tier": 1,
       "desc": "朴实无华，但管饱。"
     },
@@ -26,7 +26,7 @@
       "ingredients": {
         "wheat": 2
       },
-      "sellPrice": 15,
+      "sellPrice": 17,
       "tier": 1,
       "desc": "外脆内软，麦香扑鼻。"
     },
@@ -36,7 +36,7 @@
       "ingredients": {
         "wheat": 3
       },
-      "sellPrice": 20,
+      "sellPrice": 23,
       "tier": 1,
       "desc": "三倍麦香，沉甸甸的满足感。"
     },
@@ -46,7 +46,7 @@
       "ingredients": {
         "tomato": 1
       },
-      "sellPrice": 20,
+      "sellPrice": 23,
       "tier": 1,
       "desc": "浓缩的番茄精华，百搭。"
     },
@@ -56,7 +56,7 @@
       "ingredients": {
         "tomato": 2
       },
-      "sellPrice": 35,
+      "sellPrice": 41,
       "tier": 1,
       "desc": "两颗番茄的诚意，酸甜暖胃。"
     },
@@ -66,7 +66,7 @@
       "ingredients": {
         "potato": 1
       },
-      "sellPrice": 32,
+      "sellPrice": 37,
       "tier": 1,
       "desc": "细腻绵软，入口即化。"
     },
@@ -76,7 +76,7 @@
       "ingredients": {
         "potato": 2
       },
-      "sellPrice": 65,
+      "sellPrice": 75,
       "tier": 1,
       "desc": "两面金黄，隔壁小孩都馋哭了。"
     },
@@ -87,7 +87,7 @@
         "wheat": 1,
         "tomato": 1
       },
-      "sellPrice": 26,
+      "sellPrice": 30,
       "tier": 1,
       "desc": "麦香托底，番茄点睛。"
     },
@@ -98,7 +98,7 @@
         "wheat": 1,
         "potato": 1
       },
-      "sellPrice": 40,
+      "sellPrice": 46,
       "tier": 1,
       "desc": "咬开是绵密的土豆馅。"
     },
@@ -109,7 +109,7 @@
         "tomato": 1,
         "potato": 1
       },
-      "sellPrice": 55,
+      "sellPrice": 65,
       "tier": 1,
       "desc": "家常的味道，汤汁拌饭一绝。"
     },
@@ -119,7 +119,7 @@
       "ingredients": {
         "corn": 1
       },
-      "sellPrice": 100,
+      "sellPrice": 115,
       "tier": 2,
       "desc": "炭火慢烤，粒粒金黄。"
     },
@@ -129,7 +129,7 @@
       "ingredients": {
         "corn": 2
       },
-      "sellPrice": 200,
+      "sellPrice": 230,
       "tier": 2,
       "desc": "噼啪作响，看剧必备。"
     },
@@ -139,7 +139,7 @@
       "ingredients": {
         "pumpkin": 2
       },
-      "sellPrice": 400,
+      "sellPrice": 465,
       "tier": 2,
       "desc": "整颗南瓜熬出的金黄浓汤。"
     },
@@ -150,7 +150,7 @@
         "pumpkin": 1,
         "wheat": 1
       },
-      "sellPrice": 220,
+      "sellPrice": 255,
       "tier": 2,
       "desc": "软糯香甜，老少皆宜。"
     },
@@ -161,7 +161,7 @@
         "corn": 1,
         "pumpkin": 1
       },
-      "sellPrice": 330,
+      "sellPrice": 385,
       "tier": 2,
       "desc": "暖暖的一碗，治愈人心。"
     },
@@ -172,7 +172,7 @@
         "corn": 1,
         "tomato": 1
       },
-      "sellPrice": 125,
+      "sellPrice": 145,
       "tier": 2,
       "desc": "清爽开胃，夏天的颜色。"
     },
@@ -183,7 +183,7 @@
         "corn": 1,
         "potato": 1
       },
-      "sellPrice": 140,
+      "sellPrice": 160,
       "tier": 2,
       "desc": "玉米粒在饼里咯吱作响。"
     },
@@ -195,7 +195,7 @@
         "potato": 1,
         "corn": 1
       },
-      "sellPrice": 170,
+      "sellPrice": 195,
       "tier": 2,
       "desc": "把田里的丰收一次性装进碗里。"
     },
@@ -205,7 +205,7 @@
       "ingredients": {
         "strawberry": 1
       },
-      "sellPrice": 520,
+      "sellPrice": 605,
       "tier": 3,
       "desc": "把春天的味道封存进玻璃瓶。"
     },
@@ -215,7 +215,7 @@
       "ingredients": {
         "watermelon": 1
       },
-      "sellPrice": 1000,
+      "sellPrice": 1160,
       "tier": 3,
       "desc": "不加一滴水的纯粹。"
     },
@@ -226,7 +226,7 @@
         "strawberry": 1,
         "watermelon": 1
       },
-      "sellPrice": 1600,
+      "sellPrice": 1855,
       "tier": 3,
       "desc": "梦幻联动，一口入夏。"
     },
@@ -236,7 +236,7 @@
       "ingredients": {
         "carrot": 1
       },
-      "sellPrice": 55,
+      "sellPrice": 65,
       "tier": 2,
       "desc": "油亮金黄，甜丝丝的家常味。"
     },
@@ -247,7 +247,7 @@
         "carrot": 1,
         "potato": 1
       },
-      "sellPrice": 90,
+      "sellPrice": 105,
       "tier": 2,
       "desc": "双色绵软，小朋友的最爱。"
     },
@@ -257,7 +257,7 @@
       "ingredients": {
         "cabbage": 1
       },
-      "sellPrice": 135,
+      "sellPrice": 155,
       "tier": 2,
       "desc": "酸脆爽口，下饭一绝。"
     },
@@ -268,7 +268,7 @@
         "cabbage": 1,
         "wheat": 1
       },
-      "sellPrice": 150,
+      "sellPrice": 175,
       "tier": 2,
       "desc": "面皮烙得焦香，咬开全是清甜的白菜馅。"
     },
@@ -278,7 +278,7 @@
       "ingredients": {
         "mushroom": 1
       },
-      "sellPrice": 300,
+      "sellPrice": 350,
       "tier": 2,
       "desc": "炭火一烤，鲜味全锁在伞盖里。"
     },
@@ -289,7 +289,7 @@
         "mushroom": 1,
         "corn": 1
       },
-      "sellPrice": 420,
+      "sellPrice": 485,
       "tier": 2,
       "desc": "鲜上加甜，一碗喝出山林和田野。"
     },
@@ -299,7 +299,7 @@
       "ingredients": {
         "chili": 1
       },
-      "sellPrice": 410,
+      "sellPrice": 475,
       "tier": 3,
       "desc": "红亮亮一罐，蘸什么都带劲。"
     },
@@ -310,7 +310,7 @@
         "chili": 1,
         "potato": 1
       },
-      "sellPrice": 430,
+      "sellPrice": 500,
       "tier": 3,
       "desc": "酸辣脆爽，筷子停不下来。"
     },
@@ -320,7 +320,7 @@
       "ingredients": {
         "eggplant": 1
       },
-      "sellPrice": 820,
+      "sellPrice": 950,
       "tier": 3,
       "desc": "酱香油润，拌饭能吃三大碗。"
     },
@@ -331,7 +331,7 @@
         "eggplant": 1,
         "tomato": 1
       },
-      "sellPrice": 820,
+      "sellPrice": 950,
       "tier": 3,
       "desc": "紫的糯、红的酸，汤汁都不剩。"
     },
@@ -341,7 +341,7 @@
       "ingredients": {
         "peanut": 1
       },
-      "sellPrice": 650,
+      "sellPrice": 755,
       "tier": 3,
       "desc": "慢慢煮透，一颗接一颗。"
     },
@@ -352,7 +352,7 @@
         "peanut": 1,
         "wheat": 1
       },
-      "sellPrice": 700,
+      "sellPrice": 810,
       "tier": 3,
       "desc": "厚抹一层现磨花生酱，香浓到眯眼。"
     },
@@ -362,7 +362,7 @@
       "ingredients": {
         "grape": 1
       },
-      "sellPrice": 1400,
+      "sellPrice": 1625,
       "tier": 4,
       "desc": "紫宝石熬成的酱，抹什么都高级。"
     },
@@ -373,7 +373,7 @@
         "grape": 1,
         "watermelon": 1
       },
-      "sellPrice": 2500,
+      "sellPrice": 2900,
       "tier": 4,
       "desc": "紫与红的渐变杯，颜值与清甜并存。"
     },
@@ -383,7 +383,7 @@
       "ingredients": {
         "peach": 1
       },
-      "sellPrice": 2000,
+      "sellPrice": 2320,
       "tier": 4,
       "desc": "把夏天封进糖水，冬天也能尝到。"
     },
@@ -394,7 +394,7 @@
         "peach": 1,
         "strawberry": 1
       },
-      "sellPrice": 2670,
+      "sellPrice": 3095,
       "tier": 4,
       "desc": "酥皮托着双果，摆上桌就是节日。"
     },
@@ -406,7 +406,7 @@
         "cabbage": 1,
         "mushroom": 1
       },
-      "sellPrice": 560,
+      "sellPrice": 650,
       "tier": 2,
       "desc": "地里现摘的三样，咕嘟出一锅踏实。"
     },
@@ -418,7 +418,7 @@
         "grape": 1,
         "peach": 1
       },
-      "sellPrice": 4340,
+      "sellPrice": 5035,
       "tier": 4,
       "desc": "三种果子层层叠叠，丰收祭的压轴甜。"
     }
