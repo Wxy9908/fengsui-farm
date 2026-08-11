@@ -41,6 +41,26 @@ export interface RecipeDef {
   /** 烹饪时长：由 config.cookTimeByTier 阶梯 + 食材数加成派生，不逐条填写 */
   tier: number;
   desc: string;
+  /** 某 NPC 的最爱菜（npcs.json 的 NPC id）；赠送额外好感，图鉴/NPC 档案双向展示（M5，v6 新增） */
+  favoriteOf?: string;
+}
+
+/** M5 NPC 配置（data/npcs.json，见《故事线与人物规划》§4） */
+export interface NpcDef {
+  id: string;
+  name: string;
+  title: string;
+  desc: string;
+  role: string;
+  /** 喜好菜品 id 列表（赠送正常好感） */
+  likes: string[];
+  /** 最爱菜 id（赠送额外好感），与 recipes.json 的 favoriteOf 对应 */
+  favoriteDish: string;
+  /** 隐藏喜好（如小满 × 黑暗料理），不在档案公开 */
+  secretLikes?: string[];
+  /** 好感升级所需累计点数（下标即等级） */
+  affinityLevels: number[];
+  rewards: { level: number; type: string; note: string }[];
 }
 
 export type UpgradeEffectType =

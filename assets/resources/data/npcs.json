@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "comment": "M5 NPC 配置（《故事线与人物规划》§4 深写版定稿）。likes=喜好菜品（赠送正常好感）；favoriteDish=最爱菜（赠送额外好感，与 recipes.json 的 favoriteOf 双向对应）；affinityLevels=好感升级所需累计点数；rewards 各级解锁方向（剧情/专属食谱/经营增益），支线小节文本入 data/stories.json（M5-2）。",
+  "npcs": [
+    {
+      "id": "tianbo",
+      "name": "田伯",
+      "title": "隔壁老农",
+      "desc": "种了一辈子地，看着玩家长大。嘴硬心软，见不得地荒着；夸人只会说「还行」。",
+      "role": "新手引导人格化 + 种子相关",
+      "likes": ["toast", "potato_cake", "wheat_bread", "salted_peanut"],
+      "favoriteDish": "toast",
+      "affinityLevels": [10, 30, 60, 100, 150],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~②" },
+        { "level": 2, "type": "discount", "note": "种子折扣（数值 M5-2 定）" },
+        { "level": 3, "type": "story", "note": "支线⑤「还行」名场面 + 老种子线索" },
+        { "level": 4, "type": "story", "note": "支线⑦~⑧ 田埂托付" },
+        { "level": 5, "type": "story", "note": "支线⑨ 丰收祭前夜" }
+      ]
+    },
+    {
+      "id": "linshen",
+      "name": "林婶",
+      "title": "杂货店老板娘",
+      "desc": "一个人撑起小店十几年，全镇的情报都过她手。嘴上全是生意，心里全是人情。商店页的人格化形象。",
+      "role": "批量交易 + 订单刷新增益 + 商店口吻来源",
+      "likes": ["tomato_potato_stew", "steamed_bun", "cabbage_pastry", "spicy_potato_shreds"],
+      "favoriteDish": "tomato_potato_stew",
+      "affinityLevels": [10, 30, 60, 100, 150],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~② 开业第一单" },
+        { "level": 2, "type": "orderRefresh", "note": "订单刷新 +1（数值 M5-2 定）" },
+        { "level": 3, "type": "story", "note": "支线⑥ 批发单解锁（信任节点）" },
+        { "level": 4, "type": "premium", "note": "交易溢价提升" },
+        { "level": 5, "type": "story", "note": "支线⑨ 歇业帮忙" }
+      ]
+    },
+    {
+      "id": "xiaoman",
+      "name": "小满",
+      "title": "蹲厨房门口的皮孩子",
+      "desc": "爸妈在城里打工，跟着爷爷奶奶过。肚子永远饿，嘴巴永远甜。全镇唯一真心爱吃黑暗料理的人。",
+      "role": "低级订单 + 笑点担当 + 黑暗料理去处",
+      "likes": ["popcorn", "strawberry_jam", "corn_potato_cake", "carrot_potato_mash"],
+      "favoriteDish": "popcorn",
+      "secretLikes": ["dark_cuisine"],
+      "affinityLevels": [8, 24, 48, 80, 120],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~② 玻璃珠换爆米花" },
+        { "level": 2, "type": "story", "note": "交集剧情 A 偷吃风波（需林婶好感 2）" },
+        { "level": 3, "type": "story", "note": "支线⑥ 黑暗料理彩蛋线开启" },
+        { "level": 4, "type": "story", "note": "支线⑦ 打探沈先生" },
+        { "level": 5, "type": "story", "note": "支线⑧「长大要当做饭的」" }
+      ]
+    },
+    {
+      "id": "shenxiansheng",
+      "name": "沈先生",
+      "title": "落魄美食评论家",
+      "desc": "曾经一篇食评决定一家店生死，如今过气。挑剔毒舌，但其实一直在找「小时候的味道」。",
+      "role": "高级订单（T2/T3）+ 专属食谱主力 ×2",
+      "likes": ["pumpkin_soup", "harvest_soup", "peach_berry_tart", "grilled_mushroom"],
+      "favoriteDish": "pumpkin_soup",
+      "affinityLevels": [12, 36, 72, 120, 180],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~③ 毒舌到破例" },
+        { "level": 2, "type": "recipe", "note": "专属食谱 1（M5-2 定菜品）" },
+        { "level": 3, "type": "story", "note": "支线⑥ 承认在找一碗汤" },
+        { "level": 4, "type": "recipe", "note": "专属食谱 2" },
+        { "level": 5, "type": "story", "note": "支线⑨⑩ 那碗汤（交集剧情 B 收束）" }
+      ]
+    },
+    {
+      "id": "popo",
+      "name": "白婆婆",
+      "title": "外婆的挚友",
+      "desc": "和玩家外婆从扎羊角辫时就认识。记性时好时坏，但关于外婆的那几页，格外清楚。",
+      "role": "温情线主担当 + 厨房/图鉴引导口吻 + 丰收祭关键回忆",
+      "likes": ["corn_pumpkin_soup", "pumpkin_pie", "carrot_potato_mash", "grape_jam"],
+      "favoriteDish": "corn_pumpkin_soup",
+      "affinityLevels": [10, 30, 60, 100, 150],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~③ 错认与往事" },
+        { "level": 2, "type": "story", "note": "支线④ 差一点提示（黑暗料理对话）" },
+        { "level": 3, "type": "story", "note": "支线⑤~⑥ 旧头巾与灯笼" },
+        { "level": 4, "type": "story", "note": "支线⑦ 拿手菜的秘密（主线关键）" },
+        { "level": 5, "type": "story", "note": "支线⑨ 丰收祭落座" }
+      ]
+    },
+    {
+      "id": "ayuan",
+      "name": "阿远",
+      "title": "流浪旅人",
+      "desc": "走南闯北，行囊里只有一口旧铝锅和半张烧焦的菜单。他似乎认识玩家的外婆——这条悬念是主线暗线。",
+      "role": "主线引路人 + 稀有线索 + 终章关键物品",
+      "likes": ["berry_ice", "watermelon_juice", "harvest_fruit_cup", "grape_melon_drink"],
+      "favoriteDish": "berry_ice",
+      "affinityLevels": [12, 36, 72, 120, 180],
+      "rewards": [
+        { "level": 1, "type": "story", "note": "支线①~② 铜钱换西瓜汁" },
+        { "level": 2, "type": "story", "note": "交集剧情 C 查户口（需林婶好感 3）" },
+        { "level": 3, "type": "clue", "note": "稀有种子线索" },
+        { "level": 4, "type": "story", "note": "支线⑦ 菜单残页（主线四章）" },
+        { "level": 5, "type": "story", "note": "支线⑧ 留下铝锅" }
+      ]
+    }
+  ]
+}

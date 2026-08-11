@@ -4076,9 +4076,9 @@ export class GameController extends Component {
       tween(rays).by(12, { angle: 360 }).repeatForever().start();
     }
 
-    // 金边纸卡（稀有版更高，留出专属文案位置）
+    // 金边纸卡（稀有版更高；有描述文案时加高 40 放两句制 desc）
     const w = 430;
-    const h = rare ? 460 : 380;
+    const h = (rare ? 460 : 380) + (opts?.desc ? 40 : 0);
     const card = new Node('card');
     card.layer = Layers.Enum.UI_2D;
     card.parent = ov;
@@ -4132,7 +4132,22 @@ export class GameController extends Component {
       iut.setContentSize(130, 130);
     }
     mkLabel(`「${dishName}」`, rare ? h / 2 - 270 : -80, 32, new Color(0x4a, 0x35, 0x20), true);
-    if (rare && opts?.desc) mkLabel(opts.desc, h / 2 - 312, 17, new Color(0xc9, 0x8f, 0x1b));
+    // 描述文案：所有规格都展示（M5 两句制 desc），顶锚自动换行，图鉴详情与发现庆祝共用
+    if (opts?.desc) {
+      const dn = new Node('desc');
+      dn.layer = Layers.Enum.UI_2D;
+      dn.parent = card;
+      const dut = dn.addComponent(UITransform);
+      dut.setContentSize(w - 64, 24);
+      dut.setAnchorPoint(0.5, 1);
+      dn.setPosition(0, rare ? h / 2 - 312 : -110);
+      const dl = dn.addComponent(Label);
+      dl.string = opts.desc;
+      dl.fontSize = 16;
+      dl.lineHeight = 24;
+      dl.color = new Color(0x8b, 0x5a, 0x2b);
+      dl.overflow = Label.Overflow.RESIZE_HEIGHT; // 按宽度自动换行、向下撑高
+    }
     mkLabel('已收入图鉴 · 点击任意处继续', -h / 2 + 26, 16, new Color(0xa8, 0x91, 0x6b));
     card.setScale(0.3, 0.3, 1);
     tween(card).to(0.35, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();

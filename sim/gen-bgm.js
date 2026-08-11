@@ -4,7 +4,10 @@
  * 产出：assets/resources/audio/bgm/main.wav（11025Hz 16bit 单声道，无缝循环）
  * 风格：MC(C418) 的留白氛围 × 星露谷的田园小调——
  *   72 BPM 慢速、C 大调五声音阶（无半音冲突）、旋律稀疏大量留白、
- *   软垫和弦长音垫底（氛围层）、音乐盒音色旋律（与音效同源 MB 泛音列）。
+ *   软垫和弦长音垫底（氛围层）、合成钢琴主奏（带琴槌起音，替代 v1 音乐盒）、
+ *   沙锤轻律动层（高频噪声八分摇动，提供"流动感"不抢戏）。
+ * v2（2026-08-11）：旋律改钢琴音色 + 全部旋律音加 attack 渐入（根治 v1 瞬时起音"哒哒哒"音头），
+ *   新增沙锤层（参考用户偏好：有节奏但舒服、悠扬、久听不烦、无顶部主奏乐器）。
  * 无缝循环原理：所有音符的起止严格对齐节拍网格，尾音衰减按缓冲长度取模回卷到开头。
  * 体积说明：WAV 约 3.5MB，按 M4-2 发布工程应走 CDN；本地包内不入主包红线。
  * 注意：.meta 由 Cocos Creator 下次打开时自动生成；GameController 加载失败静默降级。
@@ -49,12 +52,14 @@ const PENTA = [60, 62, 64, 67, 69, 72, 74, 76, 79, 81];
 
 const b = new Float32Array(Math.ceil(TOTAL * SR));
 
-/** 加音：t0 起 dur 秒正弦+泛音，指数衰减；超出末尾的部分回卷到开头（无缝循环） */
-function tone({ f0, f1 = f0, t0, dur, amp, harm = [], decay = 6, vib = 0, vibRate = 5 }) {
+/** 加音：t0 起 dur 秒正弦+泛音，指数衰减；超出末尾的部分回卷到开头（无缝循环）
+ *  attack：起音渐入秒数（>0 时线性渐入，治瞬时起音的"哒"音头；旋律/钢琴必加） */
+function tone({ f0, f1 = f0, t0, dur, amp, harm = [], decay = 6, vib = 0, vibRate = 5, attack = 0 }) {
   const NYQ = SR * 0.45; // 防混叠：基频/泛音超过奈奎斯特即丢弃（半采样率下高音 sparkle 会触顶）
   if (f0 > NYQ) return;
   const start = Math.floor(t0 * SR);
   const N = Math.floor(dur * SR);
+  const atkN = Math.floor(attack * SR);
   let phase = 0;
   for (let i = 0; i < N; i++) {
     const t = i / SR;
@@ -64,8 +69,66 @@ function tone({ f0, f1 = f0, t0, dur, amp, harm = [], decay = 6, vib = 0, vibRat
     phase += (2 * Math.PI * f) / SR;
     let s = Math.sin(phase);
     for (const [h, a] of harm) if (f * h <= NYQ) s += a * Math.sin(phase * h);
-    s *= amp * Math.exp(-decay * t);
-    b[(start + i) % b.length] += s;
+    let env = Math.exp(-decay * t);
+    if (atkN > 0 && i < atkN) env *= i / atkN;
+    b[(start + i) % b.length] += s * amp * env;
+  }
+}
+
+/** 合成钢琴：琴槌快亮头 + 琴弦长延音两段包络，泛音越高衰减越快（比音乐盒更"肉"） */
+function piano({ midi, t0, dur = 1.6, amp = 0.24 }) {
+  const f0 = mf(midi);
+  const NYQ = SR * 0.45;
+  if (f0 > NYQ) return;
+  const start = Math.floor(t0 * SR);
+  const N = Math.floor(dur * SR);
+  const atkN = Math.floor(0.012 * SR); // 12ms 琴槌起音
+  // v2.3：高音区柔化——基频超 E5(660Hz) 时压掉 3 阶以上泛音（刺耳感主要来自高音 × 高泛音）
+  const soft = f0 > 660 ? 660 / f0 : 1;
+  // [泛音比, 振幅, 衰减率]：低泛音撑延音，高泛音只给起音亮度
+  const PARTIALS = [[1, 1.0, 2.2], [2, 0.42, 3.5], [3, 0.20 * soft, 5.0], [4, 0.09 * soft, 7.0], [5, 0.04 * soft, 9.0]];
+  for (let i = 0; i < N; i++) {
+    const t = i / SR;
+    let s = 0;
+    for (const [h, a, d] of PARTIALS) if (f0 * h <= NYQ) s += a * Math.sin(2 * Math.PI * f0 * h * t) * Math.exp(-d * t);
+    let env = i < atkN ? i / atkN : 1;
+    b[(start + i) % b.length] += s * amp * env;
+  }
+}
+
+/** 风：棕噪声 + 缓慢起伏包络（≈13s 一阵），似有若无的环境层，藏在音乐底下 */
+function wind(rnd) {
+  const amp = 0.028; // 剂量纪律：能"感觉"但不能"听清"
+  let brown = 0;
+  const swell = TOTAL / 6; // 全曲 6 阵风，错开乐句边界
+  for (let i = 0; i < b.length; i++) {
+    brown = (brown + (rnd() * 2 - 1) * 0.02) * 0.998; // 棕噪声（漏积分白噪声，低频为主）
+    const ph = (i / SR / swell) % 1;
+    const env = Math.pow(Math.sin(Math.PI * ph), 2); // 每阵风缓起缓落，无音头
+    b[i] += brown * amp * env;
+  }
+}
+
+/** 沙锤：高通噪声 + 短包络，八分音符轻摇（正拍弱、反拍强的"chick"感），提供流动律动 */
+function shaker(rnd) {
+  for (let bar = 0; bar < BARS; bar++) {
+    for (let e = 0; e < 8; e++) {
+      const t0 = bar * BAR + e * (BEAT / 2);
+      const off = e % 2 === 1; // 反拍
+      const amp = (off ? 0.030 : 0.018) * (0.9 + rnd() * 0.2); // 人性化微抖
+      const start = Math.floor(t0 * SR);
+      const N = Math.floor((off ? 0.09 : 0.06) * SR);
+      let prev = 0;
+      for (let i = 0; i < N; i++) {
+        const t = i / SR;
+        const n = rnd() * 2 - 1; // 白噪声
+        const hp = n - prev; prev = n; // 一阶高通，只留"沙沙"高频
+        const atkN = Math.floor(0.004 * SR);
+        let env = Math.exp(-55 * t);
+        if (i < atkN) env *= i / atkN;
+        b[(start + i) % b.length] += hp * amp * env;
+      }
+    }
   }
 }
 
@@ -92,20 +155,27 @@ const MB = [[2, 0.28], [3, 0.14], [4.2, 0.05]];
 for (let bar = 0; bar < BARS; bar++) {
   const ch = CHORDS[Math.floor(bar / 2) % 4];
   const t0 = bar * BAR;
-  // 低音：每小节根音长音，软而稳
-  tone({ f0: mf(ch.root), t0, dur: BAR * 1.05, amp: 0.16, harm: [[2, 0.12]], decay: 0.9 });
+  // 低音：每小节根音长音，软而稳（10ms 起音防低频"噗"头）
+  tone({ f0: mf(ch.root), t0, dur: BAR * 1.05, amp: 0.16, harm: [[2, 0.12]], decay: 0.9, attack: 0.01 });
   // 软垫：和弦三音铺满 2 小节（每和弦首小节铺一次）
   if (bar % 2 === 0) for (const m of ch.tri) pad({ midi: m, t0, dur: BAR * 2.1, amp: 0.045 });
 }
 
-// ---- 2) 旋律层：音乐盒，稀疏留白（星露谷的田园小调感） ----
-// 三乐句结构：A(1~8) 呈示 / B(9~16) 高八度展开 / A'(17~24) 回归并收尾到主音
+// ---- 1.5) 律动层：沙锤八分轻摇（正拍弱反拍强），贯穿全曲提供流动感 ----
+shaker(mulberry32(20260811));
+
+// ---- 1.6) 环境层：间歇微风（v2.2，似有若无剂量，藏在音乐底下） ----
+wind(mulberry32(20260812));
+
+// ---- 2) 旋律层：合成钢琴，稀疏留白（星露谷的田园小调感） ----
+// 三乐句结构：A(1~8) 呈示 / B(9~16) 加密展开 / A'(17~24) 回归并收尾到主音
 // 确定性随机漫步：约 45% 八分位为空（留白），邻级进行为主（≤2 阶），偶发跳进
+// v2.1：B 乐句取消高八度（+12 的孤立高音区是"听多了烦躁"的来源），变化只靠密度
 const rnd = mulberry32(20260807);
 let pos = 3; // 旋律游标（PENTA 下标），从 G 出发
 for (let bar = 0; bar < BARS; bar++) {
   const phrase = Math.floor(bar / 8);
-  const oct = phrase === 1 ? 12 : 0; // B 乐句高八度
+  const oct = 0; // v2.1：不再抬八度，全曲旋律待在舒适音区
   for (let e = 0; e < 8; e++) {
     const t0 = bar * BAR + e * (BEAT / 2);
     const isBarHead = e === 0;
@@ -118,20 +188,19 @@ for (let bar = 0; bar < BARS; bar++) {
     if (r < 0.7) step = (rnd() < 0.5 ? -1 : 1) * (1 + Math.floor(rnd() * 2));
     else if (r >= 0.9) step = (rnd() < 0.5 ? -1 : 1) * (3 + Math.floor(rnd() * 2));
     pos = Math.max(0, Math.min(PENTA.length - 1, pos + step));
+    // v2.3：高音均值回归——游标到 79/81（G5/A5）大概率被拉回中音区，
+    // 治随机漫步卡顶造成的"高音扎堆刺耳"（12-20s、53-60s 两个投诉段根因）
+    if (pos > 7 && rnd() < 0.65) pos -= 2;
     // 最后一小节强制收主音 C
     if (bar === BARS - 1 && e >= 6) pos = 0;
     const dur = (rnd() < 0.3 ? 1 : 0.5) * BEAT * 1.6; // 附点感长短错落
-    tone({ f0: mf(PENTA[pos] + oct), t0, dur, amp: 0.30, harm: MB, decay: 4.5, vib: 0.004, vibRate: 4.5 });
-    // 乐句尾点缀高音星光（每乐句末小节）
-    if (bar % 8 === 7 && e === 4) tone({ f0: mf(91 + oct), t0: t0 + BEAT, dur: 1.4, amp: 0.10, harm: MB, decay: 3.5 });
+    piano({ midi: PENTA[pos] + oct, t0, dur: Math.max(dur, 1.6), amp: 0.26 });
+    // 乐句尾点缀（每乐句末小节，限制在旋律同音区，不再冲高八度）
+    if (bar % 8 === 7 && e === 4) piano({ midi: PENTA[PENTA.length - 1] + oct, t0: t0 + BEAT, dur: 1.4, amp: 0.10 });
   }
 }
 
-// ---- 3) 氛围层：极轻的高频「风」 shimmer，每 4 小节一粒 ----
-for (let bar = 0; bar < BARS; bar += 4) {
-  const m = PENTA[Math.floor(mulberry32(bar + 7)() * PENTA.length)] + 24;
-  tone({ f0: mf(m), t0: bar * BAR + BEAT * 2, dur: 2.2, amp: 0.05, harm: MB, decay: 2.5 });
-}
+// ---- 3) 氛围层：v2.1 移除（原 shimmer 高音纯泛音列在慢曲里过于刺耳，pad 已足够铺底） ----
 
 // ---- 写出 ----
 let peak = 0;

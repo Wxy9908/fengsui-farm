@@ -225,6 +225,30 @@ assert.strictEqual(data.crops.length, 15, '作物表应为 15 种');
   assert.strictEqual(seen.size, 39, '命中食谱应为 39 条（不含黑暗料理）');
 }
 
+// M5 菜品文案体系（recipes v6 + npcs v1）：desc 两句制、favoriteOf 与 NPC favoriteDish 双向一致
+{
+  const npcs = read('npcs.json');
+  const npcIds = new Set<string>(npcs.npcs.map((n: { id: string }) => n.id));
+  const recipeIds = new Set<string>(data.recipes.map((r) => r.id));
+  const favOf = new Map<string, string[]>(); // npcId -> recipeIds
+  for (const r of data.recipes) {
+    assert.ok(r.desc && r.desc.length >= 20, `食谱 desc 应为两句制长文案: ${r.id}`);
+    if (r.favoriteOf) {
+      assert.ok(npcIds.has(r.favoriteOf), `favoriteOf 引用无效 NPC: ${r.id} -> ${r.favoriteOf}`);
+      (favOf.get(r.favoriteOf) ?? favOf.set(r.favoriteOf, []).get(r.favoriteOf)!).push(r.id);
+    }
+  }
+  assert.strictEqual(data.recipes.filter((r) => r.favoriteOf).length, 8, 'favoriteOf 应绑定 8 条');
+  for (const n of npcs.npcs as { id: string; likes: string[]; favoriteDish: string; secretLikes?: string[]; affinityLevels: number[] }[]) {
+    for (const id of [...n.likes, ...(n.secretLikes ?? [])]) {
+      assert.ok(recipeIds.has(id), `NPC ${n.id} 喜好引用无效食谱: ${id}`);
+    }
+    assert.ok((favOf.get(n.id) ?? []).includes(n.favoriteDish), `NPC ${n.id} 的 favoriteDish 应有食谱 favoriteOf 回指`);
+    assert.ok(n.likes.includes(n.favoriteDish), `NPC ${n.id} 的 favoriteDish 应在 likes 内`);
+    assert.ok(n.affinityLevels.every((v, i, a) => i === 0 || v > a[i - 1]), `NPC ${n.id} 好感阈值应递增`);
+  }
+}
+
 // M3-②：注入 xp 到 Lv6（3300），胡萝卜可买可种可收（tier2 经验 +10）；新组合命中新食谱
 {
   const s6 = new GameCore(data, undefined, nowFn).getSave();
