@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "comment": "NPC 求购池。每日按日期 hash 抽 3 张上板，与小铺直卖分开。premium 相对表价，不含今日特价。",
+  "orders": [
+    { "id": "tb_toast", "npcId": "tianbo", "kind": "dish", "itemId": "toast", "qty": 1, "premium": 1.3, "affinity": 3 },
+    { "id": "tb_bun", "npcId": "tianbo", "kind": "dish", "itemId": "steamed_bun", "qty": 2, "premium": 1.25, "affinity": 2 },
+    { "id": "ls_stew", "npcId": "linshen", "kind": "dish", "itemId": "tomato_potato_stew", "qty": 1, "premium": 1.3, "affinity": 3 },
+    { "id": "ls_potato", "npcId": "linshen", "kind": "crop", "itemId": "potato", "qty": 2, "premium": 1.2, "affinity": 2 },
+    { "id": "xm_wheat", "npcId": "xiaoman", "kind": "crop", "itemId": "wheat", "qty": 3, "premium": 1.2, "affinity": 2 },
+    { "id": "xm_pop", "npcId": "xiaoman", "kind": "dish", "itemId": "popcorn", "qty": 1, "premium": 1.25, "affinity": 3 },
+    { "id": "shen_soup", "npcId": "shenxiansheng", "kind": "dish", "itemId": "pumpkin_soup", "qty": 1, "premium": 1.3, "affinity": 4 },
+    { "id": "popo_pie", "npcId": "popo", "kind": "dish", "itemId": "pumpkin_pie", "qty": 1, "premium": 1.3, "affinity": 3 }
+  ]
+}

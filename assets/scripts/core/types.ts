@@ -123,6 +123,36 @@ export interface MilestoneDef {
   name: string;
 }
 
+/** 一句对白。speaker 空着时气泡不显示名字（序章旁白）。 */
+export interface TalkLine {
+  speaker: string;
+  text: string;
+}
+
+/** 引导/剧情节点（data/stories.json）。P0c 只用 type=tutorial。 */
+export interface StoryDef {
+  id: string;
+  type: 'tutorial';
+  /** 地点 id，不写页面名。orders 是地图完成前的临时地点。 */
+  place: string;
+  trigger: 'onEnter' | 'onHarvest' | 'onDark';
+  speaker: string;
+  lines: string[];
+}
+
+/** NPC 求购单（data/orders.json）。与小铺直卖分开结算。 */
+export interface OrderDef {
+  id: string;
+  npcId: string;
+  kind: 'dish' | 'crop';
+  itemId: string;
+  qty: number;
+  /** 相对表价的溢价倍率（不含今日特价） */
+  premium: number;
+  /** 交付增加的好感 */
+  affinity: number;
+}
+
 export interface DataTables {
   crops: CropDef[];
   recipes: RecipeDef[];
@@ -131,6 +161,13 @@ export interface DataTables {
   levels: LevelDef[];
   config: GameConfig;
   milestones: MilestoneDef[];
+  /** M5 求购；旧调用方可缺省为空 */
+  orders?: OrderDef[];
+  npcs?: NpcDef[];
+  /** P0c 引导节点；缺省则无气泡 */
+  stories?: StoryDef[];
+  /** 新档序章；缺省则不播 */
+  prologue?: TalkLine[];
 }
 
 // ---------- 存档（运行时状态） ----------
@@ -170,6 +207,18 @@ export interface SaveData {
   lastDailyRewardDate: string | null;
   /** 已领取的收集里程碑 id（M4 留存钩子；旧存档缺省 = []，构造时按当前图鉴进度一次性补发） */
   claimedMilestones: string[];
+  /** NPC 累计好感（旧存档缺省 {}） */
+  affinity: Record<string, number>;
+  /** 当日订单板日期 YYYY-MM-DD */
+  orderDate: string;
+  /** 当日板上的订单 id */
+  orderIds: string[];
+  /** 当日已交付的订单 id */
+  orderDone: string[];
+  /** 已读引导 id。旧存档缺字段时视为全部已读，不重播 */
+  readTutorials: string[];
+  /** 序章是否已看过或跳过。旧存档缺字段时视为已看过 */
+  prologueSeen: boolean;
   stats: {
     totalGoldEarned: number;
     recipesDiscovered: number;

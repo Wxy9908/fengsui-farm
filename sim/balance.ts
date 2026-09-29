@@ -28,6 +28,10 @@ const data: DataTables = {
   upgrades: read('upgrades.json').upgrades,
   levels: read('levels.json').levels,
   milestones: read('milestones.json').milestones,
+  npcs: read('npcs.json').npcs,
+  orders: read('orders.json').orders,
+  stories: read('stories.json').stories,
+  prologue: read('stories.json').prologue,
   config: { ...read('config.json'), debugTimeScale: 1 }, // 仿真固定 1 倍时间
 };
 

@@ -6,15 +6,15 @@
       "id": "tianbo",
       "name": "田伯",
       "title": "隔壁老农",
-      "desc": "种了一辈子地，看着玩家长大。嘴硬心软，见不得地荒着；夸人只会说「还行」。",
+      "desc": "种了一辈子地，看着玩家长大。和蔼慈善的爷爷型老人，总记得你小时候的趣事，逢人就夸「这孩子最棒」。",
       "role": "新手引导人格化 + 种子相关",
       "likes": ["toast", "potato_cake", "wheat_bread", "salted_peanut"],
       "favoriteDish": "toast",
       "affinityLevels": [10, 30, 60, 100, 150],
       "rewards": [
-        { "level": 1, "type": "story", "note": "支线①~②" },
+        { "level": 1, "type": "story", "note": "支线①~② 下种 + 当众夸你" },
         { "level": 2, "type": "discount", "note": "种子折扣（数值 M5-2 定）" },
-        { "level": 3, "type": "story", "note": "支线⑤「还行」名场面 + 老种子线索" },
+        { "level": 3, "type": "story", "note": "支线⑤ 烤面包「全镇数第一」+ 老种子线索" },
         { "level": 4, "type": "story", "note": "支线⑦~⑧ 田埂托付" },
         { "level": 5, "type": "story", "note": "支线⑨ 丰收祭前夜" }
       ]
@@ -75,15 +75,15 @@
       "id": "popo",
       "name": "白婆婆",
       "title": "外婆的挚友",
-      "desc": "和玩家外婆从扎羊角辫时就认识。记性时好时坏，但关于外婆的那几页，格外清楚。",
-      "role": "温情线主担当 + 厨房/图鉴引导口吻 + 丰收祭关键回忆",
+      "desc": "和玩家外婆从扎羊角辫时就认识。唠叨毒舌、外冷内热；前期怕你三心二意，见你真下功夫后才改观。",
+      "role": "厨房/图鉴引导口吻（刀子嘴）+ 温情线后半程 + 丰收祭关键回忆",
       "likes": ["corn_pumpkin_soup", "pumpkin_pie", "carrot_potato_mash", "grape_jam"],
       "favoriteDish": "corn_pumpkin_soup",
       "affinityLevels": [10, 30, 60, 100, 150],
       "rewards": [
-        { "level": 1, "type": "story", "note": "支线①~③ 错认与往事" },
+        { "level": 1, "type": "story", "note": "支线①~③ 戒备与暗中盯梢" },
         { "level": 2, "type": "story", "note": "支线④ 差一点提示（黑暗料理对话）" },
-        { "level": 3, "type": "story", "note": "支线⑤~⑥ 旧头巾与灯笼" },
+        { "level": 3, "type": "story", "note": "支线⑤~⑥ 旧头巾与灯笼（改观）" },
         { "level": 4, "type": "story", "note": "支线⑦ 拿手菜的秘密（主线关键）" },
         { "level": 5, "type": "story", "note": "支线⑨ 丰收祭落座" }
       ]

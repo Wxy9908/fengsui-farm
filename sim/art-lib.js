@@ -646,16 +646,16 @@ const DISH_ICONS = {
 };
 
 const DISH_NAMES = {
-  dark_cuisine: '黑暗料理', steamed_bun: '馒头', toast: '烤面包', wheat_bread: '全麦面包',
-  ketchup: '番茄酱', tomato_soup: '番茄浓汤', mashed_potato: '土豆泥', potato_cake: '香煎土豆饼',
-  tomato_flatbread: '番茄烤饼', potato_bun: '土豆餐包', tomato_potato_stew: '番茄炖土豆',
-  baked_corn: '烤玉米', popcorn: '爆米花', pumpkin_soup: '南瓜浓汤', pumpkin_pie: '南瓜饼',
-  corn_pumpkin_soup: '玉米南瓜粥', corn_tomato_salad: '玉米番茄沙拉', corn_potato_cake: '玉米土豆饼',
+  dark_cuisine: '黑暗料理', steamed_bun: '馒头', toast: '烤面包', wheat_bread: '全麦馒头',
+  ketchup: '番茄酱', tomato_soup: '番茄汤', mashed_potato: '土豆泥', potato_cake: '香煎土豆饼',
+  tomato_flatbread: '番茄馅饼', potato_bun: '土豆包子', tomato_potato_stew: '番茄炖土豆',
+  baked_corn: '烤玉米', popcorn: '爆米花', pumpkin_soup: '南瓜汤', pumpkin_pie: '南瓜饼',
+  corn_pumpkin_soup: '玉米南瓜粥', corn_tomato_salad: '玉米拌番茄', corn_potato_cake: '玉米土豆饼',
   harvest_soup: '丰收汤', strawberry_jam: '草莓酱', watermelon_juice: '西瓜汁', berry_ice: '草莓西瓜冰',
   sauteed_carrot: '清炒胡萝卜', carrot_potato_mash: '胡萝卜土豆泥', vinegar_cabbage: '醋溜白菜',
   cabbage_pastry: '白菜盒子', grilled_mushroom: '烤香菇', mushroom_corn_soup: '香菇玉米羹',
   chili_sauce: '辣椒酱', spicy_potato_shreds: '香辣土豆丝', braised_eggplant: '红烧茄子',
-  eggplant_tomato: '茄子烧番茄', salted_peanut: '盐水花生', peanut_toast: '花生酱吐司',
+  eggplant_tomato: '茄子烧番茄', salted_peanut: '盐水花生', peanut_toast: '花生酱馒头片',
   grape_jam: '葡萄果酱', grape_melon_drink: '葡萄西瓜饮', peach_can: '蜜桃罐头',
   peach_berry_tart: '蜜桃草莓挞', farmhouse_stew: '农家炖菜', harvest_fruit_cup: '丰收果盅',
 };
@@ -881,31 +881,11 @@ const CROP_S2 = {
     C(27, 22, 2.2, '#F7B9A0', `stroke="#4A3520" stroke-width="1"`),
 };
 
-// ---------- 田地土壤畦（200×110 坐标系；dry 空地 / wet 生长中——湿土=已浇水暗示，规范 §2.2） ----------
-const SOIL = (kind) => {
-  const wet = kind === 'wet';
-  const top = wet ? '#8A5C3A' : '#B0825A'; // 畦面受光
-  const body = wet ? '#7C5335' : '#A0724A'; // 主色（湿土 / 泥土）
-  const dark = wet ? '#4A2E18' : '#6B4423'; // 犁沟
-  const lite = wet ? '#9A6B45' : '#C79870'; // 沟沿受光
-  return (
-    E(100, 100, 92, 9, '#4A3520', 'opacity="0.15"') + // 落地影
-    P('M18 26 Q100 12 182 26 L190 84 Q100 102 10 84 Z', body, `stroke="#4A3520" stroke-width="2.5"`) +
-    P('M18 26 Q100 12 182 26 L186 44 Q100 30 14 44 Z', top, 'opacity="0.55"') + // 上部受光坡
-    PS('M16 26 Q100 12 184 26', lite, 2.5, 'opacity="0.8"') + // 畦沿受光边
-    [42, 58, 74].map((y, i) =>
-      PS(`M${22 - i * 2} ${y} Q100 ${y - 9} ${178 + i * 2} ${y}`, dark, 3.5, 'opacity="0.5"') +
-      PS(`M${22 - i * 2} ${y - 3} Q100 ${y - 12} ${178 + i * 2} ${y - 3}`, lite, 1.5, 'opacity="0.5"'),
-    ).join('') + // 3 条微汇聚犁沟 + 沟沿
-    C(48, 52, 2.5, dark, 'opacity="0.5"') + C(150, 66, 3, dark, 'opacity="0.45"') + C(98, 82, 2.2, dark, 'opacity="0.5"')
-  );
-};
-
 /** 把 48×48 图标摆到 (x, y) 中心、缩放 s */
 const icon = (inner, x, y, s = 1) => `<g transform="translate(${x - 24 * s},${y - 24 * s}) scale(${s})">${inner}</g>`;
 
 module.exports = {
   FONT, esc, T, RR, C, E, P, PS, DEFS, wc,
   CROP_ICONS, CROP_NAMES, DISH_COLORS, DISH_NAMES, DISH_ICONS, icon,
-  CROP_S1, CROP_S2, SOIL,
+  CROP_S1, CROP_S2,
 };

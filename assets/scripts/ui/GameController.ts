@@ -81,6 +81,7 @@ export class GameController extends Component {
   private basketRoot: Node | null = null;
   private basketKey = '';
   private upgradeContainer: Node | null = null;
+  private orderContainer: Node | null = null;
   private collectionContainer: Node | null = null;
   /** 图鉴当前分类页签（BOOK_TABS 的 key；新增分类只需在 BOOK_TABS 加一项 + getBookItems 加分支） */
   private bookTab = 'crop';
@@ -153,7 +154,8 @@ export class GameController extends Component {
   private static readonly PAGES: { key: string; name: string }[] = [
     { key: 'field', name: '田地' },
     { key: 'kitchen', name: '厨房' },
-    { key: 'shop', name: '商店' },
+    { key: 'shop', name: '小铺' },
+    { key: 'orders', name: '订单' },
     { key: 'book', name: '图鉴' },
   ];
 
@@ -167,6 +169,25 @@ export class GameController extends Component {
   private splashShown = 0;
   /** 遮罩创建时刻（用于最短展示时长，防本地秒加载闪屏） */
   private splashStartAt = 0;
+  /** 启动遮罩结束后才允许地点引导；序章期间不因切页插队 */
+  private playReady = false;
+  private talkNode: Node | null = null;
+  private talkLines: { speaker: string; text: string }[] = [];
+  private talkIndex = 0;
+  private talkOnDone: (() => void) | null = null;
+  private talkStoryId = '';
+  private talkQueue: { id: string; lines: { speaker: string; text: string }[]; onDone: () => void }[] = [];
+  private talkSpeaker: Label | null = null;
+  private talkBody: Label | null = null;
+
+  /** 页面到地点。订单页是地图完成前的临时地点。 */
+  private static readonly PLACE: Record<string, string> = {
+    field: 'farm',
+    kitchen: 'canteen',
+    book: 'canteen',
+    shop: 'shop',
+    orders: 'orders',
+  };
 
   /** loading 小贴士池（每次启动随机一条；文案只用快乐体覆盖字符） */
   private static readonly SPLASH_TIPS = [
@@ -212,7 +233,8 @@ export class GameController extends Component {
       }
       this.switchPage('field');
       this.refreshPanels();
-      this.hideSplash();
+      if (this.splash) this.hideSplash();
+      else this.beginStory();
     });
   }
 
@@ -346,7 +368,10 @@ export class GameController extends Component {
         n.removeComponent(BlockInputEvents);
         tween(op)
           .to(0.4, { opacity: 0 })
-          .call(() => n.destroy())
+          .call(() => {
+            n.destroy();
+            this.beginStory();
+          })
           .start();
       }, 0.35); // 等进度补间收尾再淡出
     }, holdMs / 1000);
@@ -1408,6 +1433,82 @@ export class GameController extends Component {
     });
   }
 
+  /** 求购页：当日订单卡（交付 / 缺货 / 未发现）。与小铺卖出分开。 */
+  private refreshOrders() {
+    const c = this.orderContainer;
+    if (!c || !this.game) return;
+    c.removeAllChildren();
+    const title = this.makeTitle(c, '镇民订单', 28);
+    title.setPosition(0, 480);
+    const sub = this.makeTitle(c, '把菜端给人 · 溢价高于小铺直卖', 16);
+    sub.setPosition(0, 440);
+    (sub.getComponent(Label)!).color = new Color(0x8b, 0x5a, 0x2b);
+
+    const list = this.game.listOrders();
+    if (list.length === 0) {
+      const empty = this.makeTitle(c, '今天的单都交完了，明天再来看看', 20);
+      empty.setPosition(0, 200);
+      return;
+    }
+    list.forEach((o, i) => {
+      const y = 320 - i * 168;
+      const card = new Node(`order_${o.id}`);
+      card.layer = Layers.Enum.UI_2D;
+      card.parent = c;
+      card.setPosition(0, y);
+      card.addComponent(UITransform).setContentSize(640, 150);
+      const g = card.addComponent(Graphics);
+      g.fillColor = o.state === 'locked' ? new Color(0xed, 0xe3, 0xcc) : new Color(0xff, 0xfd, 0xf5);
+      g.roundRect(-320, -75, 640, 150, 16);
+      g.fill();
+      g.lineWidth = 2.5;
+      g.strokeColor = new Color(0x4a, 0x35, 0x20);
+      g.roundRect(-320, -75, 640, 150, 16);
+      g.stroke();
+
+      const name = this.makeTitle(card, `${o.npcName}  ${o.npcTitle}`, 22);
+      name.setPosition(-40, 48);
+      const want = this.makeTitle(card, `想要  ${o.itemName} ×${o.qty}`, 18);
+      want.setPosition(-70, 12);
+      const pay = this.makeTitle(card, `报酬 ${o.pay} 金  溢价×${o.premium}  好心+${o.affinity}`, 16);
+      pay.setPosition(-20, -22);
+      (pay.getComponent(Label)!).color = new Color(0x8b, 0x5a, 0x2b);
+
+      const sf = this.iconFrames[o.itemId];
+      if (sf) {
+        const iconN = new Node('icon');
+        iconN.layer = Layers.Enum.UI_2D;
+        iconN.parent = card;
+        iconN.setPosition(-250, 8);
+        const iut = iconN.addComponent(UITransform);
+        iut.setContentSize(56, 56);
+        const sp = iconN.addComponent(Sprite);
+        sp.sizeMode = Sprite.SizeMode.CUSTOM;
+        sp.spriteFrame = sf;
+        iut.setContentSize(56, 56);
+      }
+
+      const label = o.state === 'ready' ? '交付' : o.state === 'lack' ? '缺货' : '未发现';
+      this.makePillButton(card, label, 210, -8, 150, 52, o.state === 'ready', () => {
+        if (o.state === 'locked') {
+          this.say('图鉴里还没有这道菜', 'orders');
+          return;
+        }
+        if (o.state === 'lack') {
+          this.say('货不够，先去田里收或厨房做', 'orders');
+          return;
+        }
+        this.run(() => {
+          const r = this.game!.deliverOrder(o.id);
+          this.playSfx('coin');
+          this.say(`交给${r.npcName}，+${r.gold} 金，好心 +${r.affinityGain}`, 'orders');
+          this.refreshOrders();
+          this.refreshKitchen();
+        });
+      }, 22);
+    });
+  }
+
   private buyUpgrade(line: string) {
     this.run(() => {
       const def = this.game!.buyUpgrade(line);
@@ -1456,6 +1557,7 @@ export class GameController extends Component {
         const id = this.game!.harvest(i)!;
         this.playSfx('harvest');
         this.say(`收获了 ${this.game!.cropName(id)} ×1`, 'field');
+        this.maybeTalk('field', 'onHarvest');
         const plot = this.fieldPlots[i];
         if (plot) this.playHarvest(plot.node, id); // 收获动效：图标弹跳飞出
         this.refreshKitchen(); // 新食材进库存，刷新可选列表
@@ -1498,6 +1600,7 @@ export class GameController extends Component {
       }
       this.playSfx('harvest');
       this.say(`收获了 ×${list.length} 份作物`, 'field');
+      this.maybeTalk('field', 'onHarvest');
       // 批量时不逐块播动效，简化为首块被收地块一次汇总飞行动效
       const plot = this.fieldPlots[list[0].fieldIndex];
       if (plot) this.playHarvest(plot.node, list[0].cropId);
@@ -1518,10 +1621,12 @@ export class GameController extends Component {
         this.playSfx(rare ? 'discovery_rare' : 'discovery', 0.9);
         this.playDiscovery(recipe.id, recipe.name, { rare, desc: recipe.desc });
         if (result.refund > 0) this.say(`黑暗料理……但至少是一种发现，返还了 ${result.refund} 金币（新手安慰）`, 'kitchen');
+        if (this.game!.isDarkDish(result.dishId)) this.maybeTalk('kitchen', 'onDark');
         this.refreshCollection(); // 图鉴点亮
       } else if (result.refund > 0) {
         this.playSfx('dark'); // 新手保护期黑暗料理（毕业后黑暗料理暂无专属提示音，归入 cook_done）
         this.say(`出锅：${this.game!.dishName(result.dishId)}……没人欣赏，返还了 ${result.refund} 金币（新手安慰）`, 'kitchen');
+        if (this.game!.isDarkDish(result.dishId)) this.maybeTalk('kitchen', 'onDark');
       } else {
         this.playSfx('cook_done');
         this.say(`菜品出锅：${this.game!.dishName(result.dishId)}`, 'kitchen');
@@ -1610,6 +1715,7 @@ export class GameController extends Component {
     // 注：田地页种子列表已改底部抽屉（buildSeedDrawer），不再占用页内容器
     this.kitchenContainer = this.makePlain(this.pages.kitchen, 'KitchenPanel', 0, 0);
     this.upgradeContainer = this.makePlain(this.pages.shop, 'UpgradeRoot', 0, 0);
+    this.orderContainer = this.makePlain(this.pages.orders, 'OrderRoot', 0, 0);
     this.collectionContainer = this.makePlain(this.pages.book, 'CollectionRoot', 0, 520);
 
     // 场景静态节点归位（保持槽位绑定有效，仅运行时换父节点）
@@ -1657,13 +1763,14 @@ export class GameController extends Component {
     const navUt = nav.addComponent(UITransform);
     navUt.setAnchorPoint(0.5, 0.5);
     navUt.setContentSize(vis.width, NAV_TAB_H);
-    // 四个 tab 宽度等分可用宽（mockup 720 宽时为 164×66，gap≈8）
-    let tabW = 164;
-    let gap = (vis.width - NAV_MARGIN * 2 - tabW * 4) / 3;
+    const nTabs = GameController.PAGES.length;
+    let tabW = nTabs <= 4 ? 164 : 120;
+    let gap = (vis.width - NAV_MARGIN * 2 - tabW * nTabs) / (nTabs - 1);
     if (gap < NAV_GAP_MIN) {
       gap = NAV_GAP_MIN;
-      tabW = (vis.width - NAV_MARGIN * 2 - gap * 3) / 4;
+      tabW = (vis.width - NAV_MARGIN * 2 - gap * (nTabs - 1)) / nTabs;
     }
+    const tabFont = nTabs <= 4 ? 26 : 22;
     GameController.PAGES.forEach(({ key, name }, i) => {
       const on = key === this.currentPage;
       const tab = new Node(`NavTab_${key}`);
@@ -1680,7 +1787,7 @@ export class GameController extends Component {
       labelN.addComponent(UITransform).setContentSize(tabW, NAV_TAB_H);
       const label = labelN.addComponent(Label);
       label.string = name;
-      label.fontSize = 26;
+      label.fontSize = tabFont;
       label.isBold = on;
       label.color = on ? new Color(0x6b, 0x44, 0x23) : new Color(0x4a, 0x35, 0x20);
       this.drawNavTab(g, tabW, NAV_TAB_H, on);
@@ -1918,7 +2025,7 @@ export class GameController extends Component {
   private makePageBg(page: Node, key: string, vis: { width: number; height: number }) {
     const w = Math.max(720, vis.width);
     const h = Math.max(1280, vis.height);
-    const sf = this.bgFrames[key];
+    const sf = this.bgFrames[key === 'orders' ? 'shop' : key];
     if (sf) {
       const n = new Node('PageBg');
       n.layer = Layers.Enum.UI_2D;
@@ -1950,8 +2057,8 @@ export class GameController extends Component {
     } else if (key === 'kitchen') {
       rect(-hw, -hh, w, h, new Color(0x7e, 0x51, 0x27)); // 木墙
       rect(-hw, -hh, w, 172, new Color(0x6b, 0x44, 0x23)); // 地板带
-    } else if (key === 'shop') {
-      rect(-hw, -hh, w, h, new Color(0xf5, 0xe8, 0xc8)); // 奶油墙
+    } else if (key === 'shop' || key === 'orders') {
+      rect(-hw, -hh, w, h, new Color(0xf5, 0xe8, 0xc8)); // 奶油墙（订单页复用小铺底）
     } else {
       rect(-hw, -hh, w, h, new Color(0xf9, 0xef, 0xd8)); // 图鉴纸
     }
@@ -2041,12 +2148,14 @@ export class GameController extends Component {
       item.label.color = on ? new Color(0x6b, 0x44, 0x23) : new Color(0x4a, 0x35, 0x20);
       this.drawNavTab(item.g, item.w, item.h, on);
     }
+    this.maybeTalk(key, 'onEnter');
   }
 
   private refreshPanels() {
     this.refreshSeeds();
     this.refreshKitchen();
     this.refreshShop();
+    this.refreshOrders();
     this.refreshCollection();
     // 列表每次刷新重建 Label，快乐体需重挂（美术 v1.1 ④）
     const canvas = this.node.scene?.getChildByName('Canvas');
@@ -3537,6 +3646,154 @@ export class GameController extends Component {
     }
   }
 
+  /** 遮罩结束后：新档先播序章，再按当前地点出引导。老存档两者都已读。 */
+  private beginStory() {
+    if (!this.game || this.playReady) return;
+    if (this.game.prologuePending()) {
+      this.openTalk(this.game.prologueLines(), () => {
+        this.game!.finishPrologue();
+        this.writeSave();
+        this.playReady = true;
+        this.maybeTalk(this.currentPage, 'onEnter');
+      }, 'prologue');
+      return;
+    }
+    this.playReady = true;
+    this.maybeTalk(this.currentPage, 'onEnter');
+  }
+
+  /** 地点引导。切页的 onEnter 等序章结束；收获和黑暗料理可以排在序章后面。 */
+  private maybeTalk(page: string, trigger: 'onEnter' | 'onHarvest' | 'onDark') {
+    if (!this.game) return;
+    if (trigger === 'onEnter' && !this.playReady) return;
+    const place = GameController.PLACE[page];
+    if (!place) return;
+    const story = this.game.pendingTutorial(place, trigger);
+    if (!story) return;
+    if (this.talkStoryId === story.id || this.talkQueue.some((q) => q.id === story.id)) return;
+    this.openTalk(
+      story.lines.map((text) => ({ speaker: story.speaker, text })),
+      () => {
+        this.game!.completeTutorial(story.id);
+        this.writeSave();
+      },
+      story.id,
+    );
+  }
+
+  /** 底部对白。不盖住整屏，跳过只结束这一段。正在播时后来的段排队。 */
+  private openTalk(
+    lines: { speaker: string; text: string }[],
+    onDone: () => void,
+    id: string,
+  ) {
+    if (lines.length === 0) {
+      onDone();
+      return;
+    }
+    if (this.talkNode) {
+      this.talkQueue.push({ id, lines, onDone });
+      return;
+    }
+    this.talkStoryId = id;
+    this.talkLines = lines;
+    this.talkIndex = 0;
+    this.talkOnDone = onDone;
+    const canvas = this.node.scene?.getChildByName('Canvas');
+    if (!canvas) {
+      this.talkStoryId = '';
+      this.talkOnDone = null;
+      onDone();
+      return;
+    }
+    const n = new Node('Talk');
+    n.layer = Layers.Enum.UI_2D;
+    n.parent = canvas;
+    n.setPosition(0, -430);
+    n.addComponent(UITransform).setContentSize(660, 250);
+    n.addComponent(BlockInputEvents);
+    const g = n.addComponent(Graphics);
+    g.fillColor = new Color(0xff, 0xf8, 0xe7, 245);
+    g.roundRect(-330, -110, 660, 230, 18);
+    g.fill();
+    g.lineWidth = 3;
+    g.strokeColor = new Color(0x4a, 0x35, 0x20);
+    g.roundRect(-330, -110, 660, 230, 18);
+    g.stroke();
+    const mk = (y: number, size: number, color: Color, w: number) => {
+      const t = new Node('t');
+      t.layer = Layers.Enum.UI_2D;
+      t.parent = n;
+      t.setPosition(0, y);
+      t.addComponent(UITransform).setContentSize(w, size + 8);
+      const l = t.addComponent(Label);
+      l.fontSize = size;
+      l.color = color;
+      l.horizontalAlign = Label.HorizontalAlign.CENTER;
+      l.overflow = Label.Overflow.RESIZE_HEIGHT;
+      return l;
+    };
+    this.talkSpeaker = mk(78, 22, new Color(0x8b, 0x5a, 0x2b), 600);
+    this.talkSpeaker.isBold = true;
+    this.talkBody = mk(10, 26, new Color(0x4a, 0x35, 0x20), 600);
+    const btn = (x: number, text: string, fn: () => void) => {
+      const b = new Node(text);
+      b.layer = Layers.Enum.UI_2D;
+      b.parent = n;
+      b.setPosition(x, -78);
+      b.addComponent(UITransform).setContentSize(140, 44);
+      const bg = b.addComponent(Graphics);
+      bg.fillColor = new Color(0xf2, 0xb8, 0x30);
+      bg.roundRect(-70, -22, 140, 44, 12);
+      bg.fill();
+      bg.strokeColor = new Color(0x4a, 0x35, 0x20);
+      bg.lineWidth = 2;
+      bg.roundRect(-70, -22, 140, 44, 12);
+      bg.stroke();
+      const l = mk(0, 22, new Color(0x4a, 0x35, 0x20), 120);
+      l.string = text;
+      l.node.setParent(b);
+      l.node.setPosition(0, 0);
+      b.on(Node.EventType.TOUCH_END, fn);
+    };
+    btn(-90, '下一句', () => this.advanceTalk());
+    btn(90, '跳过', () => this.finishTalk());
+    this.talkNode = n;
+    this.renderTalkLine();
+    this.applyUiFont(n);
+    n.setSiblingIndex(canvas.children.length - 1);
+  }
+
+  private renderTalkLine() {
+    const line = this.talkLines[this.talkIndex];
+    if (!line || !this.talkSpeaker || !this.talkBody) return;
+    this.talkSpeaker.string = line.speaker;
+    this.talkBody.string = line.text;
+  }
+
+  private advanceTalk() {
+    if (this.talkIndex < this.talkLines.length - 1) {
+      this.talkIndex += 1;
+      this.renderTalkLine();
+      return;
+    }
+    this.finishTalk();
+  }
+
+  private finishTalk() {
+    const done = this.talkOnDone;
+    this.talkNode?.destroy();
+    this.talkNode = null;
+    this.talkSpeaker = null;
+    this.talkBody = null;
+    this.talkOnDone = null;
+    this.talkStoryId = '';
+    this.talkLines = [];
+    done?.();
+    const next = this.talkQueue.shift();
+    if (next) this.openTalk(next.lines, next.onDone, next.id);
+  }
+
   /** 当前页消息栏（各页位置统一）；page 指定时写到对应页 */
   private say(msg: string, page?: string) {
     console.log(msg);
@@ -4268,13 +4525,16 @@ export class GameController extends Component {
           err ? reject(err) : resolve(asset.json),
         ),
       );
-    const [crops, recipes, upgrades, levels, config, milestones] = await Promise.all([
+    const [crops, recipes, upgrades, levels, config, milestones, npcs, orders, stories] = await Promise.all([
       load('crops'),
       load('recipes'),
       load('upgrades'),
       load('levels'),
       load('config'),
       load('milestones'),
+      load('npcs'),
+      load('orders'),
+      load('stories'),
     ]);
     return {
       crops: crops.crops,
@@ -4284,6 +4544,10 @@ export class GameController extends Component {
       levels: levels.levels,
       config,
       milestones: milestones.milestones,
+      npcs: npcs.npcs,
+      orders: orders.orders,
+      stories: stories.stories,
+      prologue: stories.prologue,
     };
   }
 

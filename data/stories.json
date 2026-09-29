@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "prologue": [
+    { "speaker": "", "text": "同一张桌，同一份报告，同一盒外卖。钟在走。" },
+    { "speaker": "", "text": "老板的话翻来覆去：还不够，再改。" },
+    { "speaker": "", "text": "田伯的信到了。镇上的地还在，他先看着。信里夹着钥匙，还有一条旧围裙。" },
+    { "speaker": "", "text": "信纸后面是旧日子：田埂，食堂的木桌，外婆的背影，还有一碗热饭。" },
+    { "speaker": "", "text": "你离开那栋楼，坐上回丰穗镇的车。窗外的楼，慢慢换成田。" },
+    { "speaker": "田伯", "text": "这孩子，可算回来了。地我替你看着呢。" }
+  ],
+  "stories": [
+    {
+      "id": "tut_farm_plant",
+      "type": "tutorial",
+      "place": "farm",
+      "trigger": "onEnter",
+      "speaker": "田伯",
+      "lines": [
+        "这孩子，记得不？你小时候就爱往田里钻。",
+        "来，这袋小麦咱俩一起撒。点空地，选上种子，种下去。",
+        "麦子熟得快，先从它开始。"
+      ]
+    },
+    {
+      "id": "tut_farm_harvest",
+      "type": "tutorial",
+      "place": "farm",
+      "trigger": "onHarvest",
+      "speaker": "田伯",
+      "lines": [
+        "熟了。点那块地，粮食就进你袋子。",
+        "收下的麦，能卖给林婶，也能拿去食堂做。"
+      ]
+    },
+    {
+      "id": "tut_shop",
+      "type": "tutorial",
+      "place": "shop",
+      "trigger": "onEnter",
+      "speaker": "林婶",
+      "lines": [
+        "回来了？货给我，我按价收。菜比生的值钱，你自己掂量。",
+        "镇上有人嘴馋。他们想吃的写在订单那一页，交给本人，比卖给我多几个钱。"
+      ]
+    },
+    {
+      "id": "tut_orders",
+      "type": "tutorial",
+      "place": "orders",
+      "trigger": "onEnter",
+      "speaker": "林婶",
+      "note": "订单页是地图完成前的临时地点，地图期改到各人所在的 place",
+      "lines": [
+        "这页是他们今天想吃的。货够了就交；不够，先去田里收，或者去食堂做。"
+      ]
+    },
+    {
+      "id": "tut_canteen",
+      "type": "tutorial",
+      "place": "canteen",
+      "trigger": "onEnter",
+      "speaker": "白婆婆",
+      "lines": [
+        "城里回来种田？能撑几天？",
+        "做菜就点下面的食材放进槽里，再点火。做出来的，记在图鉴那本手抄本上。我说完了。"
+      ]
+    },
+    {
+      "id": "tut_dark",
+      "type": "tutorial",
+      "place": "canteen",
+      "trigger": "onDark",
+      "speaker": "白婆婆",
+      "lines": [
+        "这味道……跟你外婆当年糊弄灶台一个样。少放了一样东西——我说完了。"
+      ]
+    }
+  ]
+}

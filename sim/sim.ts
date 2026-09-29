@@ -18,6 +18,9 @@ const recipes = read('recipes.json');
 const upgrades = read('upgrades.json');
 const levels = read('levels.json');
 const milestones = read('milestones.json');
+const npcs = read('npcs.json');
+const orders = read('orders.json');
+const stories = read('stories.json');
 const data: DataTables = {
   crops: crops.crops,
   recipes: recipes.recipes,
@@ -25,6 +28,10 @@ const data: DataTables = {
   upgrades: upgrades.upgrades,
   levels: levels.levels,
   milestones: milestones.milestones,
+  npcs: npcs.npcs,
+  orders: orders.orders,
+  stories: stories.stories,
+  prologue: stories.prologue,
   // 仿真固定用 1 倍时间（debugTimeScale 是测试期加速开关，逻辑断言不应受它影响）
   config: { ...read('config.json'), debugTimeScale: 1 },
 };
@@ -109,7 +116,7 @@ assert.strictEqual(rd.recipe.id, 'dark_cuisine', '未命中组合应产出黑暗
 advance(5);
 const dc = game.collectDish();
 assert.strictEqual(dc?.dishId, 'dark_cuisine');
-assert.strictEqual(dc?.refund, 30, '新手保护期：3 个土豆（成本 60）黑暗料理应回血 50% = 30');
+assert.strictEqual(dc?.refund, 24, '新手保护期：3 个土豆（成本 48）黑暗料理应回血 50% = 24');
 assert.strictEqual(game.xp, 203, '发现黑暗料理（新食谱）应再 +50 经验（其间 4 次土豆收获 +20）');
 assert.strictEqual(game.level, 1, 'xp 203 未达 Lv2（250，曲线拉陡后前期升级变慢）');
 // drainXpEvents：未有升级事件，取走后队列清空
@@ -119,7 +126,7 @@ assert.ok(evs.some((e) => e.type === 'xp' && e.amount === 50 && e.source === '�
 assert.deepStrictEqual(game.drainXpEvents(), [], '取走后队列应清空');
 assert.strictEqual(game.sellDish('dark_cuisine'), 1);
 game.sellCrop('potato', 1); // 剩余 1 个土豆卖掉
-log('组合 {土豆×3} → 黑暗料理（图鉴 +1），新手安慰回血 +30，兜底机制正常；经验事件已消费');
+log('组合 {土豆×3} → 黑暗料理（图鉴 +1），新手安慰回血 +24，兜底机制正常；经验事件已消费');
 
 // 快进赚钱：反复种土豆卖土豆（演示经济循环）
 for (let round = 0; round < 8; round++) {
@@ -496,6 +503,54 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
   assert.strictEqual(gm.nextMilestoneOf('recipe'), null, '全达成后下一个预告应为 null（UI 显示已全部达成）');
   assert.strictEqual(gm.nextMilestoneOf('crop'), null);
   log(`M4 收集里程碑：门槛触发/不重复发放/旧存档补发（全收集合计 ${totalReward} 金）/预告查询全部通过`);
+}
+
+{
+  const s = new GameCore(data, undefined, nowFn).getSave();
+  s.orderDate = new Date(now).toLocaleDateString('sv');
+  s.orderIds = ['tb_toast', 'xm_wheat', 'shen_soup'];
+  s.orderDone = [];
+  s.discoveredRecipes = ['toast'];
+  s.inventory.dishes = { toast: 1 };
+  s.inventory.crops = { wheat: 1 };
+  s.gold = 100;
+  s.affinity = {};
+  const g = new GameCore(data, s, nowFn);
+  const views = g.listOrders();
+  assert.strictEqual(views.find((v) => v.id === 'tb_toast')?.state, 'ready', '已发现且有货应可交');
+  assert.strictEqual(views.find((v) => v.id === 'xm_wheat')?.state, 'lack', '作物不够应为缺货');
+  assert.strictEqual(views.find((v) => v.id === 'shen_soup')?.state, 'locked', '未发现菜品不可接');
+  const toastPay = views.find((v) => v.id === 'tb_toast')!.pay;
+  assert.ok(toastPay > 17, `求购溢价应高于表价 17，实际 ${toastPay}`);
+  const gold0 = g.gold;
+  const r = g.deliverOrder('tb_toast');
+  assert.strictEqual(g.gold, gold0 + r.gold, '交付金币入账');
+  assert.strictEqual(g.affinityOf('tianbo'), r.affinityGain, '好感入账');
+  assert.ok(r.affinityGain >= 5, '最爱菜应有额外好感（3+2）');
+  assert.throws(() => g.deliverOrder('tb_toast'), /不在今天/);
+  assert.throws(() => g.deliverOrder('shen_soup'));
+  assert.throws(() => g.deliverOrder('xm_wheat'));
+  log(`求购：三态 + 溢价 ${toastPay} + 田伯好感 ${r.affinityGain}`);
+}
+
+{
+  const fresh = new GameCore(data, undefined, nowFn);
+  assert.strictEqual(fresh.prologuePending(), true, '新档应播序章');
+  assert.strictEqual(fresh.prologueLines().length, 6, '序章应为 6 句');
+  assert.strictEqual(fresh.pendingTutorial('farm', 'onEnter')?.id, 'tut_farm_plant');
+  fresh.finishPrologue();
+  fresh.completeTutorial('tut_farm_plant');
+  assert.strictEqual(fresh.prologuePending(), false);
+  assert.strictEqual(fresh.pendingTutorial('farm', 'onEnter'), null, '已读引导不重复');
+  assert.strictEqual(fresh.pendingTutorial('canteen', 'onDark')?.speaker, '白婆婆');
+  const legacyTalk = fresh.getSave() as Partial<SaveData>;
+  delete legacyTalk.readTutorials;
+  delete legacyTalk.prologueSeen;
+  const old = new GameCore(data, legacyTalk as SaveData, nowFn);
+  assert.strictEqual(old.prologuePending(), false, '旧存档不重播序章');
+  assert.strictEqual(old.pendingTutorial('farm', 'onEnter'), null, '旧存档不重播教学');
+  assert.strictEqual(old.pendingTutorial('shop', 'onEnter'), null);
+  log('引导：新档可播、已读不重复、旧存档视为已读');
 }
 
 console.log('\n✅ 仿真通过：核心循环（种菜→收获→做菜→卖钱→升级）+ 离线结算全部符合数据表预期');

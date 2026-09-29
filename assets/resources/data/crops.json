@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "crops": [
     {
       "id": "wheat",
@@ -16,8 +16,8 @@
       "name": "番茄",
       "tier": 1,
       "seedPrice": 6,
-      "sellPrice": 11,
-      "growTime": 225,
+      "sellPrice": 9,
+      "growTime": 135,
       "unlock": { "type": "default" },
       "desc": "酸甜多汁，是很多菜品的灵魂。"
     },
@@ -26,8 +26,8 @@
       "name": "土豆",
       "tier": 1,
       "seedPrice": 10,
-      "sellPrice": 20,
-      "growTime": 450,
+      "sellPrice": 16,
+      "growTime": 270,
       "unlock": { "type": "default" },
       "desc": "朴实耐放，怎么做都好吃。"
     },

@@ -7,6 +7,7 @@ import {
   CropDef,
   DataTables,
   MilestoneDef,
+  OrderDef,
   RecipeDef,
   SaveData,
   UpgradeDef,
@@ -41,6 +42,24 @@ export interface CollectResult {
   isNew: boolean;
 }
 
+/** 求购单展示态（订单页 UI） */
+export interface OrderView {
+  id: string;
+  npcId: string;
+  npcName: string;
+  npcTitle: string;
+  kind: 'dish' | 'crop';
+  itemId: string;
+  itemName: string;
+  qty: number;
+  /** ready=可交 lack=缺货 locked=菜品未发现 */
+  state: 'ready' | 'lack' | 'locked';
+  pay: number;
+  premium: number;
+  affinity: number;
+  have: number;
+}
+
 /** 升级线状态（UI 展示用） */
 export interface UpgradeInfo {
   line: string;
@@ -71,6 +90,20 @@ export class GameCore {
     this.save.seenCrops ??= []; // 旧存档迁移：作物图鉴字段后补
     this.save.xp ??= 0; // 旧存档迁移：M3-① 经验字段后补
     this.save.claimedMilestones ??= []; // 旧存档迁移：M4 收集里程碑字段后补
+    this.save.affinity ??= {};
+    this.save.orderDate ??= '';
+    this.save.orderIds ??= [];
+    this.save.orderDone ??= [];
+    // 旧存档没有引导字段：视为序章和全部教学已读，避免老玩家重看
+    const legacyTutorials = save !== undefined && save.readTutorials === undefined;
+    this.save.readTutorials ??= [];
+    this.save.prologueSeen ??= false;
+    if (legacyTutorials) {
+      this.save.prologueSeen = true;
+      for (const s of this.data.stories ?? []) {
+        if (!this.save.readTutorials.includes(s.id)) this.save.readTutorials.push(s.id);
+      }
+    }
     // 旧存档迁移：后加的升级线（如便利线）缺省 = Lv1 初始级（Lv1 无解锁门控，缺省会永远锁死）
     for (const line of this.upgradeLines()) this.save.upgrades[line] ??= 1;
     // 数据腐蚀自愈：金币非有限数（如 NaN 被 JSON 存成 null）时重置为初始金，避免脏值无限传播
@@ -103,8 +136,43 @@ export class GameCore {
       lastOnlineAt: this.nowFn(),
       lastDailyRewardDate: null,
       claimedMilestones: [],
+      affinity: {},
+      orderDate: '',
+      orderIds: [],
+      orderDone: [],
+      readTutorials: [],
+      prologueSeen: false,
       stats: { totalGoldEarned: 0, recipesDiscovered: 0 },
     };
+  }
+
+  prologuePending(): boolean {
+    return !this.save.prologueSeen && (this.data.prologue?.length ?? 0) > 0;
+  }
+
+  prologueLines(): { speaker: string; text: string }[] {
+    return (this.data.prologue ?? []).map((l) => ({ speaker: l.speaker, text: l.text }));
+  }
+
+  finishPrologue(): void {
+    this.save.prologueSeen = true;
+  }
+
+  /** 该地点、该触发下第一条未读引导；没有则 null */
+  pendingTutorial(place: string, trigger: string) {
+    return (
+      (this.data.stories ?? []).find(
+        (s) => s.type === 'tutorial' && s.place === place && s.trigger === trigger && !this.save.readTutorials.includes(s.id),
+      ) ?? null
+    );
+  }
+
+  completeTutorial(id: string): void {
+    if (!this.save.readTutorials.includes(id)) this.save.readTutorials.push(id);
+  }
+
+  isDarkDish(id: string): boolean {
+    return id === this.data.fallbackRecipeId;
   }
 
   getSave(): SaveData {
@@ -649,6 +717,121 @@ export class GameCore {
   /** 今日奖励是否可领（每日奖励按钮待领/已领态用） */
   canClaimDaily(): boolean {
     return this.save.lastDailyRewardDate !== new Date(this.nowFn()).toLocaleDateString('sv');
+  }
+
+  // ---------- NPC 求购（与小铺直卖分开） ----------
+
+  private orderPool(): OrderDef[] {
+    return this.data.orders ?? [];
+  }
+
+  private npcOf(id: string) {
+    return (this.data.npcs ?? []).find((n) => n.id === id);
+  }
+
+  private hashStr(s: string): number {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) >>> 0;
+    return h;
+  }
+
+  /** 按日确定性抽 boardSize 张单（默认 3），换日清空已交 */
+  private ensureOrderBoard() {
+    const today = new Date(this.nowFn()).toLocaleDateString('sv');
+    if (this.save.orderDate === today && this.save.orderIds.length > 0) return;
+    const pool = this.orderPool();
+    const size = 3;
+    const ranked = pool
+      .map((o) => ({ o, k: this.hashStr(`${today}:${o.id}`) }))
+      .sort((a, b) => a.k - b.k);
+    this.save.orderDate = today;
+    this.save.orderDone = [];
+    this.save.orderIds = ranked.slice(0, Math.min(size, ranked.length)).map((x) => x.o.id);
+  }
+
+  private orderPay(o: OrderDef): number {
+    const base =
+      o.kind === 'dish'
+        ? (this.data.recipes.find((r) => r.id === o.itemId)?.sellPrice ?? 0)
+        : this.crop(o.itemId).sellPrice;
+    return Math.round(base * o.qty * o.premium * this.effectValue('sellPriceMult'));
+  }
+
+  private orderHave(o: OrderDef): number {
+    const bag = o.kind === 'dish' ? this.save.inventory.dishes : this.save.inventory.crops;
+    return bag[o.itemId] ?? 0;
+  }
+
+  /** 当日未交付的求购单（含缺货/未发现态） */
+  listOrders(): OrderView[] {
+    this.ensureOrderBoard();
+    const views: OrderView[] = [];
+    for (const id of this.save.orderIds) {
+      if (this.save.orderDone.includes(id)) continue;
+      const o = this.orderPool().find((x) => x.id === id);
+      if (!o) continue;
+      const npc = this.npcOf(o.npcId);
+      const itemName =
+        o.kind === 'dish'
+          ? (this.data.recipes.find((r) => r.id === o.itemId)?.name ?? o.itemId)
+          : this.crop(o.itemId).name;
+      const discovered =
+        o.kind === 'crop' || this.save.discoveredRecipes.includes(o.itemId);
+      const have = this.orderHave(o);
+      const state: OrderView['state'] = !discovered ? 'locked' : have >= o.qty ? 'ready' : 'lack';
+      views.push({
+        id: o.id,
+        npcId: o.npcId,
+        npcName: npc?.name ?? o.npcId,
+        npcTitle: npc?.title ?? '',
+        kind: o.kind,
+        itemId: o.itemId,
+        itemName,
+        qty: o.qty,
+        state,
+        pay: this.orderPay(o),
+        premium: o.premium,
+        affinity: o.affinity,
+        have,
+      });
+    }
+    return views;
+  }
+
+  affinityOf(npcId: string): number {
+    return this.save.affinity[npcId] ?? 0;
+  }
+
+  /**
+   * 向对应 NPC 交付求购。不走今日特价。菜品单须已发现。
+   * 好感只升：基础点 + 最爱菜额外 +2。
+   */
+  deliverOrder(id: string): { gold: number; affinityGain: number; npcName: string; itemName: string } {
+    this.ensureOrderBoard();
+    if (!this.save.orderIds.includes(id) || this.save.orderDone.includes(id)) throw new Error('这张单不在今天的板上');
+    const o = this.orderPool().find((x) => x.id === id);
+    if (!o) throw new Error('未知订单');
+    if (o.kind === 'dish' && !this.save.discoveredRecipes.includes(o.itemId)) throw new Error('图鉴里还没有这道菜');
+    if (this.orderHave(o) < o.qty) throw new Error('货不够，先去田里收或厨房做');
+    const bag = o.kind === 'dish' ? this.save.inventory.dishes : this.save.inventory.crops;
+    bag[o.itemId] -= o.qty;
+    if (bag[o.itemId] <= 0) delete bag[o.itemId];
+    const gold = this.orderPay(o);
+    this.save.gold += gold;
+    this.save.stats.totalGoldEarned += gold;
+    if (o.kind === 'dish') {
+      this.gainXp(Math.min(Math.round(gold / 10), this.data.config.sellDishXpCap), '交付求购');
+    }
+    const npc = this.npcOf(o.npcId);
+    let affinityGain = o.affinity;
+    if (o.kind === 'dish' && npc?.favoriteDish === o.itemId) affinityGain += 2;
+    this.save.affinity[o.npcId] = (this.save.affinity[o.npcId] ?? 0) + affinityGain;
+    this.save.orderDone.push(id);
+    const itemName =
+      o.kind === 'dish'
+        ? (this.data.recipes.find((r) => r.id === o.itemId)?.name ?? o.itemId)
+        : this.crop(o.itemId).name;
+    return { gold, affinityGain, npcName: npc?.name ?? o.npcId, itemName };
   }
 
   // ---------- 离线结算 ----------

@@ -103,16 +103,19 @@ const topBar = (gold) => {
   return s;
 };
 const msgBar = (msg) => (msg ? T(W / 2, 106, 22, msg, '#5C4028', 'bold') : '');
-// 底部导航：木牌 tab
-const navBar = (active) => {
-  const tabs = ['田地', '厨房', '商店', '图鉴'];
+// 底部导航：木牌 tab（默认四页；订单页可传五页）
+const navBar = (active, tabs = ['田地', '厨房', '小铺', '图鉴']) => {
+  const n = tabs.length;
+  const gap = n <= 4 ? 172 : 138;
+  const bw = n <= 4 ? 164 : 128;
+  const x0 = n <= 4 ? 26 : Math.round((W - ((n - 1) * gap + bw)) / 2);
   let s = RR(0, H - 118, W, 118, 0, '#6B4423', 'none', 0, 'opacity="0.16"');
   tabs.forEach((t, i) => {
-    const x = 26 + i * 172;
+    const x = x0 + i * gap;
     const on = t === active;
-    s += pill(x, H - 100, 164, 66, t, on
-      ? { fill: 'url(#gold)', stroke: '#8A5F10', weight: 'bold', size: 26 }
-      : { fill: 'url(#paper)', size: 26 });
+    s += pill(x, H - 100, bw, 66, t, on
+      ? { fill: 'url(#gold)', stroke: '#8A5F10', weight: 'bold', size: n <= 4 ? 26 : 22 }
+      : { fill: 'url(#paper)', size: n <= 4 ? 26 : 22 });
   });
   return s;
 };
@@ -452,10 +455,10 @@ function pageKitchen() {
   // 装饰背景（木墙/挂饰/台面/地板/大锅/切菜板/调味罐）：与游戏内 bg/kitchen.jpg 同源
   let s = BG.kitchen();
   // 顶部 UI：顶栏 + 发现食谱的金色 toast（一条，不再和倒计时并排抢层次）
-  s += topBar(251) + msgBar('✨ 发现新食谱「番茄浓汤」！');
+  s += topBar(251) + msgBar('✨ 发现新食谱「番茄汤」！');
   // 组合槽：横排在锅正上方，同种食材合并计数（番茄×2 占 1 槽）；空槽虚线
   {
-    const SLOTS = [['tomato', 2], null, null]; // 演示：番茄浓汤 = 番茄×2
+    const SLOTS = [['tomato', 2], null, null]; // 演示：番茄汤 = 番茄×2
     const sw = 132, sh = 108, gap = 24, sx0 = (W - (SLOTS.length * sw + (SLOTS.length - 1) * gap)) / 2, sy = 330;
     s += T(W / 2, sy - 16, 18, `组合槽 1/${SLOTS.length}`, '#FFE9A8', 'bold');
     SLOTS.forEach((slot, i) => {
@@ -473,10 +476,10 @@ function pageKitchen() {
       s += PS(`M${x + sw / 2} ${sy + sh + 6} L${x + sw / 2} ${sy + sh + 22}`, '#FFE9A8', 2.5, 'opacity="0.5" stroke-dasharray="3 5"');
     });
   }
-  // 烹饪状态：槽满后显示进度（演示：番茄浓汤 剩余 8 秒）
+  // 烹饪状态：槽满后显示进度（演示：番茄汤 剩余 8 秒）
   s += RR(260, 470, 200, 12, 6, '#2E1D0E', 'none', 0, 'opacity="0.55"');
   s += RR(260, 470, 200 * 0.72, 12, 6, 'url(#gold)');
-  s += T(W / 2, 506, 17, '番茄浓汤 · 剩余 8 秒', '#FFE9A8', 'bold');
+  s += T(W / 2, 506, 17, '番茄汤 · 剩余 8 秒', '#FFE9A8', 'bold');
   // 状态按钮：按烹饪状态只显示一个（待开始=开始烹饪 / 烹饪中=倒计时置灰 / 完成=出锅高亮）
   s += pill(196, 756, 328, 62, '开始烹饪', { fill: 'url(#gold)', stroke: '#8A5F10', weight: 'bold', size: 26 });
   // 食材区（台面下方通栏）：两行网格、随列左右滑动，只展示持有的食材，数量写在名字后
@@ -520,7 +523,7 @@ function pageShop() {
     RR(-62, -46, 124, 76, 8, 'url(#woodSign)', '#4A3520', 2.2, `filter="url(#softSm)"`) +
     RR(-52, -36, 104, 56, 5, '#3E3225', '#2E2418', 1.5) +
     T(0, -12, 17, '今日特价', '#F5D47E', 'bold') +
-    T(0, 12, 14, '番茄浓汤 9折', '#FFF8E7') +
+    T(0, 12, 14, '番茄汤 9折', '#FFF8E7') +
     PS('M-42 16 L-30 16 M30 16 L42 16', '#D9C9A8', 1.5, 'opacity="0.6"') +
     `</g>`;
   // —— 分区 2：升级 ——
@@ -550,7 +553,96 @@ function pageShop() {
     s += T(302, y + 86, 16.5, desc, '#8B5A2B', 'normal', 'start');
     s += pill(496, y + 32, 136, 48, `${cost} 金`, { fill: 'url(#gold)', stroke: '#8A5F10', weight: 'bold', size: 20 });
   });
-  s += navBar('商店');
+  s += navBar('小铺');
+  s += grain(0.05);
+  return svg(s, '#F3E4C2');
+}
+
+// ==================== 页面 3b：求购 / 订单（与小铺分开） ====================
+// 设计口径（P0b 前确认）：
+//  - 小铺 = 卖给林婶的日常出货；本页 = 向具体 NPC 交付点名单
+//  - 一张卡 = 一单：头像 + 谁 + 要什么 + 报酬（溢价金 + 好心）+ 主按钮
+//  - 三态示意：可交付 / 缺货 / 未发现（菜品单未进图鉴）
+//  - 底部第五 tab「订单」；落地时可改为小铺内入口，本 mockup 按独立页评审构图
+function pageOrders() {
+  let s = BG.shop();
+  s += topBar(251);
+
+  // 木匾标题（与小铺招牌区分：强调「人」不是「货」）
+  s += RR(120, 96, 480, 64, 14, 'url(#woodSign)', '#4A3520', 2.5, `filter="url(#soft)"`);
+  s += RR(132, 104, 456, 22, 8, '#FFFFFF', 'none', 0, 'opacity="0.18"');
+  s += T(W / 2, 138, 28, '镇民订单', '#FFF8E7', 'bold');
+  s += T(W / 2, 186, 18, '把菜端给人 · 溢价高于小铺直卖', '#5C4028');
+
+  // NPC 简笔头像（占位，非最终立绘）
+  const npcFace = (cx, cy, fill, mark) => {
+    let g = C(cx, cy, 28, fill, `stroke="#4A3520" stroke-width="2.2"`);
+    g += C(cx - 8, cy - 2, 3.2, '#4A3520');
+    g += C(cx + 8, cy - 2, 3.2, '#4A3520');
+    g += PS(`M${cx - 8} ${cy + 10} Q${cx} ${cy + 16} ${cx + 8} ${cy + 10}`, '#4A3520', 2);
+    g += T(cx, cy + 48, 13, mark, '#8B5A2B', 'bold');
+    return g;
+  };
+
+  // 订单卡
+  // state: ready | lack | locked
+  const orderCard = (y, opt) => {
+    const { name, title, face, faceMark, wantIcon, wantName, qty, pay, premium, affinity, state } = opt;
+    let c = RR(40, y, 640, 168, 18, 'url(#paper)', '#4A3520', 2.5, `filter="url(#soft)"`);
+    c += RR(50, y + 8, 620, 36, 12, '#FFFFFF', 'none', 0, 'opacity="0.4"');
+    // 左：头像
+    c += npcFace(98, y + 78, face, faceMark);
+    // 中：文案 + 需求
+    c += T(148, y + 42, 24, name, '#4A3520', 'bold', 'start');
+    c += T(148 + name.length * 26 + 8, y + 42, 16, title, '#A8916B', 'normal', 'start');
+    c += T(148, y + 72, 17, '想要', '#8B5A2B', 'normal', 'start');
+    c += RR(200, y + 52, 200, 44, 12, '#FFF8E7', '#C9B891', 1.8);
+    c += icon(wantIcon, 224, y + 74, 0.55);
+    c += T(252, y + 80, 18, `${wantName} ×${qty}`, '#4A3520', 'bold', 'start');
+    // 报酬条
+    c += T(148, y + 118, 16, '报酬', '#8B5A2B', 'normal', 'start');
+    c += coin(188, y + 112, 11);
+    c += T(206, y + 118, 20, `${pay}`, '#4A3520', 'bold', 'start');
+    c += RR(268, y + 100, 72, 28, 10, '#FFF0C8', '#C98F1B', 1.5);
+    c += T(304, y + 119, 14, `溢价${premium}`, '#8A5F10', 'bold');
+    c += T(360, y + 118, 16, `· 好心 +${affinity}`, '#C45C6A', 'normal', 'start');
+    // 右：主按钮三态
+    if (state === 'ready') {
+      c += pill(468, y + 56, 180, 56, '交付', { fill: 'url(#gold)', stroke: '#8A5F10', weight: 'bold', size: 24 });
+    } else if (state === 'lack') {
+      c += pill(468, y + 56, 180, 56, '缺货', { fill: '#E3D9C4', stroke: '#A8916B', textFill: '#8B7355', size: 24, shadow: false });
+      c += T(558, y + 132, 14, '先去田里收 / 厨房做', '#A8916B');
+    } else {
+      c += pill(468, y + 56, 180, 56, '未发现', { fill: '#EDE3CC', stroke: '#A8916B', textFill: '#8B7355', size: 22, shadow: false });
+      c += T(558, y + 132, 14, '图鉴里还没有这道菜', '#A8916B');
+    }
+    return c;
+  };
+
+  s += orderCard(220, {
+    name: '田伯', title: '隔壁老农', face: '#E8C9A0', faceMark: '田',
+    wantIcon: DISH_ICONS.toast, wantName: '烤面包', qty: 1,
+    pay: 22, premium: '×1.3', affinity: 3, state: 'ready',
+  });
+  s += orderCard(410, {
+    name: '林婶', title: '杂货铺老板娘', face: '#F0B8A0', faceMark: '林',
+    wantIcon: DISH_ICONS.tomato_potato_stew, wantName: '番茄炖土豆', qty: 1,
+    pay: 62, premium: '×1.3', affinity: 3, state: 'lack',
+  });
+  s += orderCard(600, {
+    name: '小满', title: '皮孩子', face: '#F5D6A8', faceMark: '满',
+    wantIcon: CROP_ICONS.wheat, wantName: '小麦', qty: 3,
+    pay: 5, premium: '×1.2', affinity: 2, state: 'ready',
+  });
+  // 第四态「未发现」用半透明示意条，不占一整卡高度
+  s += RR(40, 790, 640, 72, 16, '#EDE3CC', '#A8916B', 2, 'opacity="0.95"');
+  s += T(80, 822, 18, '沈先生 · 南瓜汤  ——  图鉴未发现，暂不可接', '#8B7355', 'normal', 'start');
+  s += T(80, 848, 14, '（高级单示意：先探索食谱，再来接单）', '#A8916B', 'normal', 'start');
+
+  s += RR(80, 890, 560, 52, 14, '#FFFDF5', '#C9B891', 1.8, 'opacity="0.92"');
+  s += T(W / 2, 922, 16, '不是任务板 · 交单涨好感 · 想换人明天再来看看', '#8B5A2B');
+
+  s += navBar('订单', ['田地', '厨房', '小铺', '订单', '图鉴']);
   s += grain(0.05);
   return svg(s, '#F3E4C2');
 }
@@ -602,7 +694,7 @@ function pageBook() {
 }
 
 // ==================== 输出 ====================
-const pages = { field: pageField, kitchen: pageKitchen, shop: pageShop, book: pageBook };
+const pages = { field: pageField, kitchen: pageKitchen, shop: pageShop, orders: pageOrders, book: pageBook };
 for (const [name, fn] of Object.entries(pages)) {
   fs.writeFileSync(path.join(OUT, `${name}.svg`), fn());
   console.log(`✅ docs/mockups/${name}.svg`);
@@ -613,15 +705,23 @@ for (const [name, fn] of Object.entries(pages)) {
 //   "file:///E:/Code/NewGame/docs/mockups/field.svg"
 // 批量循环渲染注意：①screenshot 路径里变量要用 ${p}（"\$p" 会被转义成字面量）；②连续调用
 // 需为每次加 --user-data-dir=<独立临时目录>，否则 Edge 配置单例锁会让后续截图静默失败。
+const captions = {
+  field: '田地页',
+  kitchen: '厨房页',
+  shop: '小铺页（卖给林婶）',
+  orders: '求购/订单页（对人交单）',
+  book: '图鉴页',
+};
 const gallery = `<!DOCTYPE html><html lang="zh"><head><meta charset="utf-8"><title>NewGame 最终成果示意图</title>
 <style>body{background:#2b2b2b;margin:0;padding:32px;font-family:${FONT};color:#eee}
 h1{font-size:22px}p{color:#bbb;font-size:14px}.row{display:flex;gap:24px;flex-wrap:wrap}
 figure{margin:0}figcaption{text-align:center;padding:8px;font-size:15px}
 img{width:270px;border-radius:12px;box-shadow:0 4px 16px #0008}</style></head>
-<body><h1>NewGame · M3 目标效果图（美术 v1.1 · 手绘水彩 · 奶油暖调 2.5D · 依据 docs/美术风格规范.md + 数据表设计 §8）</h1>
-<p>M3 目标效果图：含农场等级系统（等级徽章/经验条/种子等级门控）、金币水槽（化肥催熟/便利升级）、卖出收益预览、今日特价、首发内容量（作物 15 种 · 食谱 40 道）。作物与菜品图标与游戏内同源（sim/art-lib.js）。PNG 由 Edge 无头模式从同名 SVG 转换（命令见 sim/gen-mockups.js 尾部注释）。</p><div class="row">
-${Object.keys(pages).map((k) => `<figure><img src="${k}.svg"><figcaption>${{ field: '田地页', kitchen: '厨房页', shop: '商店页', book: '图鉴页' }[k]}</figcaption></figure>`).join('\n')}
-<figure><img src="loading.svg"><figcaption>Loading 页（sim/gen-loading.js 生成，游戏名「丰穗小镇」）</figcaption></figure>
+<body><h1>丰穗小镇 · 页面示意图</h1>
+<p>小铺 = 日常出货给林婶 · 订单 = 向 NPC 求购交付（两套分开）。求购页为 P0b 设计稿，确认后再落代码。</p>
+<div class="row">
+${Object.keys(pages).map((k) => `<figure><img src="${k}.svg"><figcaption>${captions[k]}</figcaption></figure>`).join('\n')}
+<figure><img src="loading.svg"><figcaption>Loading 页</figcaption></figure>
 </div></body></html>`;
 fs.writeFileSync(path.join(OUT, 'index.html'), gallery);
 console.log('✅ docs/mockups/index.html');

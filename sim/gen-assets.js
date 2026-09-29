@@ -23,9 +23,8 @@ const SIZE = 256;
 const SRC_DIR = path.join(ROOT, 'art-src', 'icons');
 const OUT_CROPS = path.join(ROOT, 'assets', 'resources', 'icons', 'crops');
 const OUT_DISHES = path.join(ROOT, 'assets', 'resources', 'icons', 'dishes');
-const OUT_FIELD = path.join(ROOT, 'assets', 'resources', 'icons', 'field');
 const SHEET_DIR = path.join(ROOT, 'docs', 'mockups');
-for (const d of [SRC_DIR, OUT_CROPS, OUT_DISHES, OUT_FIELD, SHEET_DIR]) fs.mkdirSync(d, { recursive: true });
+for (const d of [SRC_DIR, OUT_CROPS, OUT_DISHES, SHEET_DIR]) fs.mkdirSync(d, { recursive: true });
 
 const EDGE_CANDIDATES = [
   process.env.EDGE,
@@ -71,7 +70,7 @@ function ensureMeta(pngPath, w, h) {
   fs.writeFileSync(`${pngPath}.meta`, spriteFrameMeta(name, crypto.randomUUID(), w, h, '.png', true));
   console.log(`  + meta（新资产）: ${path.basename(pngPath)}`);
 }
-const ICON_DIRS = new Map([[OUT_CROPS, [SIZE, SIZE]], [OUT_DISHES, [SIZE, SIZE]], [OUT_FIELD, [200, 110]]]);
+const ICON_DIRS = new Map([[OUT_CROPS, [SIZE, SIZE]], [OUT_DISHES, [SIZE, SIZE]]]);
 for (const [d, [w, h]] of ICON_DIRS) {
   const dirMetaPath = `${d}.meta`;
   if (!fs.existsSync(dirMetaPath)) {
@@ -81,17 +80,6 @@ for (const [d, [w, h]] of ICON_DIRS) {
   for (const f of fs.readdirSync(d)) {
     if (f.endsWith('.png')) ensureMeta(path.join(d, f), w, h);
   }
-}
-
-// ---------- 1.5 田地土壤畦（200×110 透明底，dry/wet 两态） ----------
-for (const kind of ['dry', 'wet']) {
-  const svg =
-    `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="110" viewBox="0 0 200 110">` +
-    A.DEFS + A.wc(A.SOIL(kind)) + `</svg>`;
-  const svgPath = path.join(SRC_DIR, `field-soil_${kind}.svg`);
-  fs.writeFileSync(svgPath, svg);
-  if (EDGE) rasterize(svgPath, path.join(OUT_FIELD, `soil_${kind}.png`), 200, 110);
-  console.log(`✅ icons/field/soil_${kind}.${EDGE ? 'png' : 'svg'}`);
 }
 
 // ---------- 2. 验收拼版（含 32px 剪影测试行） ----------
