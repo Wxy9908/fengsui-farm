@@ -1,9 +1,23 @@
+﻿---
+doc_id: plan.experience-roadmap
+title: 体验内容开发方向
+doc_kind: spec
+authority: [四线阶梯, 体验底线勾选]
+related:
+  - path: development-plan.md
+    rel: milestone-status
+  - path: art/art-style-guide.md
+    rel: art-pipeline
+  - path: narrative/story-and-characters.md
+    rel: narrative
+---
+
 # 体验内容开发方向（画面 · 音乐 · 人物 · 故事）
 
 > **角色**：体验加深阶梯 + 每版体验底线勾选。  
 > **真源**：四线阶梯（V/A/C/N）、各里程碑体验底线表（§4）。  
 > **不写**：画法细节、出图参数、对白全文、批次是否完成（完成状态在方案）。  
-> **文档分工**：`docs/文档体系.md`  
+> **文档分工**：`docs/doc-governance.md`  
 > 批次完成宣称前：玩法验收（方案 §7.3）∧ 本文对应底线 **同时**通过。
 
 - 创建：2026-09-29
@@ -13,8 +27,8 @@
 
 ## 1. 和其它文档的关系
 
-完整真源表与同步检查单见 **`docs/文档体系.md`**。  
-本文只负责：体验**变厚的阶梯** + **过关勾选**；画怎么画去美术规范，怎么出图去 `即梦出图管线.md`，人设去故事线，勾没勾完批次去方案 §6.5。
+完整真源表与同步检查单见 **`docs/doc-governance.md`**。  
+本文只负责：体验**变厚的阶梯** + **过关勾选**；画怎么画去 `art/art-style-guide.md`，怎么出图去 `art/jimeng-pipeline.md`，人设去 `narrative/story-and-characters.md`，勾没勾完批次去方案 §6.5。
 
 ---
 
@@ -110,7 +124,7 @@ P0 关闭时约定：**不把「画风精致」写进 P0 底线**，避免玩法
 
 | # | 底线 | 验收方式 | 过？ |
 |---|------|----------|------|
-| P1-V1 | 田地页「现版 vs 动物餐厅技法 + 桃源俯视」静态对照小样各 1 张，你签字 | `docs/mockups/` 对照图；出图按 `docs/即梦出图管线.md` 阶段 0 | ✅ 0.1 作物 + 0.2 `field_bg`（2026-09-30） |
+| P1-V1 | 田地页「现版 vs 动物餐厅技法 + 桃源俯视」静态对照小样各 1 张，你签字 | `docs/mockups/` 对照图；出图按 `docs/art/jimeng-pipeline.md` 阶段 0 | ✅ 0.1 作物 + 0.2 `field_bg`（2026-09-30） |
 | P1-V2 | 签字规则下，田地/厨房/小铺至少三页静态气质一致（粗描边、平涂、弱水彩） | 编辑器或真机截三页 | ☐ |
 | P1-V3 | 本批**无**新装修系统、**无**新加码动效 | 对照停车场 / 本批 diff | ☐ |
 | P1-C1 | 6 名 NPC 各至少 2 段可触发薄好感（跳过/已读），挂 `place` | 新档或测试档点过 | ☐ |

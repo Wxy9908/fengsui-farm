@@ -1,7 +1,7 @@
 /**
  * 数据表与存档的类型定义。
  * 原则：配置表只读（策划案），存档是运行时状态，两者严格分离。
- * 字段含义见 docs/数据表设计.md。
+ * 字段含义见 docs/gameplay/data-schema.md。
  */
 
 export interface CropUnlockDefault {
@@ -129,15 +129,20 @@ export interface TalkLine {
   text: string;
 }
 
-/** 引导/剧情节点（data/stories.json）。P0c 只用 type=tutorial。 */
+/** 引导/剧情节点（data/stories.json）。tutorial=教学；affinity=好感解锁薄剧情（M5-P1）。 */
 export interface StoryDef {
   id: string;
-  type: 'tutorial';
+  type: 'tutorial' | 'affinity';
   /** 地点 id，不写页面名。orders 是地图完成前的临时地点。 */
   place: string;
-  trigger: 'onEnter' | 'onHarvest' | 'onDark';
+  trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver';
   speaker: string;
   lines: string[];
+  /** affinity：归属 NPC；累计好感 ≥ minAffinity 且未读时可触发 */
+  npcId?: string;
+  minAffinity?: number;
+  /** 策划备注，不进游戏 */
+  note?: string;
 }
 
 /** NPC 求购单（data/orders.json）。与小铺直卖分开结算。 */
@@ -217,6 +222,8 @@ export interface SaveData {
   orderDone: string[];
   /** 已读引导 id。旧存档缺字段时视为全部已读，不重播 */
   readTutorials: string[];
+  /** 已读好感剧情 id（M5-P1；旧存档缺省 = []，可补播未读段） */
+  readAffinityStories: string[];
   /** 序章是否已看过或跳过。旧存档缺字段时视为已看过 */
   prologueSeen: boolean;
   stats: {

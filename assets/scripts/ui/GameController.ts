@@ -1504,6 +1504,8 @@ export class GameController extends Component {
           this.say(`交给${r.npcName}，+${r.gold} 金，好心 +${r.affinityGain}`, 'orders');
           this.refreshOrders();
           this.refreshKitchen();
+          this.writeSave();
+          this.maybeTalk('orders', 'onOrderDeliver', r.npcId);
         });
       }, 22);
     });
@@ -3662,22 +3664,43 @@ export class GameController extends Component {
     this.maybeTalk(this.currentPage, 'onEnter');
   }
 
-  /** 地点引导。切页的 onEnter 等序章结束；收获和黑暗料理可以排在序章后面。 */
-  private maybeTalk(page: string, trigger: 'onEnter' | 'onHarvest' | 'onDark') {
+  /** 地点引导与好感薄剧情。教学优先；同次可链式播下一条。 */
+  private maybeTalk(
+    page: string,
+    trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver',
+    orderNpcId?: string,
+  ) {
     if (!this.game) return;
     if (trigger === 'onEnter' && !this.playReady) return;
     const place = GameController.PLACE[page];
     if (!place) return;
-    const story = this.game.pendingTutorial(place, trigger);
-    if (!story) return;
-    if (this.talkStoryId === story.id || this.talkQueue.some((q) => q.id === story.id)) return;
+
+    const tutorial = this.game.pendingTutorial(place, trigger);
+    if (tutorial) {
+      if (this.talkStoryId === tutorial.id || this.talkQueue.some((q) => q.id === tutorial.id)) return;
+      this.openTalk(
+        tutorial.lines.map((text) => ({ speaker: tutorial.speaker, text })),
+        () => {
+          this.game!.completeTutorial(tutorial.id);
+          this.writeSave();
+          this.maybeTalk(page, trigger, orderNpcId);
+        },
+        tutorial.id,
+      );
+      return;
+    }
+
+    const affinity = this.game.pendingAffinity(place, trigger, orderNpcId);
+    if (!affinity) return;
+    if (this.talkStoryId === affinity.id || this.talkQueue.some((q) => q.id === affinity.id)) return;
     this.openTalk(
-      story.lines.map((text) => ({ speaker: story.speaker, text })),
+      affinity.lines.map((text) => ({ speaker: affinity.speaker, text })),
       () => {
-        this.game!.completeTutorial(story.id);
+        this.game!.completeAffinityStory(affinity.id);
         this.writeSave();
+        this.maybeTalk(page, trigger, orderNpcId);
       },
-      story.id,
+      affinity.id,
     );
   }
 

@@ -1,7 +1,7 @@
-/**
+﻿/**
  * 效果图生成器 v3：M3 目标效果图（2.5D 软渲染 · 手绘水彩 · 奶油暖调）。
- * 依据：docs/美术风格规范.md（色板 / 左上 45° 光源 / 圆角语言 / 禁忌清单）、
- *       docs/数据表设计.md §8（M3：农场等级系统 / 金币水槽 / 卖出预览 / 今日特价 / 首发内容量）。
+ * 依据：docs/art/art-style-guide.md（色板 / 左上 45° 光源 / 圆角语言 / 禁忌清单）、
+ *       docs/gameplay/data-schema.md §8（M3：农场等级系统 / 金币水槽 / 卖出预览 / 今日特价 / 首发内容量）。
  * 图标与游戏内同源：require('./art-lib.js')（美术 v1.1 权威源，22 菜品独立剪影 + 7 作物）；
  * 渐变/滤镜 defs 直接复用 art-lib.DEFS，仅追加 mockup 自用的 soilDry/soilWet。
  * 运行：node sim/gen-mockups.js → docs/mockups/{field,kitchen,shop,book}.svg + index.html

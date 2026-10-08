@@ -1,0 +1,133 @@
+# 与 docs/README.md 同步；改结构时两处一起改。
+version: 2
+docs:
+  - path: README.md
+    doc_id: index.readme
+    title: 文档索引
+    kind: index
+    purpose_zh: 文档地图与读法（非玩法真源）
+  - path: doc-governance.md
+    doc_id: governance.doc-governance
+    title: 文档体系
+    kind: spec
+    purpose_zh: 分工真源、反打架、同步检查单
+  - path: how-to-author-docs.md
+    doc_id: governance.how-to-author
+    title: 新建文档规范
+    kind: spec
+    purpose_zh: 新建/拆分 md 的模板与登记三件套
+  - path: development-plan.md
+    doc_id: plan.development-plan
+    title: 游戏开发方案
+    kind: spec
+    purpose_zh: 里程碑、批次状态、范围、大事记
+  - path: experience-roadmap.md
+    doc_id: plan.experience-roadmap
+    title: 体验内容开发方向
+    kind: spec
+    purpose_zh: 体验四线阶梯与底线勾选
+  - path: dev-log.md
+    doc_id: changelog.dev-log
+    title: 开发日志
+    kind: changelog
+    purpose_zh: 过程史料，不当现行规格
+  - path: planning/parking-lot.md
+    doc_id: planning.parking-lot
+    title: 灵感停车场
+    kind: spec
+    purpose_zh: 未排期想法列表
+  - path: narrative/story-and-characters.md
+    doc_id: narrative.story-and-characters
+    title: 故事线与人物规划
+    kind: index
+    purpose_zh: 叙事专题索引（正文在子文件）
+  - path: narrative/worldview-and-tone.md
+    doc_id: narrative.worldview
+    title: 世界观与基调
+    kind: spec
+    purpose_zh: 定位、世界观、序章、地图
+  - path: narrative/systems-and-reputation.md
+    doc_id: narrative.systems
+    title: 叙事系统结构
+    kind: spec
+    purpose_zh: NPC、交易、好感、声望轴
+  - path: narrative/characters.md
+    doc_id: narrative.characters
+    title: 人物设定
+    kind: spec
+    purpose_zh: 六人设定与交集剧情
+  - path: narrative/plot-and-festival.md
+    doc_id: narrative.plot
+    title: 主线与丰收祭
+    kind: spec
+    purpose_zh: 主线章节与丰收祭细则
+  - path: narrative/narrative-data-contract.md
+    doc_id: narrative.data-contract
+    title: 叙事数据与 UI
+    kind: spec
+    purpose_zh: npcs/stories 契约、存档、UI
+  - path: narrative/story-roadmap.md
+    doc_id: narrative.story-roadmap
+    title: 故事侧分期要点
+    kind: spec
+    purpose_zh: 故事分期（不写批次勾选）
+  - path: narrative/copy-guide.md
+    doc_id: narrative.copy-guide
+    title: 文案规范
+    kind: spec
+    purpose_zh: 口癖、回响、审定流程
+  - path: narrative/tutorial-by-dialogue.md
+    doc_id: narrative.tutorial
+    title: 叙事化引导
+    kind: spec
+    purpose_zh: 对话式新手引导
+  - path: narrative/risks-and-open-questions.md
+    doc_id: narrative.risks
+    title: 叙事风险与待决策
+    kind: spec
+    purpose_zh: 风险与待拍板项
+  - path: narrative/affinity-design.md
+    doc_id: narrative.affinity-design
+    title: 好感度设计
+    kind: spec
+    purpose_zh: 好感触发对照表
+  - path: gameplay/data-schema.md
+    doc_id: gameplay.data-schema
+    title: 数据表设计
+    kind: spec
+    purpose_zh: 配置字段与存档契约
+  - path: gameplay/recipe-combo-design.md
+    doc_id: gameplay.recipe-combo-design
+    title: 组合表设计
+    kind: spec
+    purpose_zh: 组合与发现率
+  - path: art/art-style-guide.md
+    doc_id: art.art-style-guide
+    title: 美术风格规范
+    kind: spec
+    purpose_zh: 色板、透视、验收
+  - path: art/jimeng-pipeline.md
+    doc_id: art.jimeng-pipeline
+    title: 即梦出图管线
+    kind: index
+    purpose_zh: 即梦文档索引
+  - path: art/jimeng-workflow.md
+    doc_id: art.jimeng-workflow
+    title: 即梦出图流程
+    kind: spec
+    purpose_zh: 界面、顺序、入库
+  - path: art/jimeng-prompts.md
+    doc_id: art.jimeng-prompts
+    title: 即梦提示词模板
+    kind: spec
+    purpose_zh: 可粘贴提示词全文
+  - path: art/comfyui-pipeline-deprecated.md
+    doc_id: art.comfyui-pipeline-deprecated
+    title: ComfyUI出图管线
+    kind: spec
+    purpose_zh: 停用指针
+  - path: release/wechat-minigame-checklist.md
+    doc_id: release.wechat-minigame-checklist
+    title: 微信小游戏发布检查清单
+    kind: spec
+    purpose_zh: M6 提审勾选

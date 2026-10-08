@@ -553,4 +553,35 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
   log('引导：新档可播、已读不重复、旧存档视为已读');
 }
 
+{
+  for (const s of stories.stories as { id: string; type: string; npcId?: string; minAffinity?: number }[]) {
+    if (s.type !== 'affinity') continue;
+    assert.ok(s.npcId, `好感剧情 ${s.id} 缺 npcId`);
+    assert.ok(s.minAffinity !== undefined && s.minAffinity >= 0, `好感剧情 ${s.id} 缺 minAffinity`);
+    const npc = (npcs.npcs as { id: string }[]).find((n) => n.id === s.npcId);
+    assert.ok(npc, `好感剧情 ${s.id} 引用未知 NPC ${s.npcId}`);
+  }
+  const affIds = (stories.stories as { id: string; type: string; npcId?: string; minAffinity?: number }[])
+    .filter((s) => s.type === 'affinity')
+    .map((s) => s.id);
+  assert.ok(new Set(affIds).size === affIds.length, '好感剧情 id 应唯一');
+
+  const s = new GameCore(data, undefined, nowFn).getSave();
+  s.prologueSeen = true;
+  for (const t of stories.stories as { id: string; type: string }[]) {
+    if (t.type === 'tutorial') s.readTutorials.push(t.id);
+  }
+  s.affinity = { tianbo: 10 };
+  const g = new GameCore(data, s, nowFn);
+  assert.strictEqual(g.pendingAffinity('farm', 'onEnter')?.id, 'aff_tianbo_10');
+  g.completeAffinityStory('aff_tianbo_10');
+  assert.strictEqual(g.pendingAffinity('farm', 'onEnter'), null);
+  assert.strictEqual(g.affinityOf('tianbo'), 10, '播剧情不改好感分');
+
+  const s2 = { ...s, affinity: { linshen: 12 }, readAffinityStories: [] as string[] };
+  const g2 = new GameCore(data, s2 as SaveData, nowFn);
+  assert.strictEqual(g2.pendingAffinity('shop', 'onEnter')?.id, 'aff_linshen_10');
+  log('好感薄剧情：表校验 + 阈值触发 + 已读不重复');
+}
+
 console.log('\n✅ 仿真通过：核心循环（种菜→收获→做菜→卖钱→升级）+ 离线结算全部符合数据表预期');

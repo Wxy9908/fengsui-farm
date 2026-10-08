@@ -4,32 +4,32 @@ globs: docs/**/*.md
 alwaysApply: false
 ---
 
-# 文档权威（防互相打架）
+# 文档权威（v2）
 
-改 `docs/**/*.md` 前先读 `docs/文档体系.md`。
+改 `docs/**/*.md` 前：仓库根 **`AGENTS.md`** → **`docs/README.md`** → **`docs/doc-governance.md`**。  
+**新建/拆分文档**：必须按 **`docs/how-to-author-docs.md`**（frontmatter 模板 + §1/README/registry 登记）。
 
 ## 硬规则
 
-1. **一事实一真源**：完整表述只写在文档体系 §1 指定的那份文件里。
-2. **禁止整段复述**：色板、提示词全文、批次 ✅ 状态、体验底线勾选表——其它文档只写「详见 xxx §y」。
-3. **状态勾选**：
-   - 里程碑/P0/P1 完成与否 → 只改 `游戏开发方案.md`
-   - 体验底线勾选 → 只改 `体验内容开发方向.md`
-   - `故事线与人物规划.md` §8 **不得**维护完成状态
-4. **数值真值**在 `data/*.json`，设计文档不抄易过期价目。
-5. `开发日志.md` 只追加；**不当现行规格**。
-6. **出图操作真源**是 `即梦出图管线.md`（不是 ComfyUI）。
-7. 改完按 `文档体系.md` §3 对应检查单自检；里程碑级改动在方案大事记 + 开发日志各留一行。
+1. **一事实一真源** — 见 `doc-governance.md` §1（英文 canonical 路径）。
+2. **索引页**（`story-and-characters.md`、`jimeng-pipeline.md`）只维护链接与摘要，**禁止**在索引堆长篇正文。
+3. **状态勾选** — `development-plan.md` §6；体验底线 — `experience-roadmap.md` §4。
+4. **停车场** — 只改 `planning/parking-lot.md`，不在方案里复制整张表。
+5. **即梦** — 操作 `art/jimeng-workflow.md`；提示词 `art/jimeng-prompts.md`。
+6. **数值** — `data/*.json`；`dev-log.md` 只追加。
+7. 新文档：更新 §1 + `README.md` + `_meta/doc-registry.yaml`。
 
-## 常见路由
+## 路由
 
-| 你想改… | 打开 |
-|---------|------|
-| 下一批做什么 / 是否完成 | `游戏开发方案.md` |
-| 这版体验算不算过 | `体验内容开发方向.md` |
-| 画风、透视、验收 | `美术风格规范.md` |
-| 即梦怎么出图 / 先旧后新顺序 | `即梦出图管线.md` |
-| 人设对白祭典 | `故事线与人物规划.md` |
-| 字段/存档 | `数据表设计.md` |
-| 发现率/菜名规范 | `组合表设计.md` |
-| 文档本身怎么分工 | `文档体系.md` |
+| 任务 | 打开 |
+|------|------|
+| 批次/范围 | `docs/development-plan.md` |
+| 停车场 | `docs/planning/parking-lot.md` |
+| 体验底线 | `docs/experience-roadmap.md` |
+| 叙事 | `docs/narrative/story-and-characters.md` → 子文件 |
+| 好感 | `docs/narrative/affinity-design.md` |
+| 数据契约 | `docs/gameplay/data-schema.md` |
+| 组合 | `docs/gameplay/recipe-combo-design.md` |
+| 画风 | `docs/art/art-style-guide.md` |
+| 即梦 | `docs/art/jimeng-workflow.md` / `jimeng-prompts.md` |
+| 分工 | `docs/doc-governance.md` |

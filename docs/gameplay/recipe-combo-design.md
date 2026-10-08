@@ -1,9 +1,21 @@
+﻿---
+doc_id: gameplay.recipe-combo-design
+title: 组合表设计
+doc_kind: spec
+authority: [发现率原则, 命中表, 菜名规范]
+related:
+  - path: data-schema.md
+    rel: data-contract
+data_refs:
+  - data/recipes.json
+---
+
 # 组合表设计（M3 整合版）
 
 > **角色**：组合命中与发现率原则、菜名规范。  
 > **真源**：发现率曲线原则、命中表（仅组合→菜名）、§4.2 菜名规范。  
 > **不写**：售价/时长真值（→ `data/recipes.json` + config）、画面。  
-> **文档分工**：`docs/文档体系.md`  
+> **文档分工**：`docs/doc-governance.md`  
 > §4 命中表不列价目（防过期）。
 
 ## 1. 设计目标

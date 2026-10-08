@@ -74,6 +74,34 @@
       "lines": [
         "这味道……跟你外婆当年糊弄灶台一个样。少放了一样东西——我说完了。"
       ]
+    },
+    {
+      "id": "aff_tianbo_10",
+      "type": "affinity",
+      "npcId": "tianbo",
+      "minAffinity": 10,
+      "place": "farm",
+      "trigger": "onEnter",
+      "speaker": "田伯",
+      "note": "W1 占位；W2 替换为正式文案（祭典漏料：空地吃一夜/灯笼，不说节日名）",
+      "lines": [
+        "又给我交单啦？好，好，这孩子最棒。",
+        "（占位）好感 10 测试：进田地应只播一次。"
+      ]
+    },
+    {
+      "id": "aff_linshen_10",
+      "type": "affinity",
+      "npcId": "linshen",
+      "minAffinity": 10,
+      "place": "shop",
+      "trigger": "onEnter",
+      "speaker": "林婶",
+      "note": "W1 占位；W2 替换",
+      "lines": [
+        "货不错，婶子记下了。",
+        "（占位）好感 10 测试：进小铺应只播一次。"
+      ]
     }
   ]
 }

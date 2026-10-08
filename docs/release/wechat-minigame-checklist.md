@@ -1,11 +1,23 @@
+﻿---
+doc_id: release.wechat-minigame-checklist
+title: 微信小游戏发布检查清单
+doc_kind: spec
+authority: [提审勾选清单]
+related:
+  - path: ../development-plan.md
+    rel: milestone-status
+  - path: ../experience-roadmap.md
+    rel: experience-gate
+---
+
 # 微信小游戏发布检查清单
 
 > **角色**：M6 正式提审前逐项核对（测试版只勾适用项）。  
 > **真源**：本清单勾选状态。  
 > **不写**：玩法设计、美术风格细则。  
-> **文档分工**：`docs/文档体系.md`  
-> 包体/合规口径与《游戏开发方案》§5.2/§5.3 冲突时以方案为准。  
-> 体验完成标准另见 `体验内容开发方向.md`。
+> **文档分工**：`docs/doc-governance.md`  
+> 包体/合规口径与 `development-plan.md` §5.2/§5.3 冲突时以方案为准。  
+> 体验完成标准另见 `experience-roadmap.md`。
 
 ## 一、合规与资质（最先办，周期长 · M6）
 

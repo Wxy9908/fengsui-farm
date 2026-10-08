@@ -1,9 +1,23 @@
+﻿---
+doc_id: gameplay.data-schema
+title: 数据表设计
+doc_kind: spec
+authority: [字段含义, 存档结构, 经济原则]
+related:
+  - path: recipe-combo-design.md
+    rel: data-contract
+  - path: ../development-plan.md
+    rel: cross-ref
+data_refs:
+  - data/*.json
+---
+
 # 数据表设计（M1 地基）
 
 > **角色**：配置/存档字段含义与经济原则。  
 > **真源**：字段说明、存档结构、原则；**数值真值以 `data/*.json` + sim/balance 为准**。  
 > **不写**：对白全文、出图、发现率长文（→ 组合表）。  
-> **文档分工**：`docs/文档体系.md`  
+> **文档分工**：`docs/doc-governance.md`  
 > 菜名规范见《组合表设计》§4.2；体验底线见《体验内容开发方向》。
 
 ## 1. 文件清单
@@ -66,7 +80,7 @@ resolveCombo(selected):                      # selected = {cropId: count}
   return dark_cuisine
 ```
 
-当前 15 种作物、最多 3 槽位的全部组合共 815 种。M3-② 扩表后共 40 条食谱（39 道 + 黑暗料理），发现率曲线：Lv1 52.6% → Lv3 32.7% → Lv5 17.6% → Lv8 4.8%（前期密集惊喜建立钩子，后期稀有维持追求；逐阶段测算详见 `docs/组合表设计.md` §2）。
+当前 15 种作物、最多 3 槽位的全部组合共 815 种。M3-② 扩表后共 40 条食谱（39 道 + 黑暗料理），发现率曲线：Lv1 52.6% → Lv3 32.7% → Lv5 17.6% → Lv8 4.8%（前期密集惊喜建立钩子，后期稀有维持追求；逐阶段测算详见 `docs/gameplay/recipe-combo-design.md` §2）。
 
 ## 4. upgrades.json 升级线表
 

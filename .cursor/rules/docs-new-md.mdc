@@ -1,0 +1,43 @@
+---
+description: 按照规范新建 docs 下 Markdown（模板、登记三件套、目录纪律）
+globs: docs/**/*.md
+alwaysApply: false
+---
+
+# 按照规范新建 md 文档
+
+用户要求**新建或拆分** `docs/**/*.md` 时，先读 **`docs/how-to-author-docs.md`**（完整模板与示例）。改已有文档的分工真源仍遵守 `docs-authority.mdc`。
+
+## 执行顺序
+
+1. `docs/README.md` + `docs/doc-governance.md` §1 → 确认无重复真源、选对目录（`planning/` `narrative/` `gameplay/` `art/` `release/`）。
+2. 文件名：**英文 kebab-case**；`title` 与 `#` 标题用**中文**。
+3. 文首：**YAML frontmatter**（`doc_id`、`title`、`doc_kind`）+ blockquote 四句（角色 / 真源 / 不写 / 分工 → `doc-governance.md`）。
+4. `doc_kind`：`spec` 写正文；`index` 只摘要+链接表（禁止堆长篇）。勿建 `redirect`。
+5. 正文：一事实一真源；不复制色板/提示词/批次表/体验底线表；状态只链 `development-plan` §6、`experience-roadmap` §4；数值只链 `data/*.json`。
+6. **登记三件套**（同一改动内完成）：
+   - `doc-governance.md` §1 增一行
+   - `README.md` 树 + 路由表（中文用途）
+   - `_meta/doc-registry.yaml` 增条目
+7. 若属叙事/即梦子专题：更新对应 **index**（`story-and-characters.md` 或 `jimeng-pipeline.md`）链接表。
+8. 里程碑级： `development-plan` 大事记 + `dev-log` 各一行。
+
+## 禁止
+
+- 在 `mockups/`、`参考图/` 下新建 `.md`
+- 用中文文件名或已废弃的根目录 redirect
+- 为未排期想法单独建 spec（→ `planning/parking-lot.md`）
+
+## 最小 frontmatter 示例
+
+```yaml
+---
+doc_id: narrative.my-topic
+title: 我的专题
+doc_kind: spec
+authority: [关键词]
+related:
+  - path: story-and-characters.md
+    rel: narrative
+---
+```

@@ -10,6 +10,7 @@ import {
   OrderDef,
   RecipeDef,
   SaveData,
+  StoryDef,
   UpgradeDef,
   UpgradeEffectType,
 } from './types';
@@ -101,9 +102,11 @@ export class GameCore {
     if (legacyTutorials) {
       this.save.prologueSeen = true;
       for (const s of this.data.stories ?? []) {
+        if (s.type !== 'tutorial') continue;
         if (!this.save.readTutorials.includes(s.id)) this.save.readTutorials.push(s.id);
       }
     }
+    this.save.readAffinityStories ??= [];
     // 旧存档迁移：后加的升级线（如便利线）缺省 = Lv1 初始级（Lv1 无解锁门控，缺省会永远锁死）
     for (const line of this.upgradeLines()) this.save.upgrades[line] ??= 1;
     // 数据腐蚀自愈：金币非有限数（如 NaN 被 JSON 存成 null）时重置为初始金，避免脏值无限传播
@@ -141,6 +144,7 @@ export class GameCore {
       orderIds: [],
       orderDone: [],
       readTutorials: [],
+      readAffinityStories: [],
       prologueSeen: false,
       stats: { totalGoldEarned: 0, recipesDiscovered: 0 },
     };
@@ -169,6 +173,27 @@ export class GameCore {
 
   completeTutorial(id: string): void {
     if (!this.save.readTutorials.includes(id)) this.save.readTutorials.push(id);
+  }
+
+  /**
+   * 好感薄剧情：按 stories 数组顺序取第一条满足条件的未读节点。
+   * onOrderDeliver 须传入刚交付订单的 npcId。
+   */
+  pendingAffinity(place: string, trigger: string, orderNpcId?: string): StoryDef | null {
+    for (const s of this.data.stories ?? []) {
+      if (s.type !== 'affinity') continue;
+      if (s.place !== place || s.trigger !== trigger) continue;
+      if (!s.npcId || s.minAffinity === undefined) continue;
+      if (this.save.readAffinityStories.includes(s.id)) continue;
+      if (this.affinityOf(s.npcId) < s.minAffinity) continue;
+      if (trigger === 'onOrderDeliver' && orderNpcId !== s.npcId) continue;
+      return s;
+    }
+    return null;
+  }
+
+  completeAffinityStory(id: string): void {
+    if (!this.save.readAffinityStories.includes(id)) this.save.readAffinityStories.push(id);
   }
 
   isDarkDish(id: string): boolean {
@@ -806,7 +831,13 @@ export class GameCore {
    * 向对应 NPC 交付求购。不走今日特价。菜品单须已发现。
    * 好感只升：基础点 + 最爱菜额外 +2。
    */
-  deliverOrder(id: string): { gold: number; affinityGain: number; npcName: string; itemName: string } {
+  deliverOrder(id: string): {
+    gold: number;
+    affinityGain: number;
+    npcId: string;
+    npcName: string;
+    itemName: string;
+  } {
     this.ensureOrderBoard();
     if (!this.save.orderIds.includes(id) || this.save.orderDone.includes(id)) throw new Error('这张单不在今天的板上');
     const o = this.orderPool().find((x) => x.id === id);
@@ -831,7 +862,7 @@ export class GameCore {
       o.kind === 'dish'
         ? (this.data.recipes.find((r) => r.id === o.itemId)?.name ?? o.itemId)
         : this.crop(o.itemId).name;
-    return { gold, affinityGain, npcName: npc?.name ?? o.npcId, itemName };
+    return { gold, affinityGain, npcId: o.npcId, npcName: npc?.name ?? o.npcId, itemName };
   }
 
   // ---------- 离线结算 ----------
