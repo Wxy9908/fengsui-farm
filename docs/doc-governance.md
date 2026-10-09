@@ -44,6 +44,7 @@ related:
 |------|------|----------|----------|
 | `development-plan.md` | 总方案 | 支柱、范围、§6 批次勾选、技术、大事记 | 停车场表、提示词、对白、字段细则 |
 | `planning/parking-lot.md` | 停车场 | 未排期想法表 | 批次状态 |
+| `planning/m6-town-expansion.md` | M6 范围展开 | 地图/背包/果园硬指标、`type` 迁移、批次顺序 | 批次 ✅ |
 | `experience-roadmap.md` | 体验过关 | 四线阶梯、§4 底线勾选 | 画法、出图、剧情全文 |
 | `narrative/story-and-characters.md` | 叙事**索引** | 变更摘要、专题路由表 | 长篇人设/主线正文 |
 | `narrative/worldview-and-tone.md` | 世界观 | 定位、世界观、序章、地图 | 批次状态 |

@@ -1,0 +1,19 @@
+{
+  "releaseVersion": "0.5.0",
+  "archivedAt": "2026-10-08",
+  "gitCommit": "a2cfa079d1c56280b220e6a2b9ccd1830b0134bb",
+  "pipeline": "即梦小样 → npm run import-jimeng-bg",
+  "note": "M5-P1 阶段 2：field/kitchen/shop 三页场景即梦静态图入库。",
+  "files": [
+    "field.jpg",
+    "kitchen.jpg",
+    "shop.jpg",
+    "book.jpg"
+  ],
+  "jimengSamplesCanonical": [
+    "docs/参考图/小样/field_bg.png",
+    "docs/参考图/小样/kitchen_bg.png",
+    "docs/参考图/小样/shop_bg.png"
+  ],
+  "restoreHint": "npm run import-jimeng-bg 或复制 jpg 到 assets/resources/bg/；即梦 PNG 真源见 jimengSamplesCanonical"
+}

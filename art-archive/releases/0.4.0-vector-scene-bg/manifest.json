@@ -1,0 +1,23 @@
+{
+  "releaseVersion": "0.4.0",
+  "archivedAt": "2026-10-08",
+  "gitRef": "HEAD",
+  "gitCommit": "a2cfa079d1c56280b220e6a2b9ccd1830b0134bb",
+  "pipeline": "sim/bg-lib.js → sim/gen-scene-bg.js（程序化矢量烘焙 JPEG）",
+  "note": "微信体验版 0.4.0 同期画面；即梦阶段 2 替换前从 git 导出。",
+  "files": [
+    "field.jpg",
+    "kitchen.jpg",
+    "shop.jpg",
+    "book.jpg"
+  ],
+  "vectorSrc": [
+    "book.svg",
+    "field.svg",
+    "kitchen.svg",
+    "loading.svg",
+    "shop.svg",
+    "ui-paper.svg"
+  ],
+  "restoreHint": "复制 *.jpg 到 assets/resources/bg/ 并保留原 .meta；或 npm run gen-scene-bg 从 vector-src 重烘（画面以 git 提交为准）。"
+}

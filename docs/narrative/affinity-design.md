@@ -23,7 +23,8 @@ data_refs:
 > **文档分工**：见 `docs/doc-governance.md`。
 
 - 创建：2026-10-08
-- 对齐：M5-P1 A0（好感薄剧情管线）已落地；玩家侧仍**无好感条 UI**，仅订单结算「好心 +N」与气泡剧情。
+- 对齐：好感管线已落地；**M6 产品序**：**M6-P2 前**不推广订单/好感主路径（体验版 orders tab 弱化；`affinity` 剧情对新档**冻结触发**至人物出场批次）；P2 起与本文一致。
+- 玩家侧仍**无好感条 UI**（P2 前）；交单「好心 +N」代码可保留。
 
 ---
 
@@ -87,7 +88,8 @@ data_refs:
 | `onEnter` | 进入对应底栏页（序章结束后） | 田伯/林婶/白婆婆在田地、小铺、食堂见人 |
 | `onHarvest` | 田地收获成功 | 教学已用；好感**可复用**，P1 暂无 |
 | `onDark` | 黑暗料理出锅 | 教学已用 |
-| `onOrderDeliver` | **本单交付成功之后** | 小满 / 沈先生 / 阿远等「订单页才见面」的 NPC |
+| `onOrderDeliver` | **本单交付成功之后** | 小满 / 阿远等「订单页才见面」的 NPC |
+| `onDishCollect` | **菜品出锅收取之后**（发现庆祝层关闭后再链式检查） | 沈先生等点评家；须配 `dishId`，**不查好感门槛** |
 
 **播放纪律**：与教学相同——底部气泡、可跳过、播完记入 `readAffinityStories`；**同 id 不重复播**。  
 **优先级**：同一次检查时 **先 tutorial，再 affinity**；一段结束后链式检查下一条。
@@ -105,7 +107,8 @@ data_refs:
 | speaker | ✓ | ✓ | 气泡署名 |
 | lines | ✓ | ✓ | 每句一条，3～8 句/段为宜 |
 | npcId | — | ✓ | 用谁的 `affinity` 做门槛 |
-| minAffinity | — | ✓ | **累计分** ≥ 此值才可触发 |
+| minAffinity | — | ✓ | **累计分** ≥ 此值才可触发（有 `dishId` 时填 0，逻辑上不查分） |
+| dishId | — | 出锅事件 | `onDishCollect` 时须与本次出锅 id 一致 |
 | note | 可选 | 可选 | 策划备注，不进游戏 |
 
 **触发条件（逻辑真值）**：
@@ -127,31 +130,28 @@ AND 序章已结束（onEnter 与教学相同）
 > **对白正文**以 `data/stories.json` 为准；下表「内容摘要」为策划意图，W2 定稿后请与 JSON 同步改摘要。  
 > 状态列：**累计好感** + **未读** + **地点/触发** 同时满足才播。
 
-### 7.1 已入库（含 W1 占位）
+### 7.1 已入库（M5-P1 前期三人 · 2+2+1+出锅）
 
-| id | NPC | minAffinity | place | trigger | 内容摘要（策划） | 状态 |
-|----|-----|-------------|-------|---------|------------------|------|
-| aff_tianbo_10 | 田伯 | 10 | farm | onEnter | W1 占位；W2 改为交单后夸奖 + 可选祭典漏料（空地/灯笼） | ✅ 占位已接代码 |
-| aff_linshen_10 | 林婶 | 10 | shop | onEnter | W1 占位；W2 人情/赊账向 | ✅ 占位已接代码 |
+| id | NPC | minAffinity | place | trigger | 内容摘要 | 状态 |
+|----|-----|-------------|-------|---------|----------|------|
+| aff_tianbo_10 | 田伯 | 10 | farm | onEnter | 慈祥护犊；空地/灯笼（不说节日名） | ✅ |
+| aff_tianbo_30 | 田伯 | 30 | farm | onEnter | 歇脚；外婆埂上喊吃饭；田伯替你守着 | ✅ |
+| aff_popo_10 | 白婆婆 | 10 | canteen | onEnter | 毒舌；承认肯下地 | ✅ |
+| aff_popo_30 | 白婆婆 | 30 | canteen | onEnter | 祭上灯笼；外婆祭夜多熬一锅；头巾 | ✅ |
+| aff_shen_after_deliver_12 | 沈先生 | 12 | orders | onOrderDeliver | 主味到了；镇上那碗「齐了的」汤 | ✅ |
+| aff_shen_pumpkin_soup_first | 沈先生 | 0 | canteen | onDishCollect · `pumpkin_soup` | 第一次出锅南瓜汤 | ✅ |
 
-**自测**：新档交田伯单至累计 ≥10 → 进田地播 `aff_tianbo_10` 一次；林婶同理进小铺。
+**自测**：田伯 ≥10 进田地 → `aff_tianbo_10`；≥30 → `aff_tianbo_30`；白婆婆同理食堂；沈先生单 ≥12 交单后 → `aff_shen_after_deliver_12`；首次出锅南瓜汤 → `aff_shen_pumpkin_soup_first`（庆祝层关后）。
 
-### 7.2 M5-P1 计划（待写入 `stories.json`）
+**P1-N1 祭典漏料**：田伯（灯笼/空地）+ 白婆婆（祭上灯笼）已覆盖。
 
-| id（建议） | NPC | minAffinity | place | trigger | 内容摘要 | 祭典漏料 |
-|------------|-----|-------------|-------|---------|----------|----------|
-| aff_tianbo_30 | 田伯 | 30 | farm | onEnter | 田埂糗事/护犊 | 仍不说「丰收祭」三字 |
-| aff_linshen_30 | 林婶 | 30 | shop | onEnter | 外婆赊账 | **说出丰收祭**、歇业帮忙、问是否办回来 |
-| aff_popo_10 | 白婆婆 | 10 | canteen | onEnter | 毒舌但承认肯干活 | — |
-| aff_popo_30 | 白婆婆 | 30 | canteen | onEnter | 别扭关心 | 灯笼是祭上点的，语气略软 |
-| aff_xiaoman_8 | 小满 | 8 | orders | onOrderDeliver | 玻璃珠/爆米花 | — |
-| aff_xiaoman_24 | 小满 | 24 | orders | onOrderDeliver | 外号「做饭的」 | — |
-| aff_shen_12 | 沈先生 | 12 | orders | onOrderDeliver | 讲究/毒舌 | 轻提「小时候的味道」 |
-| aff_shen_36 | 沈先生 | 36 | orders | onOrderDeliver | 火候点评 | 不揭汤 |
-| aff_ayuan_12 | 阿远 | 12 | orders | onOrderDeliver | 外地铜钱 | — |
-| aff_ayuan_36 | 阿远 | 36 | orders | onOrderDeliver | 三种未见作物 | 可选一句「镇子欠一晚」（可挪 P2） |
+### 7.2 延后（未写入 `stories.json`）
 
-**P1 体验底线 N1**：上表中至少 **田伯 + 林婶或白婆婆** 的祭典漏料段落地即可勾选。
+| 方向 | NPC | 说明 |
+|------|-----|------|
+| 林婶薄好感 / 丰收祭点名 | linshen | 前期不铺长段，小铺机制保留 |
+| 订单短句 | 小满、阿远 | P1 可选补 1 段 |
+| 沈先生后续 | shenxiansheng | 更多 `onDishCollect` 或 P2 深写 |
 
 ### 7.3 教学节点（非好感，对照用）
 
@@ -207,3 +207,5 @@ AND 序章已结束（onEnter 与教学相同）
 | 日期 | 变更 |
 |------|------|
 | 2026-10-08 | 初版：A0 管线说明 + 触发总表 + P1 计划行 + W1 占位两条 |
+| 2026-10-09 | `onDishCollect` + `dishId`；沈先生 `aff_shen_pumpkin_soup_first` 入库 |
+| 2026-10-09 | 前期三人 2+2+1 定稿入库；删林婶占位 |

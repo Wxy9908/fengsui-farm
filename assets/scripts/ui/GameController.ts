@@ -36,11 +36,12 @@ import {
   Tween,
   UIOpacity,
   UITransform,
+  Vec2,
   Vec3,
   view,
   Widget,
 } from 'cc';
-import { GameCore } from '../core/GameCore';
+import { GameCore, SellAllBill } from '../core/GameCore';
 import { DataTables, MilestoneDef, SaveData } from '../core/types';
 
 const { ccclass, property } = _decorator;
@@ -91,10 +92,6 @@ export class GameController extends Component {
   private currentPage = 'field';
   /** 各页消息栏（位置统一，say() 路由到对应页） */
   private pageMessages: Record<string, Label> = {};
-  /** 商店页库存栏（代码创建，替代场景 InventoryLabel；v3 起精简为底部一行小字） */
-  private invLabel: Label | null = null;
-  /** 商店页「卖出全部，+N 金币」预览文案（refreshUI 实时刷新） */
-  private sellPreviewLabel: Label | null = null;
   /** 商店页今日特价小黑板（dailySpecial() 为 null 时隐藏；文案 refreshUI 刷新） */
   private specialBoard: Node | null = null;
   private specialLabel: Label | null = null;
@@ -105,12 +102,11 @@ export class GameController extends Component {
   private kitchenCookKey = '';
   /** 本次烹饪总时长（毫秒，算进度条比例用；存档载入中途烹饪时按剩余时长起估） */
   private cookTotalMs = 0;
-  /** 大锅搅拌动效引用（buildPotFx 建、update 逐帧驱动；refreshKitchen 重建时节点销毁后自清空） */
+  /** 炒锅动效（buildPotFx 建、update 逐帧驱动；refreshKitchen 重建时节点销毁后自清空） */
   private potAnim: {
-    spoon: Node;
-    rings: Node[];
+    fx: Node;
+    spatula: Node;
     bubbles: { n: Node; op: UIOpacity; phase: number }[];
-    stars: { n: Node; op: UIOpacity; phase: number }[];
     t: number;
   } | null = null;
   /** 顶部金币胶囊（setupPages 创建；金币动效用） */
@@ -165,6 +161,7 @@ export class GameController extends Component {
   private splashFill: Graphics | null = null;
   /** 遮罩上的百分比 Label */
   private splashPct: Label | null = null;
+  private splashVerLabel: Label | null = null;
   /** 进度条显示值（平滑追赶 setSplashProgress 的目标值） */
   private splashShown = 0;
   /** 遮罩创建时刻（用于最短展示时长，防本地秒加载闪屏） */
@@ -217,6 +214,8 @@ export class GameController extends Component {
       const oldSave = this.readSave();
       const offlineMs = oldSave ? Date.now() - oldSave.lastOnlineAt : 0;
       this.game = new GameCore(data, oldSave);
+      const rv = data.config.releaseVersion;
+      if (rv && this.splashVerLabel) this.splashVerLabel.string = `v${rv}`;
       // 每日奖励不再代领：留待商店页按钮手动领取（待领/已领两态，领取的成就感归玩家）
       const msgs: string[] = [];
       if (offlineMs > 5 * 60 * 1000) {
@@ -290,14 +289,14 @@ export class GameController extends Component {
     };
     // 坐标与 mockup 对齐（SVG y → Cocos y = 640 - y）：小贴士 y1010、加载文案 y1078、进度条中心 y1121
     const tip = GameController.SPLASH_TIPS[Math.floor(Math.random() * GameController.SPLASH_TIPS.length)];
-    mkText(tip, -370, 24, new Color(0x8b, 0x5a, 0x2b));
-    mkText('外婆正在生火备料…', -438, 28, new Color(0x4a, 0x35, 0x20), true);
+    mkText(tip, GameController.BG_UI.splashTipY, 24, new Color(0x8b, 0x5a, 0x2b));
+    mkText('外婆正在生火备料…', GameController.BG_UI.splashLoadY, 28, new Color(0x4a, 0x35, 0x20), true);
     // 进度条（对齐 mockup：木框 496×50 + 奶油底槽 480×34 + 丰收黄填充 + 百分比居中）
     const bar = new Node('bar');
     bar.layer = Layers.Enum.UI_2D;
     bar.parent = n;
     bar.addComponent(UITransform).setContentSize(496, 50);
-    bar.setPosition(0, -481);
+    bar.setPosition(0, GameController.BG_UI.splashBarY);
     const frame = bar.addComponent(Graphics);
     frame.fillColor = new Color(0x8b, 0x5a, 0x2b); // 木框
     frame.roundRect(-248, -25, 496, 50, 25);
@@ -317,7 +316,8 @@ export class GameController extends Component {
     fill.parent = bar;
     fill.addComponent(UITransform).setContentSize(480, 34);
     this.splashFill = fill.addComponent(Graphics);
-    this.splashPct = mkText('0%', -481, 22, new Color(0x4a, 0x35, 0x20), true);
+    this.splashPct = mkText('0%', GameController.BG_UI.splashBarY, 22, new Color(0x4a, 0x35, 0x20), true);
+    this.splashVerLabel = mkText('v…', GameController.BG_UI.splashBarY - 42, 18, new Color(0x8b, 0x5a, 0x2b));
     this.splash = n;
     this.splashStartAt = Date.now();
     this.setSplashProgress(0.05);
@@ -408,7 +408,36 @@ export class GameController extends Component {
   // ---------- 田地页 19 坑菱形网格（原型 v3，对齐 sim/gen-mockups.js 田地页参数） ----------
   // 坐标系：mockup 为 SVG y 向下（720×1280），Cocos 中心锚点 y 向上 → cocosX = svgX-360，cocosY = 640-svgY
   private static readonly GRID_ROWS = [3, 4, 5, 4, 3]; // 共 19 坑，行内居中天然错位半格插缝
-  private static readonly GRID_TOP_Y = -76; // mockup topY=716 → 640-716
+  /** 即梦 field/kitchen/shop/loading 底图 UI 锚点（换图时集中改这里） */
+  private static readonly BG_UI = {
+    fieldGridTopY: -168,
+    fieldSignY: -90,
+    fieldBasketY: -508,
+    kitchenPotY: 12,
+    kitchenSlotY: 172,
+    kitchenSlotTitleY: 258,
+    kitchenDashY: 101,
+    kitchenProgY: 86,
+    kitchenProgLabelY: 56,
+    kitchenCookBtnY: -188,
+    kitchenIngredientPanelY: -392,
+    // 小铺：招牌「丰穗小铺」在底图，售卖 UI 只占招牌下空墙（勿与木牌重叠）
+    shopSellAllY: 168,
+    shopRowY: 82,
+    shopSpecialX: -260,
+    shopSpecialY: 200,
+    shopUpgradeTitleY: 8,
+    shopUpgradeViewCenterY: -248,
+    /** 一屏可见 3 张升级卡（112 高 + 间距 136×2 ≈ 384） */
+    shopUpgradeViewHeight: 392,
+    shopUpgradePageStep: 136,
+    splashTipY: -395,
+    splashLoadY: -455,
+    splashBarY: -498,
+    kitchenSteamL: { x: -36, y: 42 },
+    kitchenSteamR: { x: 48, y: 38 },
+  };
+  private static readonly GRID_TOP_Y = GameController.BG_UI.fieldGridTopY;
   private static readonly GRID_STEP_Y = 66;
   private static readonly GRID_STEP_X = 134;
   private static readonly PLOT_HW = 68; // 菱形半宽（2:1）
@@ -887,7 +916,7 @@ export class GameController extends Component {
     n.layer = Layers.Enum.UI_2D;
     n.parent = parent;
     n.addComponent(UITransform).setContentSize(W, H);
-    n.setPosition(rightX - W / 2, -13);
+    n.setPosition(rightX - W / 2, GameController.BG_UI.fieldSignY);
     const g = n.addComponent(Graphics);
     g.fillColor = new Color(0x4a, 0x35, 0x20, 0x33); // 软投影
     g.roundRect(-W / 2 + 3, -H / 2 - 4, W, H, 9);
@@ -1134,7 +1163,7 @@ export class GameController extends Component {
     n.layer = Layers.Enum.UI_2D;
     n.parent = parent;
     n.addComponent(UITransform).setContentSize(140, 130);
-    n.setPosition(-260, 204);
+    n.setPosition(GameController.BG_UI.shopSpecialX, GameController.BG_UI.shopSpecialY);
     n.angle = 2; // svg rotate(-2) 为顺时针，cocos angle 逆时针为正
     const g = n.addComponent(Graphics);
     // 架子腿（先画腿，板身压其上；svg 腿 M-38 26 L-46 62 已翻转 y）
@@ -1192,6 +1221,52 @@ export class GameController extends Component {
     bL.overflow = Label.Overflow.CLAMP;
     this.specialBoard = n;
     this.specialLabel = bL;
+  }
+
+  /** 小铺升级列表：纵向 ScrollView + 松手吸附到整卡（低惯性，防误滑） */
+  private buildUpgradeScroll(parent: Node, upgrades: ReturnType<GameCore['listUpgrades']>) {
+    const viewW = 640;
+    const viewH = GameController.BG_UI.shopUpgradeViewHeight;
+    const step = GameController.BG_UI.shopUpgradePageStep;
+    const n = upgrades.length;
+    const viewNode = new Node('UpgradeScroll');
+    viewNode.layer = Layers.Enum.UI_2D;
+    viewNode.parent = parent;
+    viewNode.addComponent(UITransform).setContentSize(viewW, viewH);
+    viewNode.setPosition(0, GameController.BG_UI.shopUpgradeViewCenterY);
+    const mask = viewNode.addComponent(Mask);
+    mask.type = Mask.Type.GRAPHICS_RECT;
+    const sv = viewNode.addComponent(ScrollView);
+    sv.horizontal = false;
+    sv.vertical = true;
+    sv.inertia = false;
+    sv.elastic = false;
+    sv.brake = 0.9;
+
+    const content = new Node('content');
+    content.layer = Layers.Enum.UI_2D;
+    content.parent = viewNode;
+    const contentUt = content.addComponent(UITransform);
+    contentUt.setAnchorPoint(0.5, 1);
+    sv.content = content;
+    const cardH = 112;
+    const contentH = n > 0 ? cardH + (n - 1) * step + 12 : viewH;
+    contentUt.setContentSize(viewW, Math.max(contentH, viewH));
+    content.setPosition(0, viewH / 2);
+    upgrades.forEach((u, i) => {
+      this.makeUpgradeCard(content, u, -cardH / 2 - i * step);
+    });
+    if (n > 1) {
+      sv.node.on(ScrollView.EventType.SCROLL_ENDED, () => this.snapShopUpgradeScroll(sv, step, n), this);
+      sv.node.on(ScrollView.EventType.TOUCH_UP, () => this.snapShopUpgradeScroll(sv, step, n), this);
+    }
+  }
+
+  private snapShopUpgradeScroll(sv: ScrollView, step: number, count: number) {
+    if (count <= 1) return;
+    const o = sv.getScrollOffset();
+    const idx = Math.min(count - 1, Math.max(0, Math.round(o.y / step)));
+    sv.scrollToOffset(new Vec2(0, idx * step), 0.22);
   }
 
   /**
@@ -1399,38 +1474,19 @@ export class GameController extends Component {
     const c = this.upgradeContainer;
     if (!c || !this.game) return;
     c.removeAllChildren();
-    this.sellPreviewLabel = null;
     this.specialBoard = null;
     this.specialLabel = null;
 
-    // —— 分区 1：售卖（标题 svg y196~204 → cocos 440）——
-    this.makeSectionTitle(c, '售卖', 440);
-    // 收益预览（svg y238 → cocos 402；previewSellAll 只读口径，refreshUI 逐帧刷新）
-    const pvN = new Node('sellPreview');
-    pvN.layer = Layers.Enum.UI_2D;
-    pvN.parent = c;
-    pvN.addComponent(UITransform).setContentSize(420, 26);
-    pvN.setPosition(0, 402);
-    const pvL = pvN.addComponent(Label);
-    pvL.fontSize = 19;
-    pvL.isBold = true;
-    pvL.color = new Color(0x8b, 0x5a, 0x2b);
-    const pv = this.game.previewSellAll();
-    pvL.string = pv.gold > 0 ? `全部卖出（菜品+作物），+${pv.gold} 金币` : '暂无可卖的存货';
-    this.sellPreviewLabel = pvL;
-    // 全部卖出（金大胶囊 328×58，svg (196,256) → 中心 cocos (0,355)）
-    this.makePillButton(c, '全部卖出', 0, 355, 328, 58, true, () => this.onSellAll(), 26);
-    // 只卖菜品 / 每日奖励（米白胶囊 264×54，svg y330 → 中心 cocos 283）
-    this.makePillButton(c, '只卖菜品', -158, 283, 264, 54, false, () => this.onSellDishes());
-    this.makeDailyButton(c, 158, 283);
+    // —— 分区 1：售卖（店名在 shop_bg 木牌上；明细见「全部卖出」确认弹窗）——
+    this.makePillButton(c, '全部卖出', 0, GameController.BG_UI.shopSellAllY, 328, 58, true, () => this.openSellAllConfirm(), 26);
+    this.makePillButton(c, '只卖菜品', -158, GameController.BG_UI.shopRowY, 264, 54, false, () => this.onSellDishes());
+    this.makeDailyButton(c, 158, GameController.BG_UI.shopRowY);
     // 今日特价小黑板（售卖区左侧；dailySpecial() 为 null 时 refreshUI 整板隐藏）
     this.makeSpecialBoard(c);
 
-    // —— 分区 2：升级（标题 svg y536~544 → cocos 100；卡中心 cocos 12-i×136）——
-    this.makeSectionTitle(c, '升级', 100);
-    this.game.listUpgrades().forEach((u, i) => {
-      this.makeUpgradeCard(c, u, 12 - i * 136);
-    });
+    // —— 分区 2：升级（纵向分页滚动，一卡一停）——
+    this.makeSectionTitle(c, '升级', GameController.BG_UI.shopUpgradeTitleY);
+    this.buildUpgradeScroll(c, this.game.listUpgrades());
   }
 
   /** 求购页：当日订单卡（交付 / 缺货 / 未发现）。与小铺卖出分开。 */
@@ -1531,7 +1587,7 @@ export class GameController extends Component {
       this.writeSave();
     }
     this.refreshUI();
-    this.tickPotAnim(dt); // 大锅搅拌动效（非烹饪中 potAnim 为 null，空转）
+    this.tickPotAnim(dt); // 炒锅铲拨/轻颠（非烹饪中 potAnim 为 null，空转）
   }
 
   onDestroy() {
@@ -1616,12 +1672,15 @@ export class GameController extends Component {
       const result = this.game!.collectDish();
       if (!result) {
         this.say('还没做好', 'kitchen');
-      } else if (result.isNew) {
+        return;
+      }
+      const afterDishStories = () => this.maybeTalk('kitchen', 'onDishCollect', undefined, result.dishId);
+      if (result.isNew) {
         // 发现新食谱：出锅瞬间才揭晓，庆祝层 + 图鉴点亮都压在这个高光时刻
         const recipe = this.game!.recipeOf(result.dishId);
         const rare = Object.keys(recipe.ingredients).length >= 3; // 三食材菜 = 稀有食谱，更强正反馈
         this.playSfx(rare ? 'discovery_rare' : 'discovery', 0.9);
-        this.playDiscovery(recipe.id, recipe.name, { rare, desc: recipe.desc });
+        this.playDiscovery(recipe.id, recipe.name, { rare, desc: recipe.desc, onClosed: afterDishStories });
         if (result.refund > 0) this.say(`黑暗料理……但至少是一种发现，返还了 ${result.refund} 金币（新手安慰）`, 'kitchen');
         if (this.game!.isDarkDish(result.dishId)) this.maybeTalk('kitchen', 'onDark');
         this.refreshCollection(); // 图鉴点亮
@@ -1629,12 +1688,279 @@ export class GameController extends Component {
         this.playSfx('dark'); // 新手保护期黑暗料理（毕业后黑暗料理暂无专属提示音，归入 cook_done）
         this.say(`出锅：${this.game!.dishName(result.dishId)}……没人欣赏，返还了 ${result.refund} 金币（新手安慰）`, 'kitchen');
         if (this.game!.isDarkDish(result.dishId)) this.maybeTalk('kitchen', 'onDark');
+        else afterDishStories();
       } else {
         this.playSfx('cook_done');
         this.say(`菜品出锅：${this.game!.dishName(result.dishId)}`, 'kitchen');
+        afterDishStories();
       }
       this.refreshKitchen(); // 出锅后回到待开始态（食材/槽位/按钮全量重建）
     });
+  }
+
+  private openSellAllConfirm() {
+    if (!this.game) return;
+    this.playSfx('click', 0.5);
+    this.showSellAllConfirm(this.game.previewSellAllBill());
+  }
+
+  /** 全部卖出确认弹窗：账单表 + 取消 / 确认 */
+  private showSellAllConfirm(bill: SellAllBill) {
+    const canvas = this.node.scene?.getChildByName('Canvas');
+    if (!canvas || !this.game) return;
+    const empty = bill.lines.length === 0;
+
+    const ov = new Node('SellAllOverlay');
+    ov.layer = Layers.Enum.UI_2D;
+    ov.parent = canvas;
+    ov.addComponent(UITransform).setContentSize(720, 1280);
+    ov.addComponent(BlockInputEvents);
+    const veil = ov.addComponent(Graphics);
+    veil.fillColor = new Color(0x4a, 0x35, 0x20, 0xb8);
+    veil.rect(-360, -640, 720, 1280);
+    veil.fill();
+    const ovOp = ov.addComponent(UIOpacity);
+    ovOp.opacity = 0;
+    tween(ovOp).to(0.18, { opacity: 255 }).start();
+
+    const cardW = 520;
+    const cardH = empty ? 220 : 480;
+    const card = new Node('card');
+    card.layer = Layers.Enum.UI_2D;
+    card.parent = ov;
+    card.addComponent(UITransform).setContentSize(cardW, cardH);
+    card.setPosition(0, 30);
+    const cg = card.addComponent(Graphics);
+    cg.fillColor = new Color(0x4a, 0x35, 0x20, 0x40);
+    cg.roundRect(-cardW / 2 + 4, -cardH / 2 - 5, cardW, cardH, 20);
+    cg.fill();
+    cg.fillColor = new Color(0xff, 0xfd, 0xf5);
+    cg.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
+    cg.fill();
+    cg.strokeColor = new Color(0xf2, 0xb8, 0x30);
+    cg.lineWidth = 3.5;
+    cg.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 20);
+    cg.stroke();
+
+    const mkLbl = (
+      text: string,
+      y: number,
+      size: number,
+      color: Color,
+      bold = false,
+      w = cardW - 48,
+      align: number = Label.HorizontalAlign.CENTER,
+    ) => {
+      const ln = new Node('lbl');
+      ln.layer = Layers.Enum.UI_2D;
+      ln.parent = card;
+      ln.addComponent(UITransform).setContentSize(w, size + 10);
+      ln.setPosition(0, y);
+      const ll = ln.addComponent(Label);
+      ll.string = text;
+      ll.fontSize = size;
+      ll.color = color;
+      ll.isBold = bold;
+      ll.horizontalAlign = align;
+      ll.overflow = Label.Overflow.CLAMP;
+      return ll;
+    };
+
+    mkLbl('全部卖出', cardH / 2 - 36, 26, new Color(0xc9, 0x8f, 0x1b), true);
+
+    if (empty) {
+      mkLbl('暂无可卖的存货（菜品与作物都会卖出）', 20, 20, new Color(0x6b, 0x44, 0x23));
+    } else {
+      const tableTop = cardH / 2 - 72;
+      const colName = -cardW / 2 + 36;
+      const mkCol = (text: string, x: number, w: number, align: number) => {
+        const ln = new Node('h');
+        ln.layer = Layers.Enum.UI_2D;
+        ln.parent = card;
+        const ut = ln.addComponent(UITransform);
+        ut.setContentSize(w, 22);
+        ut.setAnchorPoint(align === Label.HorizontalAlign.LEFT ? 0 : 1, 0.5);
+        ln.setPosition(x, tableTop);
+        const ll = ln.addComponent(Label);
+        ll.string = text;
+        ll.fontSize = 16;
+        ll.color = new Color(0x8b, 0x5a, 0x2b);
+        ll.horizontalAlign = align;
+      };
+      mkCol('名称', colName, 150, Label.HorizontalAlign.LEFT);
+      mkCol('数量', 40, 56, Label.HorizontalAlign.RIGHT);
+      mkCol('单价', 130, 56, Label.HorizontalAlign.RIGHT);
+      mkCol('小计', cardW / 2 - 36, 64, Label.HorizontalAlign.RIGHT);
+
+      const scrollH = 250;
+      const viewN = new Node('billView');
+      viewN.layer = Layers.Enum.UI_2D;
+      viewN.parent = card;
+      viewN.addComponent(UITransform).setContentSize(cardW - 40, scrollH);
+      viewN.setPosition(0, tableTop - scrollH / 2 - 18);
+      const billMask = viewN.addComponent(Mask);
+      billMask.type = Mask.Type.GRAPHICS_RECT;
+      const bsv = viewN.addComponent(ScrollView);
+      bsv.horizontal = false;
+      bsv.vertical = true;
+      bsv.inertia = false;
+
+      const content = new Node('billContent');
+      content.layer = Layers.Enum.UI_2D;
+      content.parent = viewN;
+      const cut = content.addComponent(UITransform);
+      cut.setAnchorPoint(0.5, 1);
+      bsv.content = content;
+
+      const rowH = 28;
+      const secH = 30;
+      let dishLines = bill.lines.filter((l) => l.kind === 'dish');
+      let cropLines = bill.lines.filter((l) => l.kind === 'crop');
+      let rows = 0;
+      if (dishLines.length) rows += 1 + dishLines.length;
+      if (cropLines.length) rows += 1 + cropLines.length;
+      const contentH = Math.max(scrollH, rows * rowH + secH);
+      cut.setContentSize(cardW - 48, contentH);
+      content.setPosition(0, scrollH / 2);
+
+      let y = -8;
+      const addSection = (title: string) => {
+        const sn = new Node('sec');
+        sn.layer = Layers.Enum.UI_2D;
+        sn.parent = content;
+        sn.addComponent(UITransform).setContentSize(cardW - 48, secH);
+        sn.setPosition(0, y);
+        const sl = sn.addComponent(Label);
+        sl.string = title;
+        sl.fontSize = 17;
+        sl.isBold = true;
+        sl.color = new Color(0x4a, 0x35, 0x20);
+        sl.horizontalAlign = Label.HorizontalAlign.LEFT;
+        y -= secH;
+      };
+      const addRow = (line: SellAllBill['lines'][number]) => {
+        const rn = new Node('row');
+        rn.layer = Layers.Enum.UI_2D;
+        rn.parent = content;
+        rn.addComponent(UITransform).setContentSize(cardW - 48, rowH);
+        rn.setPosition(0, y);
+        const name = line.isSpecial ? `${line.name} 特价` : line.name;
+        const mkR = (text: string, x: number, w: number, align: number, bold = false) => {
+          const ln = new Node('c');
+          ln.layer = Layers.Enum.UI_2D;
+          ln.parent = rn;
+          const ut = ln.addComponent(UITransform);
+          ut.setContentSize(w, rowH);
+          ut.setAnchorPoint(align === Label.HorizontalAlign.LEFT ? 0 : 1, 0.5);
+          ln.setPosition(x, 0);
+          const ll = ln.addComponent(Label);
+          ll.string = text;
+          ll.fontSize = 18;
+          ll.color = new Color(0x4a, 0x35, 0x20);
+          ll.horizontalAlign = align;
+          ll.isBold = bold;
+          ll.overflow = Label.Overflow.CLAMP;
+        };
+        mkR(name, -cardW / 2 + 44, 148, Label.HorizontalAlign.LEFT);
+        mkR(`×${line.qty}`, 40, 56, Label.HorizontalAlign.RIGHT);
+        mkR(`${line.unitGold}`, 130, 56, Label.HorizontalAlign.RIGHT);
+        mkR(`${line.lineGold}`, cardW / 2 - 44, 64, Label.HorizontalAlign.RIGHT, true);
+        y -= rowH;
+      };
+      if (dishLines.length) {
+        addSection('菜品');
+        dishLines.forEach(addRow);
+      }
+      if (cropLines.length) {
+        addSection('作物');
+        cropLines.forEach(addRow);
+      }
+
+      let footY = -cardH / 2 + 88;
+      if (bill.subtotalDishes > 0) {
+        mkLbl(`菜品小计  ${bill.subtotalDishes} 金`, footY, 17, new Color(0x8b, 0x5a, 0x2b), false, cardW - 56, Label.HorizontalAlign.RIGHT);
+        footY += 24;
+      }
+      if (bill.subtotalCrops > 0) {
+        mkLbl(`作物小计  ${bill.subtotalCrops} 金`, footY, 17, new Color(0x8b, 0x5a, 0x2b), false, cardW - 56, Label.HorizontalAlign.RIGHT);
+        footY += 24;
+      }
+      mkLbl(`合计  +${bill.totalGold} 金币`, footY, 23, new Color(0x4a, 0x35, 0x20), true, cardW - 56, Label.HorizontalAlign.RIGHT);
+    }
+
+    const close = () => {
+      tween(ovOp)
+        .to(0.2, { opacity: 0 })
+        .call(() => ov.destroy())
+        .start();
+    };
+
+    const btnY = -cardH / 2 + 36;
+    if (empty) {
+      this.makeModalPill(card, '知道了', 0, btnY, 200, 48, true, close);
+    } else {
+      this.makeModalPill(card, '取消', -120, btnY, 168, 48, false, close);
+      this.makeModalPill(
+        card,
+        '确认卖出',
+        120,
+        btnY,
+        168,
+        48,
+        true,
+        () => {
+          close();
+          this.onSellAll();
+        },
+      );
+    }
+
+    card.setScale(0.88, 0.88, 1);
+    tween(card).to(0.28, { scale: new Vec3(1, 1, 1) }, { easing: 'backOut' }).start();
+    this.applyUiFont(ov);
+  }
+
+  /** 弹窗内胶囊钮（相对父节点 card 本地坐标） */
+  private makeModalPill(
+    parent: Node,
+    text: string,
+    x: number,
+    y: number,
+    w: number,
+    h: number,
+    gold: boolean,
+    onTap: () => void,
+  ) {
+    const btnN = new Node('modalBtn');
+    btnN.layer = Layers.Enum.UI_2D;
+    btnN.parent = parent;
+    btnN.addComponent(UITransform).setContentSize(w, h);
+    btnN.setPosition(x, y);
+    const g = btnN.addComponent(Graphics);
+    if (gold) this.drawCookPill(g, w, h, true);
+    else {
+      g.fillColor = new Color(0xff, 0xfd, 0xf5);
+      g.roundRect(-w / 2, -h / 2, w, h, h / 2);
+      g.fill();
+      g.lineWidth = 2;
+      g.strokeColor = new Color(0x4a, 0x35, 0x20);
+      g.roundRect(-w / 2, -h / 2, w, h, h / 2);
+      g.stroke();
+    }
+    const lb = new Node('label');
+    lb.layer = Layers.Enum.UI_2D;
+    lb.parent = btnN;
+    lb.addComponent(UITransform).setContentSize(w, h);
+    const ll = lb.addComponent(Label);
+    ll.string = text;
+    ll.fontSize = 20;
+    ll.isBold = gold;
+    ll.color = new Color(0x4a, 0x35, 0x20);
+    btnN.addComponent(Button).transition = Button.Transition.NONE;
+    btnN.on(Button.EventType.CLICK, () => {
+      this.playSfx('click', 0.5);
+      onTap();
+    }, this);
   }
 
   onSellAll() {
@@ -1740,14 +2066,6 @@ export class GameController extends Component {
     // v3 无独立库存栏（收益预览文案已体现），精简为底部一行小字
     const invScene = canvas.getChildByName('InventoryLabel');
     if (invScene) invScene.active = false;
-    const invNode = new Node('InventoryInfo');
-    invNode.layer = Layers.Enum.UI_2D;
-    invNode.parent = this.pages.shop;
-    invNode.setPosition(0, -498); // 升级卡列表之下、底部导航之上
-    invNode.addComponent(UITransform).setContentSize(620, 24);
-    this.invLabel = invNode.addComponent(Label);
-    this.invLabel.fontSize = 14;
-    this.invLabel.overflow = Label.Overflow.CLAMP;
 
     // 底部导航栏（原型 v3：四枚大胶囊 tab 等距横排；Widget 钉在 Canvas 真实底边，内部手动算坐标，不用 Layout）
     const NAV_TAB_H = 66;
@@ -1938,7 +2256,6 @@ export class GameController extends Component {
 
     // 场景 Label 配色适配新底色（美术规范：深色底用浅麦字、浅色底用描边棕）
     if (this.kitchenLabel) this.kitchenLabel.color = new Color(0xff, 0xe9, 0xa8);
-    if (this.invLabel) this.invLabel.color = new Color(0x4a, 0x35, 0x20);
   }
 
   /** 纯容器（无 Layout）：子节点全部手动摆位——图鉴页专用，嵌套 Layout 在此页两次翻车，弃用 */
@@ -2085,8 +2402,10 @@ export class GameController extends Component {
     if (key === 'field') {
       this.spawnPuffs(page, 248, 228, { rise: 86, drift: 26, cycle: 4.2, count: 3, r: 10, peakOp: 110 });
     } else if (key === 'kitchen') {
-      this.spawnPuffs(page, -40, 100, { rise: 70, drift: 12, cycle: 3.2, count: 2, r: 8, peakOp: 70 });
-      this.spawnPuffs(page, 44, 96, { rise: 64, drift: -10, cycle: 3.2, count: 2, r: 7, peakOp: 55, phase: 1.6 });
+      const L = GameController.BG_UI.kitchenSteamL;
+      const R = GameController.BG_UI.kitchenSteamR;
+      this.spawnPuffs(page, L.x, L.y, { rise: 70, drift: 12, cycle: 3.2, count: 2, r: 8, peakOp: 70 });
+      this.spawnPuffs(page, R.x, R.y, { rise: 64, drift: -10, cycle: 3.2, count: 2, r: 7, peakOp: 55, phase: 1.6 });
     }
   }
 
@@ -2790,7 +3109,9 @@ export class GameController extends Component {
     if (key === this.basketKey) return;
     this.basketKey = key;
     this.basketRoot.removeAllChildren();
-    top.forEach(([id, n], i) => this.makeBasket(this.basketRoot!, -264 + i * 112, -432, id, n)); // mockup: x=96+i*112, y=1072
+    top.forEach(([id, n], i) =>
+      this.makeBasket(this.basketRoot!, -264 + i * 112, GameController.BG_UI.fieldBasketY, id, n),
+    );
   }
 
   /** 图鉴分类页签定义（顺序即按钮顺序；扩展新分类在此加一项即可） */
@@ -3061,7 +3382,7 @@ export class GameController extends Component {
     titleN.layer = Layers.Enum.UI_2D;
     titleN.parent = c;
     titleN.addComponent(UITransform).setContentSize(300, 26);
-    titleN.setPosition(0, 342); // 槽顶 310，抬高留出呼吸位（原 326 贴框）
+    titleN.setPosition(0, GameController.BG_UI.kitchenSlotTitleY);
     const titleL = titleN.addComponent(Label);
     titleL.string = `组合槽 ${units.length}/${maxSlots}`;
     titleL.fontSize = 18;
@@ -3072,7 +3393,7 @@ export class GameController extends Component {
     const sh = 108;
     const sGap = 24;
     const sx0 = -((maxSlots * sw + (maxSlots - 1) * sGap) / 2) + sw / 2;
-    const slotY = 256; // svg 330+54
+    const slotY = GameController.BG_UI.kitchenSlotY;
     for (let i = 0; i < maxSlots; i++) {
       const id = units[i];
       const slot = new Node(`slot${i}`);
@@ -3124,26 +3445,34 @@ export class GameController extends Component {
           this.removeFromCombo(id); // 音效在 removeFromCombo 内（remove_ingredient）
         }, this);
       } else {
-        // 空槽：半透明米白 + 虚线描边（Graphics 无 dash，短线段手拼）
-        g.fillColor = new Color(0xff, 0xfd, 0xf5, 0x33);
+        // 空槽：奶油底 + 深棕实线框 + 虚线内缘（亮墙背景上也要可读）
+        g.fillColor = new Color(0x4a, 0x35, 0x20, 0x28);
+        g.roundRect(-sw / 2 + 2, -sh / 2 - 3, sw, sh, 14);
+        g.fill();
+        g.fillColor = new Color(0xff, 0xfd, 0xf5, 0xe6);
         g.roundRect(-sw / 2, -sh / 2, sw, sh, 14);
         g.fill();
-        this.strokeDashedRoundRect(g, -sw / 2, -sh / 2, sw, sh, 14, new Color(0xc9, 0xb8, 0x91, 0xb3));
+        g.lineWidth = 2.4;
+        g.strokeColor = new Color(0x6b, 0x44, 0x23, 0xe0);
+        g.roundRect(-sw / 2, -sh / 2, sw, sh, 14);
+        g.stroke();
+        this.strokeDashedRoundRect(g, -sw / 2 + 6, -sh / 2 + 6, sw - 12, sh - 12, 10, new Color(0x8b, 0x5a, 0x2b, 0x99));
         const eN = new Node('empty');
         eN.layer = Layers.Enum.UI_2D;
         eN.parent = slot;
         eN.addComponent(UITransform).setContentSize(sw - 8, 26);
         const eL = eN.addComponent(Label);
         eL.string = '空槽位';
-        eL.fontSize = 19;
-        eL.color = new Color(0xc9, 0xb8, 0x91);
+        eL.fontSize = 18;
+        eL.isBold = true;
+        eL.color = new Color(0x6b, 0x44, 0x23);
       }
       // 槽 → 锅 倒入虚线点缀（svg y444~466 → cocos 196~174）
       const dN = new Node('dash');
       dN.layer = Layers.Enum.UI_2D;
       dN.parent = c;
       dN.addComponent(UITransform).setContentSize(4, 24);
-      dN.setPosition(sx0 + i * (sw + sGap), 185);
+      dN.setPosition(sx0 + i * (sw + sGap), GameController.BG_UI.kitchenDashY);
       const dg = dN.addComponent(Graphics);
       dg.strokeColor = new Color(0xff, 0xe9, 0xa8, 0x80);
       dg.lineWidth = 2.5;
@@ -3162,14 +3491,14 @@ export class GameController extends Component {
     progN.layer = Layers.Enum.UI_2D;
     progN.parent = c;
     progN.addComponent(UITransform).setContentSize(200, 12);
-    progN.setPosition(0, 164);
+    progN.setPosition(0, GameController.BG_UI.kitchenProgY);
     progN.active = !!cooking;
     const barG = progN.addComponent(Graphics);
     const progLabelN = new Node('progLabel');
     progLabelN.layer = Layers.Enum.UI_2D;
     progLabelN.parent = c;
     progLabelN.addComponent(UITransform).setContentSize(360, 24);
-    progLabelN.setPosition(0, 134);
+    progLabelN.setPosition(0, GameController.BG_UI.kitchenProgLabelY);
     progLabelN.active = !!cooking;
     const progLabel = progLabelN.addComponent(Label);
     progLabel.fontSize = 17;
@@ -3198,7 +3527,7 @@ export class GameController extends Component {
     btnN.layer = Layers.Enum.UI_2D;
     btnN.parent = c;
     btnN.addComponent(UITransform).setContentSize(328, 62);
-    btnN.setPosition(0, -147);
+    btnN.setPosition(0, GameController.BG_UI.kitchenCookBtnY);
     const btnG = btnN.addComponent(Graphics);
     this.drawCookPill(btnG, 328, 62, enabled);
     const btnLabelN = new Node('label');
@@ -3235,7 +3564,7 @@ export class GameController extends Component {
     panelN.layer = Layers.Enum.UI_2D;
     panelN.parent = c;
     panelN.addComponent(UITransform).setContentSize(PW, PH);
-    panelN.setPosition(0, -372);
+    panelN.setPosition(0, GameController.BG_UI.kitchenIngredientPanelY);
     const pg = panelN.addComponent(Graphics);
     pg.fillColor = new Color(0x4a, 0x35, 0x20, 0x40); // 软投影
     pg.roundRect(-PW / 2 + 4, -PH / 2 - 5, PW, PH, 20);
@@ -3383,153 +3712,111 @@ export class GameController extends Component {
   }
 
   /**
-   * 大锅动态层：木勺常驻（v3.1 起不再烘进背景，UI 层绘制同款造型，勺尖为节点原点）；
-   * 烹饪中播放搅拌动效（update 逐帧驱动，不用 tween，refreshKitchen 重建即销）——
-   *   勺尖沿椭圆轨道顺时针绕圈搅拌 + 汤面三层漩涡弧环（压扁贴合汤面，内层转更快）+ 汤泡鼓起破裂 + 锅沿四角星闪烁。
+   * 炒锅动态层：铁铲由 UI 叠在即梦浅口锅口上（背景不画铲）。
+   * 烹饪中：A 扇形慢拨铲（约 2.5s 一轮，中间略停）+ B 约每 10s 一次轻颠（整层微抬）+ 稀疏油泡。
    */
   private buildPotFx(c: Node, stirring: boolean) {
     this.potAnim = null;
     const fx = new Node('potFx');
     fx.layer = Layers.Enum.UI_2D;
     fx.parent = c;
-    fx.setPosition(0, 74); // 汤面中心（svg 360,566 → cocos 0,74）
+    fx.setPosition(0, GameController.BG_UI.kitchenPotY);
 
-    // 木勺：勺尖为原点（柄 #8B5A2B、头 #A0713D + 棕描边，同原 bg-lib 造型）
-    const spoon = new Node('spoon');
-    spoon.layer = Layers.Enum.UI_2D;
-    spoon.parent = fx;
-    const sg = spoon.addComponent(Graphics);
-    sg.strokeColor = new Color(0x8b, 0x5a, 0x2b);
-    sg.lineWidth = 7;
-    sg.moveTo(0, 0);
-    sg.lineTo(34, 66);
+    const spatula = new Node('spatula');
+    spatula.layer = Layers.Enum.UI_2D;
+    spatula.parent = fx;
+    const sg = spatula.addComponent(Graphics);
+    sg.strokeColor = new Color(0x4a, 0x35, 0x20);
+    sg.lineWidth = 2;
+    sg.fillColor = new Color(0x8b, 0x5a, 0x2b);
+    sg.roundRect(-5, -46, 10, 40, 3);
+    sg.fill();
     sg.stroke();
-    const head = new Node('head');
-    head.layer = Layers.Enum.UI_2D;
-    head.parent = spoon;
-    head.setPosition(40, 76);
-    head.angle = -28;
-    const hg = head.addComponent(Graphics);
-    hg.fillColor = new Color(0xa0, 0x71, 0x3d);
-    hg.ellipse(0, 0, 9, 12);
-    hg.fill();
-    hg.strokeColor = new Color(0x4a, 0x35, 0x20);
-    hg.lineWidth = 1.8;
-    hg.ellipse(0, 0, 9, 12);
-    hg.stroke();
+    sg.fillColor = new Color(0xb8, 0x8a, 0x5a);
+    sg.roundRect(-16, -54, 32, 10, 4);
+    sg.fill();
+    sg.stroke();
 
-    if (!stirring) {
-      spoon.setPosition(58, 14); // 静置：斜插在汤里（沿用原背景构图）
-      return;
-    }
-
-    // 汤面漩涡：母节点压扁到汤面椭圆比例（ry/rx ≈ 25/110），三层圆弧环同向旋转、内层更快 → 漩涡感
-    const swirl = new Node('swirl');
-    swirl.layer = Layers.Enum.UI_2D;
-    swirl.parent = fx;
-    swirl.setScale(1, 0.23, 1);
-    const ringDefs: [number, number, number, Color, number][] = [
-      // [半径, 弧起始角(弧度), 弧长, 颜色, 线宽]
-      [88, 0.3, 4.4, new Color(0xff, 0xe9, 0xa8, 0x70), 5],
-      [60, 2.2, 4.8, new Color(0xf8, 0xa5, 0x8e, 0x90), 4.5],
-      [34, 4.0, 5.2, new Color(0xff, 0xfd, 0xf5, 0x80), 4],
-    ];
-    const rings: Node[] = [];
-    for (const [r, a0, span, col, lw] of ringDefs) {
-      const ring = new Node('ring');
-      ring.layer = Layers.Enum.UI_2D;
-      ring.parent = swirl;
-      const rg = ring.addComponent(Graphics);
-      rg.strokeColor = col;
-      rg.lineWidth = lw;
-      rg.arc(0, 0, r, a0, a0 + span, false);
-      rg.stroke();
-      rings.push(ring);
-    }
-
-    // 汤泡 3 粒：鼓起→滞胀→破裂，相位错开
-    const bubbles: { n: Node; op: UIOpacity; phase: number }[] = [];
-    const mkBubble = (x: number, y: number, r: number, phase: number) => {
+    const mkBubble = (x: number, y: number, r: number, phase: number, list: { n: Node; op: UIOpacity; phase: number }[]) => {
       const b = new Node('bubble');
       b.layer = Layers.Enum.UI_2D;
       b.parent = fx;
       b.setPosition(x, y);
       const bg = b.addComponent(Graphics);
-      bg.fillColor = new Color(0xff, 0xe9, 0xa8, 0xb0);
+      bg.fillColor = new Color(0xff, 0xe9, 0xa8, 0x90);
       bg.circle(0, 0, r);
       bg.fill();
       const op = b.addComponent(UIOpacity);
       op.opacity = 0;
-      bubbles.push({ n: b, op, phase });
+      list.push({ n: b, op, phase });
     };
-    mkBubble(-36, 4, 5, 0);
-    mkBubble(40, -3, 4, 0.55);
-    mkBubble(6, 8, 3.5, 1.0);
 
-    // 锅沿四角星 2 颗：闪烁（可爱点缀，与庆祝层星星同语言）
-    const stars: { n: Node; op: UIOpacity; phase: number }[] = [];
-    const mkStar = (x: number, y: number, r: number, col: Color, phase: number) => {
-      const s = new Node('star');
-      s.layer = Layers.Enum.UI_2D;
-      s.parent = fx;
-      s.setPosition(x, y);
-      const sg2 = s.addComponent(Graphics);
-      sg2.fillColor = col;
-      sg2.moveTo(0, r);
-      sg2.quadraticCurveTo(0, 0, r, 0);
-      sg2.quadraticCurveTo(0, 0, 0, -r);
-      sg2.quadraticCurveTo(0, 0, -r, 0);
-      sg2.quadraticCurveTo(0, 0, 0, r);
-      sg2.fill();
-      const op = s.addComponent(UIOpacity);
-      stars.push({ n: s, op, phase });
-    };
-    mkStar(-76, 36, 7, new Color(0xff, 0xe9, 0xa8), 0);
-    mkStar(82, 32, 5.5, new Color(0xf8, 0xa5, 0x8e), 1.6);
+    if (!stirring) {
+      spatula.setPosition(54, 10);
+      spatula.angle = -38;
+      return;
+    }
 
-    this.potAnim = { spoon, rings, bubbles, stars, t: 0 };
+    const bubbles: { n: Node; op: UIOpacity; phase: number }[] = [];
+    mkBubble(-28, 2, 4, 0, bubbles);
+    mkBubble(22, -2, 3.5, 0.7, bubbles);
+
+    this.potAnim = { fx, spatula, bubbles, t: 0 };
   }
 
-  /** 搅拌动效逐帧驱动（update 调用）：勺尖椭圆绕圈 + 漩涡环旋转 + 泡/星循环 */
+  /** 铲拨 + 轻颠逐帧驱动（烹饪中由 buildPotFx 注册 potAnim） */
   private tickPotAnim(dt: number) {
     const a = this.potAnim;
     if (!a) return;
-    if (!a.spoon.isValid) {
-      this.potAnim = null; // 节点已被 refreshKitchen 重建销毁
+    if (!a.spatula.isValid) {
+      this.potAnim = null;
       return;
     }
     a.t += dt;
     const t = a.t;
-    // 勺尖沿汤面椭圆顺时针绕圈（俯视投影：x 大圈、y 小圈），勺身随轨道切线微倾 = 手腕随动
-    const th = -t * 2.4; // 负号 = 顺时针，约 2.6 秒一圈
-    a.spoon.setPosition(Math.cos(th) * 62, Math.sin(th) * 62 * 0.23 + 2);
-    a.spoon.angle = 14 * Math.sin(th) - 8;
-    // 漩涡环：顺时针同向，内层更快（角速度差制造搅动层次）
-    const speeds = [90, 160, 260];
-    a.rings.forEach((r, i) => (r.angle = -speeds[i] * t));
-    // 汤泡：1.4s 周期，鼓起(0~60%)→滞胀(60~80%)→破裂淡出(80~100%)
-    for (const b of a.bubbles) {
-      const k = ((t + b.phase) % 1.4) / 1.4;
-      if (k < 0.6) {
-        const s = 0.2 + (k / 0.6) * 0.9;
-        b.n.setScale(s, s, 1);
-        b.op.opacity = 220;
-      } else if (k < 0.8) {
-        b.n.setScale(1.15, 1.15, 1);
-        b.op.opacity = 220;
-      } else {
-        const f = (k - 0.8) / 0.2;
-        const s = 1.15 * (1 - f);
-        b.n.setScale(s, s, 1);
-        b.op.opacity = Math.round(220 * (1 - f));
-      }
+    const potY = GameController.BG_UI.kitchenPotY;
+
+    // B：约每 10s 一次轻颠（0.35s 正弦抬升）
+    const flipPeriod = 10;
+    const flipPhase = t % flipPeriod;
+    let lift = 0;
+    if (flipPhase > flipPeriod - 0.35) {
+      const u = (flipPhase - (flipPeriod - 0.35)) / 0.35;
+      lift = Math.sin(u * Math.PI) * 12;
     }
-    // 星星：呼吸闪烁 + 微缩放
-    for (const s of a.stars) {
-      const w = 0.5 + 0.5 * Math.sin(t * 3 + s.phase);
-      s.op.opacity = Math.round(100 + 140 * w);
-      const sc = 0.85 + 0.3 * w;
-      s.n.setScale(sc, sc, 1);
+    a.fx.setPosition(0, potY + lift);
+    const squash = 1 + (lift / 12) * 0.035;
+    a.fx.setScale(squash, squash, 1);
+
+    // A：2.5s 周期，前 55% 扇形拨铲，后 45% 静置
+    const cycle = 2.5;
+    const k = (t % cycle) / cycle;
+    if (k < 0.55) {
+      const s = k / 0.55;
+      const a0 = -1.35;
+      const a1 = -0.55;
+      const ang = a0 + (a1 - a0) * s;
+      const r = 36;
+      const px = Math.cos(ang) * r;
+      const py = Math.sin(ang) * r * 0.42;
+      a.spatula.setPosition(px, py);
+      a.spatula.angle = (ang * 180) / Math.PI + 62;
+    } else {
+      a.spatula.setPosition(50, 8);
+      a.spatula.angle = -34;
+    }
+
+    for (const b of a.bubbles) {
+      const ph = ((t + b.phase) % 2.2) / 2.2;
+      if (ph < 0.5) {
+        const s = 0.35 + (ph / 0.5) * 0.65;
+        b.n.setScale(s, s, 1);
+        b.op.opacity = 160;
+      } else {
+        const f = (ph - 0.5) / 0.5;
+        b.n.setScale(1 * (1 - f * 0.5), 1 * (1 - f * 0.5), 1);
+        b.op.opacity = Math.round(160 * (1 - f));
+      }
     }
   }
 
@@ -3667,8 +3954,9 @@ export class GameController extends Component {
   /** 地点引导与好感薄剧情。教学优先；同次可链式播下一条。 */
   private maybeTalk(
     page: string,
-    trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver',
+    trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver' | 'onDishCollect',
     orderNpcId?: string,
+    dishId?: string,
   ) {
     if (!this.game) return;
     if (trigger === 'onEnter' && !this.playReady) return;
@@ -3679,29 +3967,33 @@ export class GameController extends Component {
     if (tutorial) {
       if (this.talkStoryId === tutorial.id || this.talkQueue.some((q) => q.id === tutorial.id)) return;
       this.openTalk(
-        tutorial.lines.map((text) => ({ speaker: tutorial.speaker, text })),
+        this.storyTalkLines(tutorial),
         () => {
           this.game!.completeTutorial(tutorial.id);
           this.writeSave();
-          this.maybeTalk(page, trigger, orderNpcId);
+          this.maybeTalk(page, trigger, orderNpcId, dishId);
         },
         tutorial.id,
       );
       return;
     }
 
-    const affinity = this.game.pendingAffinity(place, trigger, orderNpcId);
+    const affinity = this.game.pendingAffinity(place, trigger, orderNpcId, dishId);
     if (!affinity) return;
     if (this.talkStoryId === affinity.id || this.talkQueue.some((q) => q.id === affinity.id)) return;
     this.openTalk(
-      affinity.lines.map((text) => ({ speaker: affinity.speaker, text })),
+      this.storyTalkLines(affinity),
       () => {
         this.game!.completeAffinityStory(affinity.id);
         this.writeSave();
-        this.maybeTalk(page, trigger, orderNpcId);
+        this.maybeTalk(page, trigger, orderNpcId, dishId);
       },
       affinity.id,
     );
+  }
+
+  private storyTalkLines(def: { speaker: string; lines: Array<string | { speaker: string; text: string }> }) {
+    return def.lines.map((l) => (typeof l === 'string' ? { speaker: def.speaker, text: l } : l));
   }
 
   /** 底部对白。不盖住整屏，跳过只结束这一段。正在播时后来的段排队。 */
@@ -3943,24 +4235,6 @@ export class GameController extends Component {
       }
     }
 
-    const invTarget = this.invLabel ?? this.inventoryLabel;
-    if (invTarget) {
-      const fmt = (o: Record<string, number>, nameOf: (id: string) => string) =>
-        Object.entries(o)
-          .filter(([, n]) => n > 0)
-          .map(([k, n]) => `${nameOf(k)}×${n}`)
-          .join(' ') || '（空）';
-      invTarget.string =
-        `作物 ${fmt(save.inventory.crops, (id) => this.game!.cropName(id))} · ` +
-        `菜品 ${fmt(save.inventory.dishes, (id) => this.game!.dishName(id))} · ` +
-        `图鉴 ${save.discoveredRecipes.length}/${this.game!.recipeCount}`;
-    }
-
-    // 商店页收益预览（previewSellAll 只读，含店铺倍率 + 今日特价；库存变化实时反映）
-    if (this.sellPreviewLabel) {
-      const pv = this.game!.previewSellAll();
-      this.sellPreviewLabel.string = pv.gold > 0 ? `全部卖出（菜品+作物），+${pv.gold} 金币` : '暂无可卖的存货';
-    }
     // 今日特价小黑板（常驻展示；尚无已发现食谱时 dailySpecial() 为 null → 只显示标题的默认态）
     if (this.specialBoard) {
       const sp = this.game!.dailySpecial();
@@ -4268,7 +4542,11 @@ export class GameController extends Component {
   /** 发现新食谱庆祝层：暖棕纱幔 + 金边纸卡弹入 + 星星爆开；点击或 3.5s 自动关闭。
    *  稀有食谱（三食材菜）升级表现：卡片背后旋转散射光芒、双描边卡框、专属标题与菜谱文案、
    *  更多星光、停留更久（5s），传达「你发现的东西非常稀有」 */
-  private playDiscovery(dishId: string, dishName: string, opts?: { rare?: boolean; desc?: string; header?: string }) {
+  private playDiscovery(
+    dishId: string,
+    dishName: string,
+    opts?: { rare?: boolean; desc?: string; header?: string; onClosed?: () => void },
+  ) {
     const rare = opts?.rare ?? false;
     // 黑暗料理专属氛围：紫黑纱幔 + 紫黑波浪翻涌（替换金色光芒/星星那套喜庆表现）
     const dark = dishId === 'dark_cuisine';
@@ -4462,9 +4740,13 @@ export class GameController extends Component {
     const close = () => {
       if (closed) return;
       closed = true;
+      const after = opts?.onClosed;
       tween(ovOp)
         .to(0.25, { opacity: 0 })
-        .call(() => ov.destroy())
+        .call(() => {
+          ov.destroy();
+          after?.();
+        })
         .start();
     };
     ov.on(Node.EventType.TOUCH_END, close, this);

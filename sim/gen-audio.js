@@ -207,29 +207,35 @@ const SFX = {
     tone(b, { f0: 185, t0: 0.12, dur: 0.12, amp: 0.4, harm: [[2, 0.12]], decay: 18 });
     return b;
   },
-  // 搅拌（烹饪中循环）：魔女熬药风——煨煮汤底缓慢起伏 + 密集「咕噜」泡（高低错落）+ 一记大泡收尾作循环标点
+  // 翻炒（烹饪中循环）：轻铲碰锅 + 稀疏「沙沙」底噪，避免魔女式密集咕噜
   stir: () => {
     const b = buf(2.0);
-    // 汤底：重低通噪声，双 LFO 叠出煨煮起伏（首尾幅度连续，循环不咔哒）
     {
       const rnd = mulberry32(11);
       let y = 0;
       for (let i = 0; i < b.length; i++) {
         const t = i / SR;
-        y += 0.02 * (rnd() * 2 - 1 - y);
-        const lfo = 0.6 + 0.4 * Math.sin(2 * Math.PI * 2.2 * t) * Math.sin(2 * Math.PI * 0.7 * t + 1);
-        b[i] += y * 0.9 * lfo;
+        y += 0.015 * (rnd() * 2 - 1 - y);
+        const lfo = 0.35 + 0.25 * Math.sin(2 * Math.PI * 1.1 * t);
+        b[i] += y * 0.45 * lfo;
       }
     }
-    // 咕噜泡：9 颗下行短音，音高/时刻伪随机错落（熬药感）
-    const rndT = mulberry32(23);
-    for (let k = 0; k < 9; k++) {
-      const t0 = 0.08 + k * 0.2 + rndT() * 0.09;
-      const f0 = 150 + rndT() * 190;
-      tone(b, { f0, f1: f0 * 0.62, t0, dur: 0.07 + rndT() * 0.05, amp: 0.34, harm: [[2, 0.22]], decay: 16 });
+    const scrapes = [
+      [0.05, 280, 0.06],
+      [0.42, 310, 0.05],
+      [0.78, 265, 0.055],
+      [1.18, 295, 0.05],
+      [1.55, 270, 0.06],
+    ];
+    for (const [t0, f0, dur] of scrapes) {
+      tone(b, { f0, f1: f0 * 0.55, t0, dur, amp: 0.22, harm: [[2, 0.08]], decay: 28 });
     }
-    // 大泡「啵」收尾（循环节奏的标点）
-    tone(b, { f0: 320, f1: 140, t0: 1.72, dur: 0.16, amp: 0.42, harm: [[2, 0.25], [3, 0.1]], decay: 9 });
+    const rndT = mulberry32(41);
+    for (let k = 0; k < 3; k++) {
+      const t0 = 0.3 + k * 0.55 + rndT() * 0.12;
+      tone(b, { f0: 120 + rndT() * 40, t0, dur: 0.05, amp: 0.12, harm: [[2, 0.1]], decay: 22 });
+    }
+    tone(b, { f0: 240, f1: 180, t0: 1.82, dur: 0.08, amp: 0.18, harm: [[2, 0.12]], decay: 20 });
     return b;
   },
   // 离线结算/回游问候：舒展暖两音 G-E + 轻铃尾（「欢迎回来」）

@@ -36,6 +36,11 @@ docs:
     title: 灵感停车场
     kind: spec
     purpose_zh: 未排期想法列表
+  - path: planning/m6-town-expansion.md
+    doc_id: planning.m6-town-expansion
+    title: M6 小镇扩展
+    kind: spec
+    purpose_zh: M6 范围、果园硬指标、crops.type、批次顺序
   - path: narrative/story-and-characters.md
     doc_id: narrative.story-and-characters
     title: 故事线与人物规划
@@ -130,4 +135,9 @@ docs:
     doc_id: release.wechat-minigame-checklist
     title: 微信小游戏发布检查清单
     kind: spec
-    purpose_zh: M6 提审勾选
+    purpose_zh: M7 提审勾选
+  - path: release/game-releases.md
+    doc_id: release.game-releases
+    title: 游戏版本与内容记录
+    kind: spec
+    purpose_zh: 体验版号与内容变更、原画归档索引

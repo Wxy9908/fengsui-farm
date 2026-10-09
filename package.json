@@ -1,6 +1,6 @@
 {
   "name": "newgame",
-  "version": "0.1.0",
+  "version": "0.6.0",
   "private": true,
   "description": "丰穗小镇——种田做饭的慢生活经营游戏（Cocos Creator 3.x + TypeScript）",
   "scripts": {
@@ -12,7 +12,10 @@
     "gen-assets": "node sim/gen-assets.js",
     "gen-mockups": "node sim/gen-mockups.js",
     "gen-audio": "node sim/gen-audio.js",
-    "gen-bgm": "node sim/gen-bgm.js"
+    "gen-bgm": "node sim/gen-bgm.js",
+    "import-jimeng-bg": "node sim/import-jimeng-bg.js",
+    "gen-p1-v2-collage": "node sim/gen-p1-v2-collage.js",
+    "archive-art-releases": "node sim/archive-art-releases.js"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

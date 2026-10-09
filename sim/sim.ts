@@ -432,7 +432,12 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
   assert.strictEqual(gotNormal, priceOf(normalId), '非特价菜应原价');
   // previewSellAll 只读且与 sellAll 成交一致
   const before = JSON.stringify(g.getSave());
+  const bill = g.previewSellAllBill();
+  const lineSum = bill.lines.reduce((s, l) => s + l.lineGold, 0);
+  assert.strictEqual(lineSum, bill.totalGold, '账单行小计之和应等于 totalGold');
+  assert.strictEqual(bill.subtotalDishes + bill.subtotalCrops, bill.totalGold);
   const pv = g.previewSellAll();
+  assert.strictEqual(pv.gold, bill.totalGold, 'previewSellAll 应与账单 totalGold 一致');
   assert.strictEqual(JSON.stringify(g.getSave()), before, 'previewSellAll 不应改动存档');
   const sa = g.sellAll();
   assert.deepStrictEqual(sa, pv, 'sellAll 成交应与预览一致');
@@ -554,10 +559,22 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
 }
 
 {
-  for (const s of stories.stories as { id: string; type: string; npcId?: string; minAffinity?: number }[]) {
+  for (const s of stories.stories as {
+    id: string;
+    type: string;
+    npcId?: string;
+    minAffinity?: number;
+    dishId?: string;
+    trigger?: string;
+  }[]) {
     if (s.type !== 'affinity') continue;
     assert.ok(s.npcId, `好感剧情 ${s.id} 缺 npcId`);
-    assert.ok(s.minAffinity !== undefined && s.minAffinity >= 0, `好感剧情 ${s.id} 缺 minAffinity`);
+    if (s.dishId) {
+      assert.strictEqual(s.trigger, 'onDishCollect', `好感出锅事件 ${s.id} 须 onDishCollect`);
+      assert.ok(s.minAffinity !== undefined && s.minAffinity >= 0, `好感剧情 ${s.id} 缺 minAffinity`);
+    } else {
+      assert.ok(s.minAffinity !== undefined && s.minAffinity >= 0, `好感剧情 ${s.id} 缺 minAffinity`);
+    }
     const npc = (npcs.npcs as { id: string }[]).find((n) => n.id === s.npcId);
     assert.ok(npc, `好感剧情 ${s.id} 引用未知 NPC ${s.npcId}`);
   }
@@ -578,10 +595,25 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
   assert.strictEqual(g.pendingAffinity('farm', 'onEnter'), null);
   assert.strictEqual(g.affinityOf('tianbo'), 10, '播剧情不改好感分');
 
-  const s2 = { ...s, affinity: { linshen: 12 }, readAffinityStories: [] as string[] };
+  const s2 = { ...s, affinity: { popo: 10 }, readAffinityStories: [] as string[] };
   const g2 = new GameCore(data, s2 as SaveData, nowFn);
-  assert.strictEqual(g2.pendingAffinity('shop', 'onEnter')?.id, 'aff_linshen_10');
-  log('好感薄剧情：表校验 + 阈值触发 + 已读不重复');
+  assert.strictEqual(g2.pendingAffinity('canteen', 'onEnter')?.id, 'aff_popo_10');
+  const s3 = { ...s, affinity: { shenxiansheng: 12 }, readAffinityStories: [] as string[] };
+  const g3 = new GameCore(data, s3 as SaveData, nowFn);
+  assert.strictEqual(
+    g3.pendingAffinity('orders', 'onOrderDeliver', 'shenxiansheng')?.id,
+    'aff_shen_after_deliver_12',
+    '沈先生交单后薄好感',
+  );
+  assert.strictEqual(
+    g.pendingAffinity('canteen', 'onDishCollect', undefined, 'pumpkin_soup')?.id,
+    'aff_shen_pumpkin_soup_first',
+    '出锅南瓜汤应触发沈先生',
+  );
+  assert.strictEqual(g.pendingAffinity('canteen', 'onDishCollect', undefined, 'toast'), null);
+  g.completeAffinityStory('aff_shen_pumpkin_soup_first');
+  assert.strictEqual(g.pendingAffinity('canteen', 'onDishCollect', undefined, 'pumpkin_soup'), null);
+  log('好感薄剧情：表校验 + 阈值触发 + 出锅事件 + 已读不重复');
 }
 
 console.log('\n✅ 仿真通过：核心循环（种菜→收获→做菜→卖钱→升级）+ 离线结算全部符合数据表预期');

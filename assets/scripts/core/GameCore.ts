@@ -34,6 +34,28 @@ export interface SeedEntry {
   requiredLevel: number | null;
 }
 
+/** 「全部卖出」账单行（previewSellAllBill，与 sellAll 同口径） */
+export interface SellAllBillLine {
+  kind: 'dish' | 'crop';
+  id: string;
+  name: string;
+  qty: number;
+  unitGold: number;
+  lineGold: number;
+  /** 菜品是否为当日特价 */
+  isSpecial?: boolean;
+}
+
+/** 「全部卖出」账单（只读预览） */
+export interface SellAllBill {
+  lines: SellAllBillLine[];
+  subtotalDishes: number;
+  subtotalCrops: number;
+  totalGold: number;
+  totalDishes: number;
+  totalCrops: number;
+}
+
 /** 出锅结果：菜品 + 黑暗料理回血金币（新手保护）+ 是否首次发现该食谱（出锅时才点亮图鉴） */
 export interface CollectResult {
   dishId: string;
@@ -179,12 +201,17 @@ export class GameCore {
    * 好感薄剧情：按 stories 数组顺序取第一条满足条件的未读节点。
    * onOrderDeliver 须传入刚交付订单的 npcId。
    */
-  pendingAffinity(place: string, trigger: string, orderNpcId?: string): StoryDef | null {
+  pendingAffinity(place: string, trigger: string, orderNpcId?: string, dishId?: string): StoryDef | null {
     for (const s of this.data.stories ?? []) {
       if (s.type !== 'affinity') continue;
       if (s.place !== place || s.trigger !== trigger) continue;
-      if (!s.npcId || s.minAffinity === undefined) continue;
       if (this.save.readAffinityStories.includes(s.id)) continue;
+      if (s.dishId) {
+        if (trigger !== 'onDishCollect' || dishId !== s.dishId) continue;
+        if (!s.npcId) continue;
+        return s;
+      }
+      if (!s.npcId || s.minAffinity === undefined) continue;
       if (this.affinityOf(s.npcId) < s.minAffinity) continue;
       if (trigger === 'onOrderDeliver' && orderNpcId !== s.npcId) continue;
       return s;
@@ -652,21 +679,64 @@ export class GameCore {
    * 卖出全部库存（菜品 + 作物）的收益预览：dry-run 只读计算，不改动存档。
    * 菜品含店铺倍率与今日特价加成；作物只有店铺倍率。供商店页「卖出全部，+N 金币」文案。
    */
+  /** 全部卖出账单明细（只读）；行序：菜品 id 升序 → 作物 id 升序 */
+  previewSellAllBill(): SellAllBill {
+    const lines: SellAllBillLine[] = [];
+    let subtotalDishes = 0;
+    let subtotalCrops = 0;
+    let totalDishes = 0;
+    let totalCrops = 0;
+    const specialId = this.dailySpecial()?.dishId;
+    const dishIds = Object.keys(this.save.inventory.dishes).sort();
+    for (const id of dishIds) {
+      const qty = this.save.inventory.dishes[id] ?? 0;
+      if (qty <= 0) continue;
+      const unitGold = this.dishPrice(id);
+      const lineGold = unitGold * qty;
+      lines.push({
+        kind: 'dish',
+        id,
+        name: this.dishName(id),
+        qty,
+        unitGold,
+        lineGold,
+        isSpecial: specialId === id,
+      });
+      subtotalDishes += lineGold;
+      totalDishes += qty;
+    }
+    const cropIds = Object.keys(this.save.inventory.crops).sort();
+    const cropMult = this.effectValue('sellPriceMult');
+    for (const id of cropIds) {
+      const qty = this.save.inventory.crops[id] ?? 0;
+      if (qty <= 0) continue;
+      const unitGold = Math.round(this.crop(id).sellPrice * cropMult);
+      const lineGold = unitGold * qty;
+      lines.push({
+        kind: 'crop',
+        id,
+        name: this.cropName(id),
+        qty,
+        unitGold,
+        lineGold,
+      });
+      subtotalCrops += lineGold;
+      totalCrops += qty;
+    }
+    const totalGold = subtotalDishes + subtotalCrops;
+    return {
+      lines,
+      subtotalDishes,
+      subtotalCrops,
+      totalGold,
+      totalDishes,
+      totalCrops,
+    };
+  }
+
   previewSellAll(): { gold: number; dishes: number; crops: number } {
-    let gold = 0;
-    let dishes = 0;
-    let crops = 0;
-    for (const [id, n] of Object.entries(this.save.inventory.dishes)) {
-      if (n <= 0) continue;
-      gold += this.dishPrice(id) * n;
-      dishes += n;
-    }
-    for (const [id, n] of Object.entries(this.save.inventory.crops)) {
-      if (n <= 0) continue;
-      gold += Math.round(this.crop(id).sellPrice * this.effectValue('sellPriceMult')) * n;
-      crops += n;
-    }
-    return { gold, dishes, crops };
+    const b = this.previewSellAllBill();
+    return { gold: b.totalGold, dishes: b.totalDishes, crops: b.totalCrops };
   }
 
   /** 卖出全部库存（菜品 + 作物），返回与 previewSellAll 同口径的实际成交明细 */

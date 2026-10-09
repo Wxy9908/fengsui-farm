@@ -111,7 +111,7 @@ related:
 |---|------|------|------|------|
 | 0.1 | **7 个田里成熟植株** | 仅 dw13 | **§6.3A** | ✅ 2026-09-30 签字（见 `docs/参考图/小样/`） |
 | 0.2 | 田地背景 1 张 | dw4 + 桃源 | §6.4 | ✅ 2026-09-30 签字（`docs/参考图/小样/field_bg.png`） |
-| 0.3 | （可选）厨房/小铺背景 | dw4 + 现版分区 | §6.4 变体 | ☐ **下一步**（阶段 0 收口）；1A 放量其后 |
+| 0.3 | 厨房/小铺背景 | dw13 + field_bg | jimeng-prompts §4 | ✅ 2026-10-08（`kitchen_bg` / `shop_bg`） |
 
 7 作物（0.1）：`wheat` `tomato` `potato` `corn` `pumpkin` `cabbage` `carrot` → 文件 `docs/参考图/小样/<id>.png`。  
 白菜口径：**圆白菜/卷心菜（结球甘蓝）**，不是大白菜。  
@@ -125,7 +125,8 @@ related:
 
 ### 阶段 2 · 场景大图
 
-`field/kitchen/shop/book/loading` → §6.4。
+`field/kitchen/shop/book/loading` → §6.4。  
+**入库命令**：`npm run import-jimeng-bg`（小样 `field_bg` / `kitchen_bg` / `shop_bg` / **`loading_bg`** → `assets/resources/bg/*.jpg`，720×1280 JPEG q87，**不覆盖**已有 `.meta`）。`book` 仍走 `gen-scene-bg`；**`loading` 整幅海报走即梦**（见 §7 Loading 海报）。
 
 ### 阶段 3 · 新内容
 
@@ -170,23 +171,30 @@ NPC 定妆等 → §6.5。
 验收通过：上半装饰（天/日/云/远山/左树/右屋+炊烟/灯笼串/木栅栏）+ 下半空草地；无人物、无作物、无田格、无 UI；构图对齐现版 `field.jpg` 分区。  
 小瑕疵可忽略（前景石径、零星小花）：地块由代码叠层，不挡操作区即可。
 
-### 当前 · 0.3 厨房 / 小铺背景小样
+### 已完成 · 0.3 厨房 / 小铺背景小样
 
-阶段 0 收口项（可选但建议做，利于 P1-V2「三页气质一致」）。  
-**本次不必继续出剩余 8 作物**；草莓等属阶段 **1A 放量**，等 0.3 后再说。
+`docs/参考图/小样/kitchen_bg.png`、`shop_bg.png` 已签字；小铺经视角修正（正面空墙）。
 
-1. 参考：挂 **dw13** + 建议加 **`field_bg.png`**（线色一致）；`dw4`/桃源仅辅助俯视，**勿挂旧 `kitchen.jpg` 当风格参考**。小铺可对照 `shop.jpg` 学分区，不照抄 UI。  
-2. 比例 **9:16**；提示词用上方 **jimeng-prompts.md §4 厨房 / 小铺** 两段。  
-3. 产出：`docs/参考图/小样/kitchen_bg.png`、`shop_bg.png`。  
-4. 验收：无按钮/列表/人物；厨房为 **浅口铁锅+灶台**、锅沿完整、**无铲无颠勺**、中下空；小铺有篷+招牌、中下空墙。
+### 当前 · 阶段 2 场景入库（field / kitchen / shop）
 
-首批 7 作物的 s1/s2 已提前做完，算 1A 预支进度，**先停在这里**，文件补进 `小样/icons/crops/` 即可。
+已跑 `npm run import-jimeng-bg` → `assets/resources/bg/{field,kitchen,shop,loading}.jpg`（含 `loading_bg` 海报）。  
+**玩法层（2026-10-09 ✅）**：四页 `BG_UI` 锚点；厨房 `potFx` 铲拨/轻颠 + `stir` 音效；小铺售卖确认弹窗与升级列表滚动见 `dev-log.md` 当日行。  
+**P1-V2 ✅（2026-10-09）**：小样拼版 `docs/mockups/p1-v2-jimeng-scenes.png`（`npm run gen-p1-v2-collage`）。游戏内 UI 叠层对照可另截真机图作加分，不挡底线。
+
+### Loading 整幅海报（`loading_bg`）
+
+1. 参考：**dw13** + **`field_bg.png`**（勿挂旧 `loading.jpg`）。  
+2. 比例 **9:16**；提示词 → [jimeng-prompts.md §6 Loading 整幅海报](jimeng-prompts.md)。  
+3. 产出：`docs/参考图/小样/loading_bg.png`（即梦**原图导出**、去水印）。  
+4. 验收：与田地页同世界；牌匾与副标题字正确；**无**进度条/百分比/小贴士/加载句；最底两行忠告可读；中下渐变压暗给程序进度条。  
+5. 入库：`npm run import-jimeng-bg` → `assets/resources/bg/loading.jpg`；Cocos 预览启动遮罩。  
+6. **勿再跑** `node sim/gen-loading.js` 覆盖 `loading.jpg`（除非只出 mockup SVG）。
 
 ### 其后（勿抢跑）
 
-- 阶段 1A：其余 8 作物 × s1/s2/成熟 + 后期抠透明 → 再覆盖游戏内 crops。  
-- 阶段 1B：菜品。  
-- 阶段 2：场景大图正式入库。
+- 阶段 1A：其余 8 作物 × s1/s2/成熟 → 覆盖 `icons/crops`（0.3 后再放量）。  
+- 阶段 1B：菜品图标。  
+- P1-V2：✅ 见 `mockups/p1-v2-jimeng-scenes.png`。
 
 ---
 
@@ -205,3 +213,6 @@ NPC 定妆等 → §6.5。
 | 2026-09-30 | **1A 首批 7 作物三阶段签字**（wheat～carrot）；小样路径改为 `小样/icons/crops/`；下一步 strawberry 起 8 个新作物 |
 | 2026-09-30 | **纠偏顺序**：当前回到 **0.3** 厨房/小铺；8 作物放量属 1A，不抢跑；jimeng-prompts.md §4 补厨房/小铺提示词 |
 | 2026-10-08 | **厨房 jimeng-prompts.md §4 改版**：深锅汤面 → 浅口农家灶锅（静态菜块）；铲拨/轻颠归程序叠层；提示词与 0.3 验收同步；建议参考 `field_bg`+dw13 |
+| 2026-10-08 | **0.3 ✅** + **阶段 2**：`import-jimeng-bg.js`；field/kitchen/shop 小样入库游戏 bg |
+| 2026-10-08 | **Loading 海报**：jimeng-prompts §6 `loading_bg` 整幅即梦；`import-jimeng-bg` 支持 loading |
+| 2026-10-09 | **P1-V2 ✅**：`gen-p1-v2-collage.js` → `mockups/p1-v2-jimeng-scenes.png` |

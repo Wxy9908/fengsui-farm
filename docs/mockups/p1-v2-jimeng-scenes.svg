@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="2280" height="1180" viewBox="0 0 2280 1180">
+  <rect width="100%" height="100%" fill="#1e1e1e"/>
+  <text x="1140" y="48" text-anchor="middle" fill="#FFF8E7" font-size="24" font-family="Microsoft YaHei">P1-V2 三页场景气质对照</text>
+  <image href="file:///E:/Code/NewGame/docs/参考图/小样/field_bg.png" x="40" y="100" width="518" height="920"/><text x="299" y="1048" text-anchor="middle" fill="#F2B830" font-size="18" font-family="Microsoft YaHei">田地</text>
+<image href="file:///E:/Code/NewGame/docs/参考图/小样/kitchen_bg.png" x="578" y="100" width="518" height="920"/><text x="837" y="1048" text-anchor="middle" fill="#F2B830" font-size="18" font-family="Microsoft YaHei">厨房</text>
+<image href="file:///E:/Code/NewGame/docs/参考图/小样/shop_bg.png" x="1116" y="100" width="518" height="920"/><text x="1375" y="1048" text-anchor="middle" fill="#F2B830" font-size="18" font-family="Microsoft YaHei">小铺</text>
+  <text x="1140" y="1144" text-anchor="middle" fill="#7ec850" font-size="14" font-family="Microsoft YaHei">制作人过目 ✅ 2026-10-09</text>
+</svg>

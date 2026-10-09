@@ -111,3 +111,13 @@ doc_kind: changelog
 | 2026-09-30 | **即梦 1A 首批签字**：7 作物（wheat～carrot）成熟+s1+s2 拼版过关；pumpkin/cabbage/carrot s2 纠偏后通过。下一步：strawberry 起 8 作物三阶段；仍不覆盖游戏内 icons。 |
 | 2026-10-08 | **docs v2 全量整理**：删除中文 redirect；叙事拆 9 专题 + 索引；即梦拆 workflow/prompts；停车场迁 `planning/parking-lot.md`；`AGENTS.md` + `_meta/doc-registry.yaml`。 |
 | 2026-10-08 | **docs 树状重组**：`narrative/`、`gameplay/`、`art/`、`release/` + 英文 canonical 文件名；新建 `README.md` 索引；根目录中文 md 改 redirect 桩；`doc-governance` 增 §0 目录规范与 `affinity-design` 真源行；各 spec 补 YAML frontmatter；Cursor `docs-authority` 路由更新。`mockups/`、`参考图/` 路径未动。 |
+| 2026-10-08 | **即梦阶段 2**：`npm run import-jimeng-bg` 将 `field_bg`/`kitchen_bg`/`shop_bg` 入库 `assets/resources/bg/*.jpg`；0.3 厨房小铺小样收官。下一步：Cocos 对齐 UI 后改厨房 potFx（铲拨+轻颠）与 stir 音效。 |
+| 2026-10-08 | **原画归档 + 版本 0.5.0**：`art-archive/releases/`（0.4.0 矢量场景自 git、`0.5.0` 即梦快照）；`npm run archive-art-releases`；`config.releaseVersion`/`package.json` 0.5.0；Loading 角标 `v0.5.0`；`docs/release/game-releases.md`。 |
+| 2026-10-08 | **仓库瘦身**：删 `wheat_logo.png`、删 `0.5.0` 归档内重复 `jimeng-samples/`；小样真源仅 `docs/参考图/小样/`。 |
+| 2026-10-09 | **M5-P1 UI 对齐即梦四底图**：`GameController` 增 `BG_UI` 锚点（田地网格/收获篮、厨房槽位/按钮/锅口、小铺售卖区、Loading 文案条）；`potFx` 改为铲拨+约 10s 轻颠；`stir.wav` 换农家翻炒感；`loading_bg` 入库 `loading.jpg`。 |
+| 2026-10-09 | **小铺交互**：`previewSellAllBill` 账单 API；「全部卖出」确认弹窗（表格式明细）；去掉底部库存小字；升级区纵向吸附滚动（视口约一屏 3 卡）。 |
+| 2026-10-09 | **M5-P1 前期三人薄好感**：`stories.json` 田伯/白婆婆各 2 + 沈先生出锅南瓜汤与交单 1；`onDishCollect`；删林婶占位。人设分工写入 `narrative/characters.md` §4.0；`affinity-design` / `story-roadmap` / `experience-roadmap` 同步。 |
+| 2026-10-09 | **P1-V2 拼版签字**：`npm run gen-p1-v2-collage` → `docs/mockups/p1-v2-jimeng-scenes.png`（field/kitchen/shop 小样三列 + 页脚签字）；`experience-roadmap` §4.2 勾选。 |
+| 2026-10-09 | **P1 体验底线收尾验收**：V3（无装修/任务板；potFx 为既有烹饪层改版）+ A1（resources 4.92MB、BGM/SFX 文件与加载路径）+ W1（无新菜名）；§4.2 全勾。真机听感留发布前抽查。 |
+| 2026-10-09 | **里程碑重排（用户定案 B）**：M5 收口；新增 M6 小镇扩展（地图/背包/果园硬指标/人物先于订单）；提审顺延 **M7**。`crops.type`（farm/orchard）；四水果迁果园；香菇花生仍 farm。新建 `planning/m6-town-expansion.md`；同步 `development-plan` §6.6、`data-schema` §2、`parking-lot` 出队、叙事/体验/发布清单。 |
+| 2026-10-09 | **release 0.6.0**：`config`/`package` 版本号；合并 M5-P1 玩法/UI/文档入库；`game-releases.md` 更新。 |

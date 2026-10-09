@@ -1,5 +1,7 @@
 {
   "version": 1,
+  "releaseVersion": "0.6.0",
+  "releaseNotes": "M5-P1 收官：即梦四场景、UI 对齐、前期三人薄好感；方案重排 M6 小镇扩展",
   "startGold": 50,
   "maxComboSlots": 3,
   "offlineCapHours": 8,

@@ -83,24 +83,89 @@
       "place": "farm",
       "trigger": "onEnter",
       "speaker": "田伯",
-      "note": "W1 占位；W2 替换为正式文案（祭典漏料：空地吃一夜/灯笼，不说节日名）",
       "lines": [
-        "又给我交单啦？好，好，这孩子最棒。",
-        "（占位）好感 10 测试：进田地应只播一次。"
+        "哟，又跑来田里啦？好，好，别跑太急，埂上滑。",
+        "单子的事我看到了——这孩子，越来越能干了，田伯心里踏实。",
+        "记得不？以前收完庄稼，大伙儿会把吃的摆到空地那头，田边灯笼一盏盏亮起来。",
+        "多年没人张罗了……你肯回来、肯下地，我就高兴。地有人看，我晚上也睡得香。"
       ]
     },
     {
-      "id": "aff_linshen_10",
+      "id": "aff_tianbo_30",
       "type": "affinity",
-      "npcId": "linshen",
-      "minAffinity": 10,
-      "place": "shop",
+      "npcId": "tianbo",
+      "minAffinity": 30,
+      "place": "farm",
       "trigger": "onEnter",
-      "speaker": "林婶",
-      "note": "W1 占位；W2 替换",
+      "speaker": "田伯",
       "lines": [
-        "货不错，婶子记下了。",
-        "（占位）好感 10 测试：进小铺应只播一次。"
+        "来，站这儿歇会儿，日头毒，别硬扛。",
+        "你外婆当年也是这个时辰喊你洗手吃饭，端着汤站在埂上，嗓门不大，却总能喊到你。",
+        "她的事，白婆婆记得更细；田伯只说一句——她最疼你，别辜负这口灶。",
+        "地交到你手里了，慢点没关系，肯一天天来，田伯就替你守着。"
+      ]
+    },
+    {
+      "id": "aff_popo_10",
+      "type": "affinity",
+      "npcId": "popo",
+      "minAffinity": 10,
+      "place": "canteen",
+      "trigger": "onEnter",
+      "speaker": "白婆婆",
+      "lines": [
+        "又来了？别挡灶。",
+        "城里那套我不懂，你这几天倒是真下地了——雨天也没见你躲屋里。",
+        "外婆要是看见，嘴上还得骂你野，心里八成乐着呢。",
+        "要做菜就动手；光站着，我不说第二遍。我说完了。"
+      ]
+    },
+    {
+      "id": "aff_popo_30",
+      "type": "affinity",
+      "npcId": "popo",
+      "minAffinity": 30,
+      "place": "canteen",
+      "trigger": "onEnter",
+      "speaker": "白婆婆",
+      "lines": [
+        "祭上要点的灯笼，不是挂好看——是让人记得，这一年还有人愿意把热菜端出来。",
+        "你外婆在的时候，最后一夜她总在灶口多熬一锅，谁晚来都有一口。",
+        "这条头巾是她借我的，你擦汗。别误会，不是心疼你，是看你一脸土。我说完了。",
+        "继续种、继续做。别让我白在门口坐。"
+      ]
+    },
+    {
+      "id": "aff_shen_after_deliver_12",
+      "type": "affinity",
+      "npcId": "shenxiansheng",
+      "minAffinity": 12,
+      "place": "orders",
+      "trigger": "onOrderDeliver",
+      "speaker": "沈先生",
+      "lines": [
+        { "speaker": "", "text": "他把单子折好，没抬头。" },
+        "这菜，主味到了。",
+        "缺的那一味，不在你锅里——在镇子的风里。",
+        "我小时候在这镇上喝过一碗汤，香是齐的；后来走遍很多地方，再也没喝到那一口。",
+        "你做下去。做得多了，也许能把它找回来。"
+      ]
+    },
+    {
+      "id": "aff_shen_pumpkin_soup_first",
+      "type": "affinity",
+      "npcId": "shenxiansheng",
+      "minAffinity": 0,
+      "place": "canteen",
+      "trigger": "onDishCollect",
+      "dishId": "pumpkin_soup",
+      "speaker": "沈先生",
+      "note": "全局第一次出锅南瓜汤；庆祝层关闭后播",
+      "lines": [
+        { "speaker": "", "text": "锅底还在响。门边有人咳了一声。" },
+        "南瓜选得沉，火也肯守。汤色对了。",
+        "可惜，还差一口气——你先别问是哪一口气。",
+        "汤留下。我尝一口就走。"
       ]
     }
   ]

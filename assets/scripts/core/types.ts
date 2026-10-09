@@ -83,6 +83,10 @@ export interface UpgradeDef {
 }
 
 export interface GameConfig {
+  /** 体验版 / 内容版本（与 docs/release/game-releases.md、微信上传版本号一致） */
+  releaseVersion?: string;
+  /** 本版一两句说明（loading 角标等） */
+  releaseNotes?: string;
   startGold: number;
   maxComboSlots: number;
   offlineCapHours: number;
@@ -135,12 +139,15 @@ export interface StoryDef {
   type: 'tutorial' | 'affinity';
   /** 地点 id，不写页面名。orders 是地图完成前的临时地点。 */
   place: string;
-  trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver';
+  trigger: 'onEnter' | 'onHarvest' | 'onDark' | 'onOrderDeliver' | 'onDishCollect';
   speaker: string;
-  lines: string[];
-  /** affinity：归属 NPC；累计好感 ≥ minAffinity 且未读时可触发 */
+  /** 字符串行用节点 speaker；也可逐句指定 speaker（旁白 speaker 留空） */
+  lines: Array<string | TalkLine>;
+  /** affinity：归属 NPC；累计好感 ≥ minAffinity 且未读时可触发（有 dishId 的出锅事件不查好感） */
   npcId?: string;
   minAffinity?: number;
+  /** onDishCollect：第一次出锅该 dishId 时触发（已读 id 不重复） */
+  dishId?: string;
   /** 策划备注，不进游戏 */
   note?: string;
 }

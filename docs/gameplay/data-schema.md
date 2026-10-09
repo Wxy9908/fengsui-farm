@@ -48,6 +48,7 @@ Cocos 工程内副本：`assets/resources/data/`（`npm run sync-data`）。包�
 | sellPrice | number | 作物直接售价（不做菜也能卖，是基础收益） |
 | growTime | number | 生长时长（**秒**，现实时间制） |
 | unlock | object | `{type:"default"}` 初始可买；`{type:"level", level}` 农场等级达标后可买（M3-① 已上线，等级给资格，见 §8）；`{type:"upgrade", line, level}` 旧升级线门控，保留兼容 |
+| type | string | **种植场景 id**（M6 起必填）：作物种子/种植/收获 UI 归属哪块地。现行枚举：`farm` 田地、`orchard` 果园；远期预留 `fishery`、`ranch`（本期无玩法）。**香菇、花生 = `farm`**；**草莓、西瓜、葡萄、桃子 = `orchard`**（从田地迁出，见 `planning/m6-town-expansion.md` §5）。未落地前 json 可暂缺，实现 M6-P1 时一次性补齐并做存档迁移说明 |
 | desc | string | 描述文案 |
 
 ## 3. recipes.json 食谱表与组合解析规则
@@ -107,7 +108,7 @@ resolveCombo(selected):                      # selected = {cropId: count}
 | maxComboSlots | 厨房组合槽位数 |
 | offlineCapHours | 离线结算时长上限（小时） |
 | dailyRewardGold | 每日登录奖励 |
-| debugTimeScale | 调试时间倍率（2026-08-11 定档：测试版 = 10 体验加速档；数值体系按 1 倍速设计与验收，正式上线是否保留 10 留 M6 复评；M1 调试可设 0.01 加速） |
+| debugTimeScale | 调试时间倍率（2026-08-11 定档：测试版 = 10 体验加速档；数值体系按 1 倍速设计与验收，正式上线是否保留 10 留 **M7** 复评；M1 调试可设 0.01 加速） |
 | cookTimeByTier | 烹饪时长阶梯（秒）：按食谱 tier 查表，当前 `{1:60, 2:150, 3:300, 4:480}`（2026-08-05 验收反馈「做菜无等待感」上调） |
 | cookTimePerExtraIngredient | 每多一样食材的烹饪加成秒数（食材总数 -1 计），当前 20；黑暗料理固定 5 秒 |
 | darkCuisineRefundRate | 黑暗料理回血比例（按食材成本计，新手保护期内每次失败都返） |
@@ -274,7 +275,8 @@ resolveCombo(selected):                      # selected = {cropId: count}
 - **小镇声望轴**：设计见故事线；存档 `reputation` 动手时再落，P0/P1 可不展示；
 - **好感存档**：`affinity`，P0b 起记账；薄对话 = P1；
 - **引导存档**：`readTutorials` / `prologueSeen`（旧档缺字段 = 已读）。
-- **物品分类预留**：物品引用按「物品」建模而非「作物」，远期果园/养殖/钓鱼扩展时新增 `category: "crop"|"fruit"|"livestock"|"fish"`，现 15 作物隐含全为 crop——M5 不加字段，玩法落地时回补（避免空字段污染数据）；
+- **种植场景 `type`**（M6-P1 真值）：见 §2；与地图 `place` 对齐（`farm` / `orchard`）。组合表与厨房仍用作物 `id`，不区分场景。
+- **物品品类**（叙事层可选、与 `type` 不同）：远期可加 `category: crop|fruit|livestock|fish` 做文案/图鉴分组；M6 仅以 `type` 驱动玩法场景。
 - 交易系统数值纪律：交易时薪 > 做菜直卖时薪 > 作物直卖时薪，sim 断言守住（沿用 §7.1 口径）。
 
 ## 9. 扩展点（已进灵感停车场，MVP 不做）
