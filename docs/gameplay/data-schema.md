@@ -33,7 +33,10 @@ data_refs:
 | `data/npcs.json` | NPC | 配置 |
 | `data/orders.json` | 求购单池 | 配置 |
 | `data/stories.json` | 序章 + 引导/剧情节点 | 配置 |
+| `data/main_quests.json` | M6 线性主线与 unlock 发放 | 配置 |
 | 存档 | 玩家进度 | 运行时 |
+
+主线字段与完成条件见 [main-quest-design.md](main-quest-design.md)。
 
 Cocos 工程内副本：`assets/resources/data/`（`npm run sync-data`）。包体策略见《游戏开发方案》§5.2（测试版走分包）。
 
@@ -136,15 +139,20 @@ resolveCombo(selected):                      # selected = {cropId: count}
   "orderIds": [],
   "orderDone": [],
   "readTutorials": [],
+  "readAffinityStories": [],
   "prologueSeen": false,
+  "unlocks": {},
+  "completedMainQuestIds": [],
   "lastOnlineAt": 1721462400000,
   "lastDailyRewardDate": null,
-  "stats": { "totalGoldEarned": 0, "recipesDiscovered": 1 }
+  "stats": { "totalGoldEarned": 0, "recipesDiscovered": 1, "harvestCount": 0 }
 }
 ```
 
+- **M6 主线**：`unlocks`（`map`/`canteen`/`shop`/`orchard`/`bag`/`orders`）、`completedMainQuestIds`、`stats.plantCount`；见 [main-quest-design.md](main-quest-design.md)。
+
 - 旧存档缺字段一律 `??=` 迁移；**缺 `readTutorials` 的旧档视为序章与引导已读**（不重播）。
-- 存档 key 现行 `newgame_save_v3`（以代码为准）；升级 key 时须在开发日志留痕。
+- 存档 key 现行 `newgame_save_v4`（M6 主线 unlock；`v3` 自动迁移）；升级 key 时须在开发日志留痕。
 
 ### 6.1 配置表增量（M5）
 

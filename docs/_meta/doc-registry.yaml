@@ -101,6 +101,16 @@ docs:
     title: 数据表设计
     kind: spec
     purpose_zh: 配置字段与存档契约
+  - path: gameplay/main-quest-design.md
+    doc_id: gameplay.main-quest-design
+    title: 主线任务设计
+    kind: spec
+    purpose_zh: main_quests 与 unlock 发放
+  - path: gameplay/bag-ui-design.md
+    doc_id: gameplay.bag-ui-design
+    title: 背包内页 UI 设计
+    kind: spec
+    purpose_zh: M6 H4b 背包抽屉视觉与验收
   - path: gameplay/recipe-combo-design.md
     doc_id: gameplay.recipe-combo-design
     title: 组合表设计

@@ -21,6 +21,7 @@ const milestones = read('milestones.json');
 const npcs = read('npcs.json');
 const orders = read('orders.json');
 const stories = read('stories.json');
+const mainQuestsFile = read('main_quests.json');
 const data: DataTables = {
   crops: crops.crops,
   recipes: recipes.recipes,
@@ -32,6 +33,7 @@ const data: DataTables = {
   orders: orders.orders,
   stories: stories.stories,
   prologue: stories.prologue,
+  mainQuests: mainQuestsFile.quests,
   // 仿真固定用 1 倍时间（debugTimeScale 是测试期加速开关，逻辑断言不应受它影响）
   config: { ...read('config.json'), debugTimeScale: 1 },
 };
@@ -614,6 +616,56 @@ log(`玉米离线 15 分钟，进度 ${(p * 100).toFixed(1)}%（1800 秒周期�
   g.completeAffinityStory('aff_shen_pumpkin_soup_first');
   assert.strictEqual(g.pendingAffinity('canteen', 'onDishCollect', undefined, 'pumpkin_soup'), null);
   log('好感薄剧情：表校验 + 阈值触发 + 出锅事件 + 已读不重复');
+}
+
+{
+  const quests = mainQuestsFile.quests as {
+    id: string;
+    complete: { type: string; storyId?: string; recipeId?: string };
+  }[];
+  for (const q of quests) {
+    if (q.complete.type === 'storyRead') {
+      const sid = q.complete.storyId!;
+      const st = (stories.stories as { id: string }[]).find((s) => s.id === sid);
+      assert.ok(st, `主线 ${q.id} 引用未知 story ${sid}`);
+    }
+    if (q.complete.type === 'recipeDiscovered') {
+      const rid = q.complete.recipeId!;
+      assert.ok(data.recipes.some((r) => r.id === rid), `主线 ${q.id} 引用未知食谱 ${rid}`);
+    }
+  }
+  const g0 = new GameCore(data, undefined, nowFn);
+  assert.strictEqual(g0.getCurrentMainQuest()?.id, 'mq_ch1_plant');
+  assert.strictEqual(g0.hasUnlock('map'), false, '新档未解锁地图');
+  g0.plant(0, 'wheat');
+  assert.strictEqual(g0.getCurrentMainQuest()?.id, 'mq_ch1_harvest');
+  const s = g0.getSave();
+  s.fields[0] = { cropId: 'wheat', plantedAt: nowFn() - 999999 };
+  const g1 = new GameCore(data, s, nowFn);
+  g1.harvest(0);
+  assert.strictEqual(g1.hasUnlock('bag'), true, '首次收获应解锁背包');
+  const bagGrants = g1.drainMainQuestGrants();
+  assert.strictEqual(bagGrants.length, 1);
+  assert.strictEqual(bagGrants[0].unlock, 'bag');
+  assert.strictEqual(g1.getCurrentMainQuest()?.id, 'mq_ch1_map');
+  g1.completeTutorial('tut_mq_map_tianbo');
+  assert.strictEqual(g1.hasUnlock('map'), true);
+  const mapGrants = g1.drainMainQuestGrants();
+  assert.strictEqual(mapGrants.length, 1);
+  assert.strictEqual(mapGrants[0].unlock, 'map');
+  assert.strictEqual(g1.getCurrentMainQuest()?.id, 'mq_ch1_canteen');
+  g1.completeTutorial('tut_canteen');
+  assert.strictEqual(g1.hasUnlock('canteen'), true);
+  const canteenGrants = g1.drainMainQuestGrants();
+  assert.strictEqual(canteenGrants.length, 1);
+  assert.strictEqual(canteenGrants[0].unlock, 'canteen');
+  assert.strictEqual(g1.getCurrentMainQuest()?.id, 'mq_ch1_first_dish');
+  const s2 = g1.getSave();
+  s2.discoveredRecipes.push('toast');
+  const g2 = new GameCore(data, s2, nowFn);
+  assert.strictEqual(g2.getCurrentMainQuest(), null, '章一做菜步完成后无后续');
+  assert.strictEqual(g2.drainMainQuestGrants().length, 0);
+  log('主线章一：种→收→认路→食堂→发现 toast');
 }
 
 console.log('\n✅ 仿真通过：核心循环（种菜→收获→做菜→卖钱→升级）+ 离线结算全部符合数据表预期');

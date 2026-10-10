@@ -1,6 +1,6 @@
 {
   "name": "newgame",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "description": "丰穗小镇——种田做饭的慢生活经营游戏（Cocos Creator 3.x + TypeScript）",
   "scripts": {
@@ -14,12 +14,24 @@
     "gen-audio": "node sim/gen-audio.js",
     "gen-bgm": "node sim/gen-bgm.js",
     "import-jimeng-bg": "node sim/import-jimeng-bg.js",
+    "import-jimeng-ui-icons": "node sim/import-jimeng-ui-icons.js",
+    "sync-ui-cutout-icons": "node sim/sync-ui-cutout-icons.js",
+    "polish-ui-sample-icons": "node sim/polish-ui-sample-icons.js",
+    "gen-simple-ui-icons": "node sim/gen-simple-ui-icons.js",
+    "import-jimeng-crops-ui": "node sim/import-jimeng-crops-ui.js",
+    "organize-crop-ui-samples": "node sim/organize-crop-ui-samples.js",
+    "import-jimeng-crop-stages": "node sim/import-jimeng-crop-stages.js",
+    "import-jimeng-crop-stages-all": "node sim/import-jimeng-crop-stages.js --all",
+    "organize-crop-samples": "node sim/organize-crop-samples.js",
+    "polish-field-crop-samples": "node sim/polish-field-crop-samples.js",
+    "repolish-crop-ui-samples": "node sim/repolish-crop-ui-samples.js",
     "gen-p1-v2-collage": "node sim/gen-p1-v2-collage.js",
     "archive-art-releases": "node sim/archive-art-releases.js"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "fonteditor-core": "^2.6.3",
+    "sharp": "^0.35.5",
     "typescript": "^5.0.0"
   },
   "creator": {

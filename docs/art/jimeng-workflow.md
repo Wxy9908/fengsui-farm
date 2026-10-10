@@ -93,13 +93,13 @@ related:
 3. 生成 → 存 `docs/参考图/小样/<id>.png`（田里成熟株）。  
 4. **不要**挂旧作物图，除非新画风已像、只是认不出作物。
 
-### 2.4 背包贴纸（可选，后做）
+### 2.4 背包贴纸 / 作物列表图标
 
-只挂 dw13，用 **§6.3B**。可保留「收获物」观感；**不要**与田里植株混用同一提示词。
+只挂 **dw13**，粘贴 **`jimeng-prompts.md` §6.3B 整段** + 作物表「内容行」。**首批 7 作物 UI 贴纸 ✅ 2026-10-09**（`icons/crops-ui/`：wheat～carrot 解锁序前 7 种）。可保留「收获物」观感；**不要**与田里植株 §6.3A 混用；**不要**挂带白刀模边的失败稿当参考。小样：`docs/参考图/小样/icons/crops-ui/<id>.png`。
 
 ### 2.5 后期
 
-去水印/文字；抠透明底；缩到约 256；过美术规范 §5.4。
+即梦「抠图」下载 → `npm run organize-crop-samples`（`_抠图` 重命名为 canonical，旧图进 `_archive`）→ `npm run import-jimeng-crop-stages-all`（去右下角即梦水印、透明/浅底、256）。仍须目视过 §5.4；角标裁不干净时换无水印导出或手修小样后再入库。
 
 ---
 
@@ -125,8 +125,22 @@ related:
 
 ### 阶段 2 · 场景大图
 
-`field/kitchen/shop/book/loading` → §6.4。  
-**入库命令**：`npm run import-jimeng-bg`（小样 `field_bg` / `kitchen_bg` / `shop_bg` / **`loading_bg`** → `assets/resources/bg/*.jpg`，720×1280 JPEG q87，**不覆盖**已有 `.meta`）。`book` 仍走 `gen-scene-bg`；**`loading` 整幅海报走即梦**（见 §7 Loading 海报）。
+`field/kitchen/shop/loading` → §6.4；**M6 新增** `map` → §6.4「小镇地图页 `map_bg`」。  
+**入库命令**：`npm run import-jimeng-bg`（小样 `field_bg` / `kitchen_bg` / `shop_bg` / `loading_bg` / **`map_bg`** → `assets/resources/bg/*.jpg`，720×1280 JPEG q87，**不覆盖**已有 `.meta`）。`book` 仍走 `gen-scene-bg`；**`loading` 整幅海报走即梦**（见 §7 Loading 海报）。
+
+### 3.1 M6 · 地图底图 + 入口小图标（生成逻辑）
+
+| 步骤 | 地图页 `map_bg` | 入口 icon（地图钮/背包钮） |
+|------|-----------------|---------------------------|
+| 1 构图 | **方案 B**：`map_bg` 无建筑；热点坐标对照 `map.svg` | 三折地图纸 icon |
+| 2 即梦 | **只挂 `field_bg.png`** + §6.4 `map_bg` 纯地形提示词 | §6.3C |
+| 2b | 地点叠层 §6.4.1：食堂/小铺（白墙橙顶）+ 田地/果园（无房：犁沟或果树） | — |
+| 3 小样 | `map_bg.png` + `map_place_*.png` | `icons/ui/map.png`、`bag.png` |
+| 4 验收 | 与 `field.jpg` 同世界、全图零建筑；小房与 field 小屋并排 | 透明底 |
+| 5 入库 | `import-jimeng-bg`；小房 `import-jimeng-ui-icons` | `import-jimeng-ui-icons`；作物贴纸 `npm run import-jimeng-crops-ui`；田里 `_s1/_s2` → `import-jimeng-crop-stages` |
+| 6 游戏 | 底图 + 代码热点；后续 Sprite 替胶囊 | 田地地图钮 |
+
+**优先级**：玩法可先色块地图；**体验底线 M6-V0** 再换 `map.jpg`。入口 icon **不挡** P0 逻辑验收。
 
 ### 阶段 3 · 新内容
 
@@ -140,7 +154,8 @@ NPC 定妆等 → §6.5。
 |------|------|
 | **W1A 田里作物** | 仅 dw13 → §6.3A → 小样/crops |
 | **W1B 菜/贴纸图标** | 仅 dw13 → §6.3B → dishes 或备选收获图 |
-| **W2 场景** | dw4/桃源 → §6.4 |
+| **W2 场景** | dw4/桃源 → §6.4（含 **map_bg**） |
+| **W2b UI 小图标** | 仅 dw13 → §6.3C（地图钮/背包钮） |
 | **W3 NPC** | sc1 → §6.5 |
 
 ---
@@ -151,8 +166,10 @@ NPC 定妆等 → §6.5。
 |------|------|------|
 | 作物 | `assets/resources/icons/crops/` | `<id>.png` / `_s1` / `_s2` |
 | 菜品 | `assets/resources/icons/dishes/` | 与现文件同名 |
-| 背景 | `assets/resources/bg/` | `field.jpg` 等 |
+| 背景 | `assets/resources/bg/` | `field.jpg` / **`map.jpg`** 等 |
+| UI 小图标 | `assets/resources/icons/ui/` | `map.png` / `bag.png` |
 | 小样 | `docs/参考图/小样/icons/crops/` | 如 `wheat.png` / `wheat_s1.png` |
+| 小样 | `docs/参考图/小样/` | `map_bg.png`；`icons/ui/*.png` |
 | NPC | `docs/mockups/npc/` | 如 `tianbo.png` |
 
 ---
@@ -216,3 +233,9 @@ NPC 定妆等 → §6.5。
 | 2026-10-08 | **0.3 ✅** + **阶段 2**：`import-jimeng-bg.js`；field/kitchen/shop 小样入库游戏 bg |
 | 2026-10-08 | **Loading 海报**：jimeng-prompts §6 `loading_bg` 整幅即梦；`import-jimeng-bg` 支持 loading |
 | 2026-10-09 | **P1-V2 ✅**：`gen-p1-v2-collage.js` → `mockups/p1-v2-jimeng-scenes.png` |
+| 2026-10-09 | **M6**：`jimeng-prompts` §6.3C 入口 icon + §6.4 `map_bg`；`import-jimeng-bg` 支持 map；`import-jimeng-ui-icons` |
+| 2026-10-09 | **§6.3C 纠偏**：地图改单层定位针/折角纸（禁卷轴嵌小镇）；背包改双肩包正面（禁粮袋麦穗） |
+| 2026-10-09 | **§6.3C**：地图定稿语义=三折地图纸 icon（禁路标）；画风仍丰穗描边平涂，非黄底圆标素材 |
+| 2026-10-09 | **map_bg 方案 B**：纯地形对齐 field_bg；地点建筑 §6.4.1 单栋叠层 |
+| 2026-10-09 | **§6.3B 作物贴纸**：15 作物内容行 + 禁白边模板；小样目录 `icons/crops-ui/` |
+| 2026-10-09 | **§6.3B 首批 7 ✅**：wheat/tomato/potato/corn/pumpkin/carrot/cabbage 入 `icons/crops-ui/`；余 8 作物待放量 |

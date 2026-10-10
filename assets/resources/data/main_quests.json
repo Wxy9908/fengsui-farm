@@ -1,0 +1,51 @@
+{
+  "version": 2,
+  "comment": "章一：种菜→做菜；卖菜见 docs/gameplay/main-quest-design.md §7 待定。grant 可省略。",
+  "quests": [
+    {
+      "id": "mq_ch1_plant",
+      "title": "撒上第一把种子",
+      "desc": "点空地，选小麦种下去",
+      "complete": { "type": "plantCount", "count": 1 },
+      "npcId": "tianbo"
+    },
+    {
+      "id": "mq_ch1_harvest",
+      "title": "收回第一袋粮",
+      "desc": "等麦子熟了，点地块收获",
+      "complete": { "type": "harvestCount", "count": 1 },
+      "npcId": "tianbo"
+    },
+    {
+      "id": "mq_ch1_bag",
+      "title": "认认行囊",
+      "desc": "点左上角背包，看看收下来的作物",
+      "complete": { "type": "harvestCount", "count": 1 },
+      "grant": { "unlock": "bag" },
+      "npcId": "tianbo"
+    },
+    {
+      "id": "mq_ch1_map",
+      "title": "认一认丰穗镇",
+      "desc": "听田伯说完镇子怎么走",
+      "complete": { "type": "storyRead", "storyId": "tut_mq_map_tianbo" },
+      "grant": { "unlock": "map" },
+      "npcId": "tianbo"
+    },
+    {
+      "id": "mq_ch1_canteen",
+      "title": "去食堂看看",
+      "desc": "从地图进入食堂，听白婆婆讲灶台",
+      "complete": { "type": "storyRead", "storyId": "tut_canteen" },
+      "grant": { "unlock": "canteen" },
+      "npcId": "popo"
+    },
+    {
+      "id": "mq_ch1_first_dish",
+      "title": "出锅第一道菜",
+      "desc": "用小麦做出烤面包",
+      "complete": { "type": "recipeDiscovered", "recipeId": "toast" },
+      "npcId": "popo"
+    }
+  ]
+}

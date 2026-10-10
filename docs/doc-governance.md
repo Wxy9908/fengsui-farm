@@ -58,7 +58,9 @@ related:
 | `narrative/risks-and-open-questions.md` | 风险/待决 | 风险、§12 待拍板 | 状态勾选 |
 | `narrative/affinity-design.md` | 好感 | 阈值、触发 ↔ stories | 人设长文 |
 | `gameplay/data-schema.md` | 数据契约 | 字段、存档、经济原则 | 发现率长文 |
+| `gameplay/main-quest-design.md` | 主线任务 | main_quests 表、complete/unlock | 批次状态 |
 | `gameplay/recipe-combo-design.md` | 组合 | 发现率、命中、菜名 §4.2 | 价目真值 |
+| `gameplay/bag-ui-design.md` | 背包 UI | 抽屉内页 IA、视觉规格、H4b 验收 | 批次 ✅、数值 |
 | `art/art-style-guide.md` | 画风 | 色板、透视、验收语义 | 提示词全文、操作步骤 |
 | `art/jimeng-pipeline.md` | 即梦**索引** | 路由 | 正文 |
 | `art/jimeng-workflow.md` | 即梦操作 | 设置、顺序、入库 | 提示词全文 |

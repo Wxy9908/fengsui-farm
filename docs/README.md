@@ -23,6 +23,8 @@ doc_kind: index
 | 叙事（入口） | [narrative/story-and-characters.md](narrative/story-and-characters.md) | 故事线索引 | 链到各叙事子文档 |
 | 好感触发 | [narrative/affinity-design.md](narrative/affinity-design.md) | 好感度设计 | 条件 ↔ stories.json |
 | 字段 / 存档 | [gameplay/data-schema.md](gameplay/data-schema.md) | 数据表设计 | 配置契约 |
+| 主线 / 功能解锁 | [gameplay/main-quest-design.md](gameplay/main-quest-design.md) | 主线任务设计 | 章一节奏与 unlock |
+| 背包内页 | [gameplay/bag-ui-design.md](gameplay/bag-ui-design.md) | 背包内页 UI 设计 | M6 H4b 规格与验收 |
 | 组合 / 发现率 | [gameplay/recipe-combo-design.md](gameplay/recipe-combo-design.md) | 组合表设计 | 组合原则 |
 | 画风 | [art/art-style-guide.md](art/art-style-guide.md) | 美术风格规范 | 色板与验收 |
 | 即梦（入口） | [art/jimeng-pipeline.md](art/jimeng-pipeline.md) | 即梦索引 | 链 workflow / prompts |

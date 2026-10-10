@@ -76,6 +76,20 @@
       ]
     },
     {
+      "id": "tut_mq_map_tianbo",
+      "type": "tutorial",
+      "place": "farm",
+      "trigger": "onEnter",
+      "speaker": "田伯",
+      "afterTutorialIds": ["tut_farm_plant", "tut_farm_harvest"],
+      "note": "主线 mq_ch1_map：读完即 grant unlock.map（P0-0）",
+      "lines": [
+        "镇子我给你画在一张图上了，别老闷在田里打转。",
+        "想买种子、去食堂、找林婶，从地图走一眼就能看清。",
+        "你认路以后，田里右下角会多一个入口——点开就是丰穗镇。"
+      ]
+    },
+    {
       "id": "aff_tianbo_10",
       "type": "affinity",
       "npcId": "tianbo",

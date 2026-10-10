@@ -17,13 +17,22 @@ related:
 > **不写**：里程碑批次勾选（→ `development-plan.md` §6）、开发过程细节（→ `dev-log.md`）。  
 > **文档分工**：见 [doc-governance.md](../doc-governance.md)
 
-微信开发者工具上传时的**版本号**请与下表 `releaseVersion` 一致（上次体验版：**0.4.0**；仓库当前：**0.6.0**）。
+微信开发者工具上传时的**版本号**请与下表 `releaseVersion` 一致（上次体验版：**0.4.0**；仓库当前：**0.7.0**）。
 
 | releaseVersion | 日期 | 微信体验版 | 内容摘要 | 原画归档 |
 |----------------|------|------------|----------|----------|
 | **0.4.0** | 2026-08-11 | ✅ 真机验收 | M4 测试版：BGM/音效、loading、原型 v3 UI、M5-P0 前玩法 | `art-archive/releases/0.4.0-vector-scene-bg/` |
 | **0.5.0** | 2026-10-08 | （未单独上传） | 即梦场景入库中间态；见 0.6.0 合并说明 | `art-archive/releases/0.5.0-jimeng-scene-bg/` |
 | **0.6.0** | 2026-10-09 | 待上传 | M5-P1 体验收官 + M6 方案；四场景/loading、小铺账单弹窗、薄好感与出锅事件 | 同 0.5.0 场景集 + `docs/mockups/p1-v2-jimeng-scenes.png` |
+| **0.7.0** | 2026-10-10 | 待上传 | **M6-P0**：地图 `map_bg` + `map_place_*` 热点、主线 unlock、背包抽屉、右下角 bag/map、存档 v4 | `assets/resources/bg/map.jpg` + `icons/ui/` |
+
+## 0.7.0 明细
+
+- **版本**：`releaseVersion` 0.7.0；**M6-P0** 批次收口（`development-plan.md` §6.6）。  
+- **玩法**：`main_quests.json` 章一主线；`hasUnlock` 门控地图/食堂/背包；收菜解锁背包（`mq_ch1_bag`）。  
+- **UI**：丰穗镇地图页；右下角双 icon 入口；背包底部抽屉 + 分区列表；主线任务条；隐藏订单 tab、`affinityStoriesEnabled` 关闭。  
+- **存档**：`newgame_save_v4`（v3 迁移补 unlock）。  
+- **待做**：M6-P0′ 背包内页改版；M6-P1 果园与 `crops.type`。
 
 ## 0.6.0 明细
 

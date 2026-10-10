@@ -42,11 +42,12 @@ import {
   Widget,
 } from 'cc';
 import { GameCore, SellAllBill } from '../core/GameCore';
-import { DataTables, MilestoneDef, SaveData } from '../core/types';
+import { DataTables, MilestoneDef, SaveData, UnlockKey } from '../core/types';
 
 const { ccclass, property } = _decorator;
 
-const SAVE_KEY = 'newgame_save_v3'; // v2 → v3：M3 平衡回修（经验曲线/便利线重排）后清档开新局（旧档仍留在 v2 key 下，可回退）
+const SAVE_KEY = 'newgame_save_v4'; // v4：M6 主线 unlock；v3 档自动迁移
+const SAVE_KEY_V3 = 'newgame_save_v3';
 const AUTOSAVE_INTERVAL = 10; // 秒
 
 @ccclass('GameController')
@@ -90,6 +91,18 @@ export class GameController extends Component {
   private pages: Record<string, Node> = {};
   private navItems: { key: string; name: string; label: Label; g: Graphics; w: number; h: number; on: boolean }[] = [];
   private currentPage = 'field';
+  /** 右下角统一 HUD：背包 + 地图（横排胶囊底座，贴底栏右上） */
+  private cornerHud: Node | null = null;
+  private cornerBagBtn: Node | null = null;
+  private cornerMapBtn: Node | null = null;
+  private bagOverlay: Node | null = null;
+  private bagListContent: Node | null = null;
+  /** setupPages 缓存，供延迟创建地图页 */
+  private hudCanvas: Node | null = null;
+  private hudVis = { width: 720, height: 1280 };
+  /** 主线任务条（当前一步 title/desc） */
+  private questTitleLabel: Label | null = null;
+  private questDescLabel: Label | null = null;
   /** 各页消息栏（位置统一，say() 路由到对应页） */
   private pageMessages: Record<string, Label> = {};
   /** 商店页今日特价小黑板（dailySpecial() 为 null 时隐藏；文案 refreshUI 刷新） */
@@ -122,8 +135,12 @@ export class GameController extends Component {
   private xpBarKey = '';
   /** 上一帧农场等级（-1=未初始化；升级时个人区脉冲） */
   private lastLevel = -1;
-  /** 图标 SpriteFrame 缓存（美术 v1.0：assets/resources/icons，key=作物/菜品 id） */
+  /** 田里株 + 菜品图标（icons/crops 含 _s1/_s2/成熟株；icons/dishes） */
   private iconFrames: Record<string, SpriteFrame> = {};
+  /** 作物收获贴纸（icons/crops-ui）：种子抽屉 / 厨房食材 / 图鉴作物 / 背包 / 收获飞出 */
+  private cropUiFrames: Record<string, SpriteFrame> = {};
+  /** 地图/背包等 UI 图标（icons/ui） */
+  private uiIconFrames: Record<string, SpriteFrame> = {};
   /** 页面背景 SpriteFrame 缓存（assets/resources/bg，key=页面 key；缺失时降级 Graphics 色块底） */
   private bgFrames: Record<string, SpriteFrame> = {};
   /** 卡片纸纹叠层（assets/resources/ui/paper，缺失时跳过，不影响显示） */
@@ -137,6 +154,8 @@ export class GameController extends Component {
   private bgmSrc: AudioSourceComponent | null = null;
   /** UI 字体（美术 v1.1 ④：站酷快乐体子集 assets/resources/fonts/ui.ttf；缺失时全体降级系统字） */
   private uiFont: TTFFont | null = null;
+  /** 快乐体只加载一次；遮罩与 loadIcons 共用，避免重复请求 */
+  private uiFontLoadPromise: Promise<void> | null = null;
 
   /** 升级线显示名 */
   private static readonly LINE_NAMES: Record<string, string> = {
@@ -197,6 +216,12 @@ export class GameController extends Component {
 
   onLoad() {
     this.makeSplash();
+    // 遮罩文案在快乐体就绪前保持透明，避免系统字 → 快乐体换皮闪一下
+    void this.ensureUiFont().then(() => {
+      if (!this.splash?.isValid) return;
+      this.applyUiFont(this.splash);
+      this.revealSplashText();
+    });
   }
 
   start() {
@@ -210,7 +235,6 @@ export class GameController extends Component {
       this.setSplashProgress(0.35);
       await this.loadIcons();
       this.setSplashProgress(0.85);
-      if (this.splash) this.applyUiFont(this.splash); // 快乐体加载完成后遮罩文字同步换皮
       const oldSave = this.readSave();
       const offlineMs = oldSave ? Date.now() - oldSave.lastOnlineAt : 0;
       this.game = new GameCore(data, oldSave);
@@ -225,6 +249,10 @@ export class GameController extends Component {
       }
       this.setupPages();
       this.setupFields();
+      if (this.hudCanvas) {
+        this.buildHudChrome(this.hudCanvas, this.hudVis);
+        this.refreshCornerHud();
+      }
       this.setSplashProgress(1);
       if (msgs.length > 0) {
         this.sayAll(msgs.join('；'));
@@ -234,6 +262,8 @@ export class GameController extends Component {
       this.refreshPanels();
       if (this.splash) this.hideSplash();
       else this.beginStory();
+    }).catch((err) => {
+      console.error('[GameController] 初始化失败', err);
     });
   }
 
@@ -285,6 +315,9 @@ export class GameController extends Component {
       l.isBold = bold;
       l.color = color;
       l.horizontalAlign = Label.HorizontalAlign.CENTER;
+      if (!this.uiFont) {
+        (t.getComponent(UIOpacity) ?? t.addComponent(UIOpacity)).opacity = 0;
+      }
       return l;
     };
     // 坐标与 mockup 对齐（SVG y → Cocos y = 640 - y）：小贴士 y1010、加载文案 y1078、进度条中心 y1121
@@ -413,6 +446,8 @@ export class GameController extends Component {
     fieldGridTopY: -168,
     fieldSignY: -90,
     fieldBasketY: -508,
+    fieldMapBtnX: 268,
+    fieldMapBtnY: -438,
     kitchenPotY: 12,
     kitchenSlotY: 172,
     kitchenSlotTitleY: 258,
@@ -442,8 +477,65 @@ export class GameController extends Component {
   private static readonly GRID_STEP_X = 134;
   private static readonly PLOT_HW = 68; // 菱形半宽（2:1）
   private static readonly PLOT_HH = 34;
+  /** 田畦植株图标（苗冠需露出菱形土面，根仍落在顶面犁沟区） */
+  private static readonly PLOT_PLANT_ICON_GROW = 76;
+  private static readonly PLOT_PLANT_ICON_MATURE = 88;
+  /** 左下收获篮内作物贴纸基准边长 */
+  private static readonly BASKET_CROP_ICON = 56;
+  /** 作物贴纸锚点偏下：放大时向上长、下沿贴土/贴篮底，避免从菱形里「顶出去」 */
+  private static readonly CROP_SPRITE_ANCHOR_Y = 0.05;
 
   /** 圆角菱形路径（2:1 斜切地块，角部裁圆 r），只描路径，由调用方 fill/stroke */
+  private applyCropSpriteAnchor(ut: UITransform) {
+    ut.setAnchorPoint(0.5, GameController.CROP_SPRITE_ANCHOR_Y);
+  }
+
+  /**
+   * 一畦三株落点：x、锚点 y、节点缩放。
+   * 菱形左右角连线为 y=0；锚点落在对角线以下，贴图底部土块落在田地下半区，苗冠仍向上伸出。
+   */
+  private static plotPlantSpots(hw: number, hh: number): [number, number, number][] {
+    return [
+      [0, -hh * 0.2, 0.86],
+      [-hw * 0.26, -hh * 0.4, 1.02],
+      [hw * 0.28, -hh * 0.4, 1.02],
+    ];
+  }
+
+  /** 收获篮内按作物外形微调（番茄/南瓜等大圆体略缩，麦穗可略大） */
+  private basketCropScaleMul(cropId: string): number {
+    switch (cropId) {
+      case 'tomato':
+        return 0.76;
+      case 'pumpkin':
+        return 0.7;
+      case 'cabbage':
+        return 0.82;
+      case 'wheat':
+        return 0.94;
+      default:
+        return 1;
+    }
+  }
+
+  /** 篮内堆叠落点（相对篮心；y 负值 = 碗底区域） */
+  private basketPileLayout(count: number): [number, number, number][] {
+    if (count >= 5) {
+      return [
+        [-11, -25, 0.72],
+        [2, -21, 0.82],
+        [13, -25, 0.68],
+      ];
+    }
+    if (count >= 2) {
+      return [
+        [-9, -25, 0.76],
+        [9, -23, 0.76],
+      ];
+    }
+    return [[0, -24, 0.84]];
+  }
+
   private traceDiamond(g: Graphics, cx: number, cy: number, hw: number, hh: number, r = 0.16) {
     const pts: [number, number][] = [
       [cx, cy + hh],
@@ -592,25 +684,27 @@ export class GameController extends Component {
         g.fill();
       }
     };
-    // 一畦三株：后 1 前 2 三角阵型（沿犁沟排布，近大远小）
-    const spots: [number, number, number][] = [
-      [0, HH * 0.24, 0.82],
-      [-HW * 0.3, -HH * 0.16, 1.0],
-      [HW * 0.3, -HH * 0.16, 1.0],
-    ];
+    const spots = GameController.plotPlantSpots(HW, HH);
     const plants: Sprite[] = [];
     for (const [px, py, ps] of spots) {
       const pn = new Node('plant');
       pn.layer = Layers.Enum.UI_2D;
       pn.parent = node;
-      pn.addComponent(UITransform).setContentSize(44, 44);
-      pn.setPosition(px, py + 10); // 根扎进垄里，图标中心略上抬
+      const put = pn.addComponent(UITransform);
+      put.setContentSize(GameController.PLOT_PLANT_ICON_GROW, GameController.PLOT_PLANT_ICON_GROW);
+      this.applyCropSpriteAnchor(put);
+      pn.setPosition(px, py);
       pn.setScale(ps, ps, 1);
       const sp = pn.addComponent(Sprite);
       sp.sizeMode = Sprite.SizeMode.CUSTOM;
       pn.active = false;
       plants.push(sp);
     }
+    const liftPlantsAboveSoil = () => {
+      const base = soilN.getSiblingIndex() + 1;
+      plants.forEach((sp, i) => sp.node.setSiblingIndex(base + i));
+    };
+    liftPlantsAboveSoil();
     // 空地「播种」小木牌（mockup：细木杆 + 原木牌 + 米白字）
     const signN = new Node('sign');
     signN.layer = Layers.Enum.UI_2D;
@@ -643,7 +737,7 @@ export class GameController extends Component {
     progN.layer = Layers.Enum.UI_2D;
     progN.parent = node;
     progN.addComponent(UITransform).setContentSize(64, 14);
-    progN.setPosition(0, HH + 30);
+    progN.setPosition(0, HH + 48);
     const prog = progN.addComponent(Graphics);
     // 成熟收获牌（悬在作物头顶：金色小圆牌「收」+ 星花，成熟时上下浮动引导点击；
     // 动效占微光呼吸的配额——呼吸光在成熟态改静态，摆动保留，每屏动效仍 ≤2）
@@ -716,6 +810,7 @@ export class GameController extends Component {
     // 拦截点击：Button 自身先响应，再由这两个监听截停冒泡，防穿透到地块的种植/收获点击
     fertN.on(Node.EventType.TOUCH_START, (e: Event) => { e.propagationStopped = true; }, this);
     fertN.on(Node.EventType.TOUCH_END, (e: Event) => { e.propagationStopped = true; }, this);
+    liftPlantsAboveSoil();
     // 坑位编号（所有坑都显示）
     this.makePlotNumBadge(node, num, false);
     node.addComponent(Button);
@@ -745,7 +840,9 @@ export class GameController extends Component {
         p.node.active = !!sf;
         if (sf) {
           p.spriteFrame = sf;
-          p.node.getComponent(UITransform)!.setContentSize(size, size);
+          const ut = p.node.getComponent(UITransform)!;
+          ut.setContentSize(size, size);
+          this.applyCropSpriteAnchor(ut);
         }
       }
     };
@@ -774,7 +871,7 @@ export class GameController extends Component {
         drawSoil(true); // 生长中 = 湿土
         // 生长阶段差分（美术 v1.1 ③）：<34% 幼苗 _s1，否则半成株 _s2；缺帧静默退回成熟帧
         const stageId = pct < 34 ? `${id}_s1` : `${id}_s2`;
-        setPlants(hasFrame(stageId) ? stageId : id, 44);
+        setPlants(hasFrame(stageId) ? stageId : id, GameController.PLOT_PLANT_ICON_GROW);
         prog.clear();
         // 底：米白胶囊 + 棕描边
         prog.fillColor = new Color(0xff, 0xfd, 0xf5, 0xf2);
@@ -801,7 +898,7 @@ export class GameController extends Component {
         stopMatureFx(); // 换作物成熟时清掉上一套动效再重建
         hideAux();
         drawSoil(true);
-        setPlants(id, 50);
+        setPlants(id, GameController.PLOT_PLANT_ICON_MATURE);
         badgeN.active = true;
         // 收获牌上下浮动（点击引导；与三株轻摆合计 2 处动效，微光改静态让出配额）
         tween(badgeN)
@@ -815,13 +912,14 @@ export class GameController extends Component {
         glowN = new Node('matureGlow');
         glowN.layer = Layers.Enum.UI_2D;
         glowN.parent = node;
-        glowN.setSiblingIndex(1); // 土壤之上、植株之下
-        glowN.addComponent(UITransform).setContentSize(96, 56);
-        glowN.setPosition(0, 18);
+        glowN.setSiblingIndex(soilN.getSiblingIndex() + 1); // 土壤之上、植株之下
+        glowN.addComponent(UITransform).setContentSize(104, 58);
+        glowN.setPosition(0, 8);
         const gg = glowN.addComponent(Graphics);
         gg.fillColor = new Color(0xff, 0xe9, 0x8a, 0x59);
-        gg.ellipse(0, 0, 48, 28);
+        gg.ellipse(0, 0, 50, 28);
         gg.fill();
+        liftPlantsAboveSoil();
         // 三株轻摆（相位错开；状态反馈，不占装饰配额）
         plants.forEach((p, i) => {
           const ps = spots[i][2];
@@ -1530,7 +1628,7 @@ export class GameController extends Component {
       pay.setPosition(-20, -22);
       (pay.getComponent(Label)!).color = new Color(0x8b, 0x5a, 0x2b);
 
-      const sf = this.iconFrames[o.itemId];
+      const sf = this.cropUiFrame(o.itemId) ?? this.iconFrames[o.itemId];
       if (sf) {
         const iconN = new Node('icon');
         iconN.layer = Layers.Enum.UI_2D;
@@ -2016,6 +2114,8 @@ export class GameController extends Component {
     // 可见区域（随分辨率适配策略变化）：消息栏贴可见顶边；导航/金币条用 Widget 钉边（不手算）
     const vis = view.getVisibleSize();
     const topY = vis.height / 2;
+    this.hudCanvas = canvas;
+    this.hudVis = { width: vis.width, height: vis.height };
 
     for (const { key } of GameController.PAGES) {
       const p = new Node(`Page_${key}`);
@@ -2074,16 +2174,17 @@ export class GameController extends Component {
     const nav = new Node('NavBar');
     nav.layer = Layers.Enum.UI_2D;
     nav.parent = canvas;
+    const navUt = nav.addComponent(UITransform);
+    navUt.setAnchorPoint(0.5, 0.5);
+    navUt.setContentSize(vis.width, NAV_TAB_H);
     const navWidget = nav.addComponent(Widget);
     navWidget.isAlignBottom = true;
     navWidget.isAlignHorizontalCenter = true;
     navWidget.bottom = 16;
     navWidget.horizontalCenter = 0;
     navWidget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
-    const navUt = nav.addComponent(UITransform);
-    navUt.setAnchorPoint(0.5, 0.5);
-    navUt.setContentSize(vis.width, NAV_TAB_H);
-    const nTabs = GameController.PAGES.length;
+    const navPages = this.getNavPages();
+    const nTabs = navPages.length;
     let tabW = nTabs <= 4 ? 164 : 120;
     let gap = (vis.width - NAV_MARGIN * 2 - tabW * nTabs) / (nTabs - 1);
     if (gap < NAV_GAP_MIN) {
@@ -2091,7 +2192,7 @@ export class GameController extends Component {
       tabW = (vis.width - NAV_MARGIN * 2 - gap * (nTabs - 1)) / nTabs;
     }
     const tabFont = nTabs <= 4 ? 26 : 22;
-    GameController.PAGES.forEach(({ key, name }, i) => {
+    navPages.forEach(({ key, name }, i) => {
       const on = key === this.currentPage;
       const tab = new Node(`NavTab_${key}`);
       tab.layer = Layers.Enum.UI_2D;
@@ -2123,13 +2224,13 @@ export class GameController extends Component {
     const bar = new Node('GoldBar');
     bar.layer = Layers.Enum.UI_2D;
     bar.parent = canvas;
+    bar.addComponent(UITransform).setContentSize(240, 52);
     const barWidget = bar.addComponent(Widget);
     barWidget.isAlignTop = true;
     barWidget.isAlignRight = true;
     barWidget.top = 12;
     barWidget.right = 16;
     barWidget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
-    bar.addComponent(UITransform).setContentSize(240, 52);
     this.drawHudCapsule(bar.addComponent(Graphics), 240, 52);
     this.goldBar = bar;
     // 丰收黄金币图标（¥）
@@ -2179,8 +2280,10 @@ export class GameController extends Component {
       this.sayAll('更多金币获取方式敬请期待！');
     }, this);
     if (this.goldLabel) {
-      this.goldLabel.node.parent = bar;
-      this.goldLabel.node.setPosition(4, 0);
+      const gn = this.goldLabel.node;
+      if (!gn.getComponent(UITransform)) gn.addComponent(UITransform).setContentSize(200, 40);
+      gn.parent = bar;
+      gn.setPosition(4, 0);
       this.goldLabel.color = new Color(0xff, 0xe9, 0xa8);
       this.goldLabel.isBold = true;
     }
@@ -2189,13 +2292,13 @@ export class GameController extends Component {
     const prof = new Node('ProfileBar');
     prof.layer = Layers.Enum.UI_2D;
     prof.parent = canvas;
+    prof.addComponent(UITransform).setContentSize(280, 52);
     const profWidget = prof.addComponent(Widget);
     profWidget.isAlignTop = true;
     profWidget.isAlignLeft = true;
     profWidget.top = 12;
     profWidget.left = 16;
     profWidget.alignMode = Widget.AlignMode.ON_WINDOW_RESIZE;
-    prof.addComponent(UITransform).setContentSize(280, 52);
     this.drawHudCapsule(prof.addComponent(Graphics), 280, 52);
     this.profileBar = prof;
     // 圆形头像占位（程序化简笔外婆：金圈 + 肤色脸 + 灰白发髻）
@@ -2256,6 +2359,23 @@ export class GameController extends Component {
 
     // 场景 Label 配色适配新底色（美术规范：深色底用浅麦字、浅色底用描边棕）
     if (this.kitchenLabel) this.kitchenLabel.color = new Color(0xff, 0xe9, 0xa8);
+  }
+
+  /** M6 顶栏 + 右下角 icon 入口（固定坐标，不用 Widget，避免引擎 _getUITransformComp 空引用） */
+  private buildHudChrome(canvas: Node, vis: { width: number; height: number }) {
+    this.buildQuestBar(canvas, vis);
+    this.buildCornerHud(canvas, vis);
+  }
+
+  /** mockup map.svg（1440×810）→ Cocos 720×1280 中心坐标 */
+  private mapSvgToCocos(sx: number, sy: number): { x: number; y: number } {
+    return { x: sx * (720 / 1440) - 360, y: 640 - sy * (1280 / 810) };
+  }
+
+  private ensureMapPage() {
+    if (this.pages.map?.isValid) return;
+    if (!this.hudCanvas) return;
+    this.buildMapPage(this.hudCanvas, this.hudVis);
   }
 
   /** 纯容器（无 Layout）：子节点全部手动摆位——图鉴页专用，嵌套 Layout 在此页两次翻车，弃用 */
@@ -2378,8 +2498,617 @@ export class GameController extends Component {
       rect(-hw, -hh, w, 172, new Color(0x6b, 0x44, 0x23)); // 地板带
     } else if (key === 'shop' || key === 'orders') {
       rect(-hw, -hh, w, h, new Color(0xf5, 0xe8, 0xc8)); // 奶油墙（订单页复用小铺底）
+    } else if (key === 'map') {
+      rect(-hw, -hh, w, h, new Color(0xbe, 0xe3, 0xd8)); // 镇图占位（草地天）
+      rect(-hw, -hh, w, h * 0.35, new Color(0xd4, 0xec, 0xf8)); // 天空带
     } else {
       rect(-hw, -hh, w, h, new Color(0xf9, 0xef, 0xd8)); // 图鉴纸
+    }
+  }
+
+  /** 底栏页（订单 tab 可由 config 隐藏） */
+  private getNavPages(): { key: string; name: string }[] {
+    const hideOrders = this.game?.data.config.hideOrdersTab !== false;
+    return GameController.PAGES.filter((p) => !(hideOrders && p.key === 'orders'));
+  }
+
+  private pageRequiredUnlock(pageKey: string): UnlockKey | null {
+    if (pageKey === 'kitchen') return 'canteen';
+    if (pageKey === 'shop') return 'shop';
+    if (pageKey === 'orders') return 'orders';
+    if (pageKey === 'map') return 'map';
+    return null;
+  }
+
+  private canSwitchToPage(pageKey: string): boolean {
+    if (!this.game) return false;
+    const need = this.pageRequiredUnlock(pageKey);
+    if (!need) return true;
+    return this.game.canAccessUnlock(need);
+  }
+
+  private pageLockHint(pageKey: string): string {
+    const q = this.game?.getCurrentMainQuest();
+    if (q) return `跟着主线：${q.title}`;
+    const need = this.pageRequiredUnlock(pageKey);
+    if (need) return `${this.game!.mainUnlockLabel(need)}尚未解锁`;
+    return '尚未解锁';
+  }
+
+  /** 丰穗镇地图壳（热点进经营页；果园占位） */
+  private buildMapPage(canvas: Node, vis: { width: number; height: number }) {
+    const p = new Node('Page_map');
+    p.layer = Layers.Enum.UI_2D;
+    p.parent = canvas;
+    p.active = false;
+    this.pages.map = p;
+    this.makePageBg(p, 'map', vis);
+    const msgNode = new Node('PageMessage');
+    msgNode.layer = Layers.Enum.UI_2D;
+    msgNode.parent = p;
+    msgNode.setPosition(0, vis.height / 2 - 105);
+    msgNode.addComponent(UITransform);
+    const msgLabel = msgNode.addComponent(Label);
+    msgLabel.fontSize = 20;
+    msgLabel.color = new Color(0x4a, 0x35, 0x20);
+    msgNode.addComponent(UIOpacity).opacity = 0;
+    this.pageMessages.map = msgLabel;
+
+    const root = new Node('MapRoot');
+    root.layer = Layers.Enum.UI_2D;
+    root.parent = p;
+    root.addComponent(UITransform).setContentSize(vis.width, vis.height);
+    if (!this.bgFrames['map']) this.makeSectionTitle(root, '丰穗镇', 520);
+    const hotspots: {
+      label: string;
+      svgX: number;
+      svgY: number;
+      placeIcon: string;
+      iconSz?: number;
+      spriteScaleY?: number;
+      noShade?: boolean;
+      page: string;
+      unlock: UnlockKey | null;
+    }[] = [
+      {
+        label: '田地',
+        svgX: 1178,
+        svgY: 518,
+        placeIcon: 'map_place_farm',
+        iconSz: 96,
+        spriteScaleY: 0.82,
+        noShade: true,
+        page: 'field',
+        unlock: null,
+      },
+      { label: '食堂', svgX: 770, svgY: 400, placeIcon: 'map_place_canteen', page: 'kitchen', unlock: 'canteen' },
+      { label: '小铺', svgX: 135, svgY: 344, placeIcon: 'map_place_shop', page: 'shop', unlock: 'shop' },
+      {
+        label: '果园',
+        svgX: 1205,
+        svgY: 278,
+        placeIcon: 'map_place_orchard',
+        iconSz: 168,
+        page: '',
+        unlock: 'orchard',
+      },
+    ];
+    for (const h of hotspots) {
+      const { x, y } = this.mapSvgToCocos(h.svgX, h.svgY);
+      this.makeMapPlaceHotspot(root, h.placeIcon, h.label, x, y, () => {
+        if (h.unlock && !this.game!.canAccessUnlock(h.unlock)) {
+          this.say(this.pageLockHint(h.page || 'map'), 'map');
+          return;
+        }
+        if (!h.page) {
+          this.say('果园还在筹备，先跟着主线吧', 'map');
+          return;
+        }
+        this.switchPage(h.page);
+      }, h.iconSz, h.spriteScaleY, h.noShade);
+    }
+    this.makePillButton(root, '回田地', 0, -520, 200, 54, true, () => this.switchPage('field'), 24);
+  }
+
+  private makeMapPlaceHotspot(
+    parent: Node,
+    placeIcon: string,
+    label: string,
+    x: number,
+    y: number,
+    onClick: () => void,
+    iconSz = 118,
+    spriteScaleY = 1,
+    noShade = false,
+  ) {
+    const n = new Node(placeIcon);
+    n.layer = Layers.Enum.UI_2D;
+    n.parent = parent;
+    const hit = iconSz + 8;
+    n.addComponent(UITransform).setContentSize(hit, hit + 30);
+    n.setPosition(x, y);
+    const sf = this.uiIconFrames[placeIcon];
+    if (sf) {
+      const spN = new Node('sprite');
+      spN.layer = Layers.Enum.UI_2D;
+      spN.parent = n;
+      spN.addComponent(UITransform).setContentSize(iconSz, iconSz);
+      spN.setPosition(0, 12);
+      spN.setScale(1, spriteScaleY, 1);
+      const sp = spN.addComponent(Sprite);
+      sp.sizeMode = Sprite.SizeMode.CUSTOM;
+      sp.spriteFrame = sf;
+      if (!noShade) {
+        const shade = new Node('shade');
+        shade.layer = Layers.Enum.UI_2D;
+        shade.parent = spN;
+        shade.setPosition(0, -iconSz * 0.38);
+        shade.addComponent(UITransform).setContentSize(iconSz * 0.7, 12);
+        const sg = shade.addComponent(Graphics);
+        sg.fillColor = new Color(0x3e, 0x5c, 0x28, 0x38);
+        sg.ellipse(0, 0, iconSz * 0.35, 6);
+        sg.fill();
+      }
+      const cap = new Node('cap');
+      cap.layer = Layers.Enum.UI_2D;
+      cap.parent = n;
+      const capW = Math.max(72, label.length * 15 + 20);
+      cap.addComponent(UITransform).setContentSize(capW, 24);
+      cap.setPosition(0, -iconSz / 2 - 6);
+      const capBg = cap.addComponent(Graphics);
+      capBg.fillColor = new Color(0xff, 0xf8, 0xe7, 0xf0);
+      capBg.strokeColor = new Color(0x4a, 0x35, 0x20);
+      capBg.lineWidth = 1.5;
+      capBg.roundRect(-capW / 2, -12, capW, 24, 8);
+      capBg.fill();
+      capBg.roundRect(-capW / 2, -12, capW, 24, 8);
+      capBg.stroke();
+      const capL = new Node('capLabel');
+      capL.layer = Layers.Enum.UI_2D;
+      capL.parent = cap;
+      capL.addComponent(UITransform).setContentSize(capW - 8, 22);
+      const cl = capL.addComponent(Label);
+      cl.string = label;
+      cl.fontSize = 14;
+      cl.isBold = true;
+      cl.color = new Color(0x4a, 0x35, 0x20);
+    } else {
+      this.makePillButton(n, label, 0, 0, 148, 52, false, onClick, 22);
+      return;
+    }
+    n.addComponent(Button);
+    n.on(Button.EventType.CLICK, () => {
+      this.playSfx('click', 0.5);
+      onClick();
+    }, this);
+  }
+
+  /** 右下角 map/bag：横排双格胶囊，对齐底栏右缘，少挡田地格 */
+  private buildCornerHud(canvas: Node, vis: { width: number; height: number }) {
+    const NAV_BOTTOM = 16;
+    const NAV_TAB_H = 66;
+    const NAV_MARGIN = 26;
+    const cell = 54;
+    const cellGap = 4;
+    const dockPad = 6;
+    const dockW = cell * 2 + cellGap + dockPad * 2;
+    const dockH = cell + dockPad * 2;
+    const baseX = vis.width / 2 - NAV_MARGIN - dockW / 2 + 4;
+    const baseY = -vis.height / 2 + NAV_BOTTOM + NAV_TAB_H + 10 + dockH / 2;
+
+    const root = new Node('CornerHud');
+    root.layer = Layers.Enum.UI_2D;
+    root.parent = canvas;
+    root.addComponent(UITransform).setContentSize(dockW, dockH);
+    root.setPosition(baseX, baseY);
+    this.cornerHud = root;
+
+    const bgN = new Node('dock');
+    bgN.layer = Layers.Enum.UI_2D;
+    bgN.parent = root;
+    bgN.addComponent(UITransform).setContentSize(dockW, dockH);
+    this.drawCornerHudDock(bgN.addComponent(Graphics), dockW, dockH, cell, cellGap, dockPad);
+
+    const half = (cell + cellGap) / 2;
+    const bagBtn = this.makeCornerIconButton(root, 'bag', '背包', -half, 0, cell, () => this.openBagOverlay());
+    this.cornerBagBtn = bagBtn;
+    const mapBtn = this.makeCornerIconButton(root, 'map', '地图', half, 0, cell, () => this.switchPage('map'));
+    this.cornerMapBtn = mapBtn;
+    this.layoutCornerHudDock();
+  }
+
+  /** 右下角双 icon 外框（与底部导航同语法：米白底 + 棕描边 + 软投影） */
+  private drawCornerHudDock(
+    g: Graphics,
+    dockW: number,
+    dockH: number,
+    cell: number,
+    cellGap: number,
+    pad: number,
+    twoCells = true,
+  ) {
+    const x = -dockW / 2;
+    const y = -dockH / 2;
+    const r = 16;
+    g.clear();
+    g.fillColor = new Color(0x4a, 0x35, 0x20, 0x40);
+    g.roundRect(x + 2, y - 3, dockW, dockH, r);
+    g.fill();
+    g.fillColor = new Color(0xff, 0xfd, 0xf5);
+    g.roundRect(x, y, dockW, dockH, r);
+    g.fill();
+    g.lineWidth = 2.5;
+    g.strokeColor = new Color(0x4a, 0x35, 0x20);
+    g.roundRect(x, y, dockW, dockH, r);
+    g.stroke();
+    g.fillColor = new Color(0xff, 0xe9, 0xa8, 0x55);
+    g.roundRect(x + 10, y + dockH - 5, dockW - 20, 2, 1);
+    g.fill();
+    if (twoCells) {
+      const divX = 0;
+      g.lineWidth = 1.5;
+      g.strokeColor = new Color(0x4a, 0x35, 0x20, 0x55);
+      g.moveTo(divX, y + pad + 4);
+      g.lineTo(divX, y + dockH - pad - 4);
+      g.stroke();
+    }
+  }
+
+  private makeCornerIconButton(
+    parent: Node,
+    iconKey: string,
+    fallbackLabel: string,
+    localX: number,
+    localY: number,
+    hit: number,
+    onClick: () => void,
+  ): Node {
+    const n = new Node(`Corner_${iconKey}`);
+    n.layer = Layers.Enum.UI_2D;
+    n.parent = parent;
+    n.addComponent(UITransform).setContentSize(hit, hit);
+    n.setPosition(localX, localY);
+    const sf = this.uiIconFrames[iconKey];
+    if (sf) {
+      const iw = iconKey === 'map' ? 36 : 42;
+      const ih = iconKey === 'map' ? 46 : 42;
+      const spN = new Node('icon');
+      spN.layer = Layers.Enum.UI_2D;
+      spN.parent = n;
+      spN.addComponent(UITransform).setContentSize(iw, ih);
+      const sp = spN.addComponent(Sprite);
+      sp.sizeMode = Sprite.SizeMode.CUSTOM;
+      sp.spriteFrame = sf;
+    } else {
+      this.makePillButton(n, fallbackLabel, 0, 0, hit + 12, 36, false, onClick, 16);
+      return n;
+    }
+    const btn = n.addComponent(Button);
+    btn.transition = Button.Transition.SCALE;
+    btn.zoomScale = 0.92;
+    n.on(Button.EventType.CLICK, () => {
+      this.playSfx('click', 0.5);
+      onClick();
+    }, this);
+    return n;
+  }
+
+  private layoutCornerHudDock() {
+    if (!this.cornerHud?.isValid) return;
+    const cell = 54;
+    const cellGap = 4;
+    const dockPad = 6;
+    const showBag = !!this.cornerBagBtn?.active;
+    const showMap = !!this.cornerMapBtn?.active;
+    const nCells = (showBag ? 1 : 0) + (showMap ? 1 : 0);
+    if (nCells === 0) {
+      this.cornerHud.active = false;
+      return;
+    }
+    this.cornerHud.active = true;
+    const dockW = nCells * cell + (nCells > 1 ? cellGap : 0) + dockPad * 2;
+    const dockH = cell + dockPad * 2;
+    const rootUt = this.cornerHud.getComponent(UITransform);
+    if (rootUt) rootUt.setContentSize(dockW, dockH);
+    const dockN = this.cornerHud.getChildByName('dock');
+    const dockUt = dockN?.getComponent(UITransform);
+    if (dockUt) dockUt.setContentSize(dockW, dockH);
+    const dockG = dockN?.getComponent(Graphics);
+    if (dockG) this.drawCornerHudDock(dockG, dockW, dockH, cell, cellGap, dockPad, nCells > 1);
+    if (showBag && this.cornerBagBtn) {
+      const bagX = nCells === 1 ? 0 : showMap ? -(cell + cellGap) / 2 : 0;
+      this.cornerBagBtn.setPosition(bagX, 0);
+    }
+    if (showMap && this.cornerMapBtn) {
+      const mapX = nCells === 1 ? 0 : (cell + cellGap) / 2;
+      this.cornerMapBtn.setPosition(mapX, 0);
+    }
+  }
+
+  private refreshCornerHud() {
+    if (!this.game) return;
+    const onMap = this.currentPage === 'map';
+    if (this.cornerBagBtn) this.cornerBagBtn.active = this.game.hasUnlock('bag');
+    if (this.cornerMapBtn) this.cornerMapBtn.active = this.game.hasUnlock('map') && !onMap;
+    this.layoutCornerHudDock();
+  }
+
+  private buildQuestBar(canvas: Node, vis: { width: number; height: number }) {
+    const barW = Math.min(288, vis.width - 140);
+    const barH = 52;
+    const pad = 14;
+    const textW = barW - pad * 2;
+    const hw = barW / 2;
+    const hh = barH / 2;
+
+    const bar = new Node('QuestBar');
+    bar.layer = Layers.Enum.UI_2D;
+    bar.parent = canvas;
+    bar.addComponent(UITransform).setContentSize(barW, barH);
+    // 与个人区左对齐，贴在头像条下方
+    bar.setPosition(-vis.width / 2 + 16 + barW / 2, vis.height / 2 - 98);
+
+    const bgN = new Node('bg');
+    bgN.layer = Layers.Enum.UI_2D;
+    bgN.parent = bar;
+    bgN.addComponent(UITransform).setContentSize(barW, barH);
+    const bg = bgN.addComponent(Graphics);
+    bg.fillColor = new Color(0x4a, 0x35, 0x20, 0xe8);
+    bg.roundRect(-hw, -hh, barW, barH, 12);
+    bg.fill();
+    bg.lineWidth = 2;
+    bg.strokeColor = new Color(0xf2, 0xb8, 0x30);
+    bg.roundRect(-hw, -hh, barW, barH, 12);
+    bg.stroke();
+
+    const mkQuestLabel = (y: number, fontSize: number, bold: boolean) => {
+      const n = new Node(bold ? 'title' : 'desc');
+      n.layer = Layers.Enum.UI_2D;
+      n.parent = bar;
+      const ut = n.addComponent(UITransform);
+      ut.setAnchorPoint(0, 0.5);
+      ut.setContentSize(textW, fontSize + 8);
+      n.setPosition(-hw + pad, y);
+      const l = n.addComponent(Label);
+      l.fontSize = fontSize;
+      l.isBold = bold;
+      l.horizontalAlign = Label.HorizontalAlign.LEFT;
+      l.overflow = Label.Overflow.CLAMP;
+      l.enableWrapText = false;
+      return l;
+    };
+    this.questTitleLabel = mkQuestLabel(11, 16, true);
+    this.questTitleLabel.color = new Color(0xff, 0xe9, 0xa8);
+    this.questDescLabel = mkQuestLabel(-12, 14, false);
+    this.questDescLabel.color = new Color(0xff, 0xf8, 0xe7);
+
+    const hit = new Node('hit');
+    hit.layer = Layers.Enum.UI_2D;
+    hit.parent = bar;
+    hit.addComponent(UITransform).setContentSize(barW, barH);
+    const btn = hit.addComponent(Button);
+    btn.transition = Button.Transition.NONE;
+    hit.on(Button.EventType.CLICK, () => {
+      this.playSfx('click', 0.5);
+      const q = this.game?.getCurrentMainQuest();
+      if (q) this.sayAll(`主线：${q.title} — ${q.desc}`);
+    }, this);
+  }
+
+  private refreshQuestBar() {
+    if (!this.game || !this.questTitleLabel || !this.questDescLabel) return;
+    const q = this.game.getCurrentMainQuest();
+    const bar = this.questTitleLabel.node.parent;
+    if (!q) {
+      if (bar) bar.active = false;
+      return;
+    }
+    if (bar) bar.active = true;
+    this.questTitleLabel.string = q.title;
+    this.questDescLabel.string = q.desc;
+  }
+
+  private buildBagOverlay(canvas: Node) {
+    const panelH = 560;
+    const ov = new Node('BagOverlay');
+    ov.layer = Layers.Enum.UI_2D;
+    ov.parent = canvas;
+    ov.addComponent(UITransform).setContentSize(720, 1280);
+    ov.addComponent(BlockInputEvents);
+    ov.active = false;
+    this.bagOverlay = ov;
+
+    const maskN = new Node('veil');
+    maskN.layer = Layers.Enum.UI_2D;
+    maskN.parent = ov;
+    maskN.addComponent(UITransform).setContentSize(720, 1280);
+    const veil = maskN.addComponent(Graphics);
+    veil.fillColor = new Color(0x3a, 0x2a, 0x18, 0x52);
+    veil.rect(-360, -640, 720, 1280);
+    veil.fill();
+    maskN.addComponent(BlockInputEvents);
+    maskN.on(Node.EventType.TOUCH_END, () => this.closeBagOverlay(), this);
+
+    const panel = new Node('panel');
+    panel.layer = Layers.Enum.UI_2D;
+    panel.parent = ov;
+    panel.addComponent(UITransform).setContentSize(720, panelH);
+    panel.setPosition(0, -640 + panelH / 2);
+    panel.addComponent(BlockInputEvents);
+    const g = panel.addComponent(Graphics);
+    g.fillColor = new Color(0x4a, 0x35, 0x20, 0x40);
+    g.roundRect(-360 + 4, -panelH / 2 - 5, 720, panelH, 28);
+    g.fill();
+    g.fillColor = new Color(0xff, 0xfd, 0xf5);
+    g.roundRect(-360, -panelH / 2, 720, panelH, 28);
+    g.fill();
+    g.strokeColor = new Color(0x4a, 0x35, 0x20);
+    g.lineWidth = 2.5;
+    g.roundRect(-360, -panelH / 2, 720, panelH, 28);
+    g.stroke();
+    g.fillColor = new Color(0xc9, 0xb4, 0x8e);
+    g.roundRect(-50, panelH / 2 - 28, 100, 7, 3.5);
+    g.fill();
+
+    const titleN = new Node('title');
+    titleN.layer = Layers.Enum.UI_2D;
+    titleN.parent = panel;
+    titleN.addComponent(UITransform).setContentSize(300, 34);
+    titleN.setPosition(0, panelH / 2 - 52);
+    const title = titleN.addComponent(Label);
+    title.string = '背包';
+    title.fontSize = 24;
+    title.isBold = true;
+    title.color = new Color(0x4a, 0x35, 0x20);
+
+    const closeN = new Node('close');
+    closeN.layer = Layers.Enum.UI_2D;
+    closeN.parent = panel;
+    closeN.addComponent(UITransform).setContentSize(44, 44);
+    closeN.setPosition(316, panelH / 2 - 52);
+    const closeL = closeN.addComponent(Label);
+    closeL.string = '×';
+    closeL.fontSize = 24;
+    closeL.isBold = true;
+    closeL.color = new Color(0xa8, 0x91, 0x6b);
+    closeN.addComponent(Button);
+    closeN.on(Button.EventType.CLICK, () => {
+      this.playSfx('click', 0.5);
+      this.closeBagOverlay();
+    }, this);
+
+    const viewN = new Node('view');
+    viewN.layer = Layers.Enum.UI_2D;
+    viewN.parent = panel;
+    const viewH = panelH - 100;
+    viewN.addComponent(UITransform).setContentSize(680, viewH);
+    viewN.setPosition(0, -panelH / 2 + 56 + viewH / 2);
+    const mask = viewN.addComponent(Mask);
+    mask.type = Mask.Type.GRAPHICS_RECT;
+    const sv = viewN.addComponent(ScrollView);
+    sv.horizontal = false;
+    sv.vertical = true;
+    const content = new Node('content');
+    content.layer = Layers.Enum.UI_2D;
+    content.parent = viewN;
+    const contentUt = content.addComponent(UITransform);
+    contentUt.setAnchorPoint(0.5, 1);
+    contentUt.setContentSize(640, viewH);
+    content.setPosition(0, viewH / 2);
+    sv.content = content;
+    this.bagListContent = content;
+  }
+
+  private openBagOverlay() {
+    if (!this.game) return;
+    if (!this.game.hasUnlock('bag')) {
+      const q = this.game.getCurrentMainQuest();
+      this.sayAll(q ? `跟着主线：${q.title}` : `${this.game.mainUnlockLabel('bag')}尚未解锁`);
+      return;
+    }
+    this.playSfx('click', 0.5);
+    if (!this.bagOverlay) {
+      const canvas = this.node.scene?.getChildByName('Canvas');
+      if (canvas) this.buildBagOverlay(canvas);
+    }
+    this.refreshBagOverlay();
+    if (this.bagOverlay) this.bagOverlay.active = true;
+  }
+
+  private closeBagOverlay() {
+    if (this.bagOverlay) this.bagOverlay.active = false;
+  }
+
+  private refreshBagOverlay() {
+    if (!this.game || !this.bagListContent) return;
+    const content = this.bagListContent;
+    content.removeAllChildren();
+    const inv = this.game.getSave().inventory;
+    const itemW = 620;
+    const itemH = 52;
+    const gap = 8;
+    const cropRows = Object.entries(inv.crops)
+      .filter(([, q]) => q > 0)
+      .map(([id, q]) => ({ id, name: this.game!.cropName(id), qty: q }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+    const dishRows = Object.entries(inv.dishes)
+      .filter(([, q]) => q > 0)
+      .map(([id, q]) => ({ id, name: this.game!.dishName(id), qty: q }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+
+    let y = 12;
+    const addSection = (
+      heading: string,
+      rows: { id: string; name: string; qty: number }[],
+    ) => {
+      const head = new Node('sec');
+      head.layer = Layers.Enum.UI_2D;
+      head.parent = content;
+      head.addComponent(UITransform).setContentSize(itemW, 28);
+      head.setPosition(0, -y - 14);
+      const hl = head.addComponent(Label);
+      hl.string = heading;
+      hl.fontSize = 18;
+      hl.isBold = true;
+      hl.color = new Color(0x6b, 0x44, 0x23);
+      hl.horizontalAlign = Label.HorizontalAlign.LEFT;
+      y += 32;
+      if (rows.length === 0) {
+        const empty = new Node('empty');
+        empty.layer = Layers.Enum.UI_2D;
+        empty.parent = content;
+        empty.addComponent(UITransform).setContentSize(itemW, 28);
+        empty.setPosition(0, -y - 14);
+        const el = empty.addComponent(Label);
+        el.string = '（暂无）';
+        el.fontSize = 15;
+        el.color = new Color(0x9a, 0x8a, 0x78);
+        el.horizontalAlign = Label.HorizontalAlign.LEFT;
+        y += 36;
+        return;
+      }
+      for (const r of rows) {
+        const row = this.makeListItem(content, {
+          w: itemW,
+          h: itemH,
+          text: r.name,
+          iconId: r.id,
+          iconKind: 'cropUi',
+          badge: `×${r.qty}`,
+        });
+        row.setPosition(0, -y - itemH / 2);
+        y += itemH + gap;
+      }
+      y += 4;
+    };
+    if (cropRows.length === 0 && dishRows.length === 0) {
+      const empty = new Node('allEmpty');
+      empty.layer = Layers.Enum.UI_2D;
+      empty.parent = content;
+      empty.addComponent(UITransform).setContentSize(itemW, 40);
+      empty.setPosition(0, -y - 20);
+      const el = empty.addComponent(Label);
+      el.string = '袋子里还空着呢';
+      el.fontSize = 18;
+      el.color = new Color(0x9a, 0x8a, 0x78);
+      y += 48;
+    } else {
+      addSection('作物', cropRows);
+      addSection('菜品', dishRows);
+    }
+    const totalH = Math.max(160, y + 16);
+    content.getComponent(UITransform)!.setContentSize(itemW, totalH);
+  }
+
+  private refreshNavLockVisual() {
+    if (!this.game) return;
+    for (const item of this.navItems) {
+      const locked = !this.canSwitchToPage(item.key);
+      item.label.color = item.on
+        ? new Color(0x6b, 0x44, 0x23)
+        : locked
+          ? new Color(0x9a, 0x8a, 0x78)
+          : new Color(0x4a, 0x35, 0x20);
     }
   }
 
@@ -2458,9 +3187,18 @@ export class GameController extends Component {
 
   /** 切换页面：只显隐页容器，游戏逻辑无感知；当前页导航 tab 丰收黄填充（状态变化才重绘 Graphics） */
   private switchPage(key: string) {
+    if (!this.canSwitchToPage(key)) {
+      this.say(this.pageLockHint(key));
+      return;
+    }
+    if (key === 'map') this.ensureMapPage();
     this.currentPage = key;
     if (key !== 'field') this.closeSeedDrawer(); // 抽屉挂在 Canvas 上盖住导航，离开田地页必须收起
-    for (const [k, p] of Object.entries(this.pages)) p.active = k === key;
+    if (key !== 'map') this.closeBagOverlay();
+    for (const [k, p] of Object.entries(this.pages)) {
+      if (p?.isValid) p.active = k === key;
+    }
+    this.refreshCornerHud();
     for (const item of this.navItems) {
       const on = item.key === key;
       if (on === item.on) continue;
@@ -2469,7 +3207,8 @@ export class GameController extends Component {
       item.label.color = on ? new Color(0x6b, 0x44, 0x23) : new Color(0x4a, 0x35, 0x20);
       this.drawNavTab(item.g, item.w, item.h, on);
     }
-    this.maybeTalk(key, 'onEnter');
+    this.refreshNavLockVisual();
+    if (key !== 'map') this.maybeTalk(key, 'onEnter');
   }
 
   private refreshPanels() {
@@ -2538,9 +3277,18 @@ export class GameController extends Component {
     return sp;
   }
 
+  private cropUiFrame(cropId: string): SpriteFrame | null {
+    return this.cropUiFrames[cropId] ?? this.iconFrames[cropId] ?? null;
+  }
+
   /** 在节点左侧挂一个图标 Sprite（缺图时告警并跳过，灰盒可降级） */
-  private attachIcon(host: Node, id: string, size: number): Sprite | null {
-    const sf = this.iconFrames[id];
+  private attachIcon(
+    host: Node,
+    id: string,
+    size: number,
+    kind: 'cropUi' | 'default' = 'default',
+  ): Sprite | null {
+    const sf = kind === 'cropUi' ? this.cropUiFrame(id) : this.iconFrames[id];
     if (!sf) {
       console.warn(`[美术] 缺图标: ${id}`);
       return null;
@@ -2563,6 +3311,8 @@ export class GameController extends Component {
       h?: number;
       text: string;
       iconId?: string;
+      /** cropUi = icons/crops-ui 收获贴纸；default = dishes 等 */
+      iconKind?: 'cropUi' | 'default';
       onClick?: () => void;
       tone?: 'cream' | 'gold' | 'locked';
       fontSize?: number;
@@ -2591,8 +3341,11 @@ export class GameController extends Component {
     g.fill();
     g.roundRect(-w / 2, -h / 2, w, h, 10);
     g.stroke();
-    const hasIcon = !!opts.iconId && !!this.iconFrames[opts.iconId];
-    if (hasIcon) this.attachIcon(item, opts.iconId!, Math.min(h - 12, 34));
+    const kind = opts.iconKind ?? 'default';
+    const hasIcon =
+      !!opts.iconId &&
+      (kind === 'cropUi' ? !!this.cropUiFrame(opts.iconId) : !!this.iconFrames[opts.iconId]);
+    if (hasIcon) this.attachIcon(item, opts.iconId!, Math.min(h - 12, 34), kind);
     const ln = new Node('label');
     ln.layer = Layers.Enum.UI_2D;
     ln.parent = item;
@@ -2920,7 +3673,7 @@ export class GameController extends Component {
       iconN.setPosition(0, 12);
       const isp = iconN.addComponent(Sprite);
       isp.sizeMode = Sprite.SizeMode.CUSTOM;
-      const sf = this.iconFrames[s.crop.id];
+      const sf = this.cropUiFrame(s.crop.id);
       if (sf) {
         isp.spriteFrame = sf;
         if (!s.unlocked) {
@@ -3067,33 +3820,27 @@ export class GameController extends Component {
     g.moveTo(-26, 6);
     g.quadraticCurveTo(0, 34, 26, 6);
     g.stroke();
-    // 作物堆叠三档：少(1) 孤零零一个 / 中(2~4) 两个并排 / 多(5+) 冒尖一堆
-    const pile: [number, number, number][] =
-      count >= 5
-        ? [
-            [-13, 3, 0.7],
-            [3, 11, 0.85],
-            [15, 3, 0.65],
-          ]
-        : count >= 2
-          ? [
-              [-10, 6, 0.8],
-              [10, 8, 0.8],
-            ]
-          : [[0, 8, 0.95]];
-    const sf = this.iconFrames[cropId];
+    const pile = this.basketPileLayout(count);
+    const cropMul = this.basketCropScaleMul(cropId);
+    const sf = this.cropUiFrame(cropId);
     if (!sf) return;
+    const pileRoot = new Node('pile');
+    pileRoot.layer = Layers.Enum.UI_2D;
+    pileRoot.parent = n;
+    pileRoot.setPosition(0, -2);
     for (const [px, py, ps] of pile) {
       const icon = new Node('crop');
       icon.layer = Layers.Enum.UI_2D;
-      icon.parent = n;
+      icon.parent = pileRoot;
       const ut = icon.addComponent(UITransform);
-      ut.setContentSize(48 * ps, 48 * ps);
+      const side = GameController.BASKET_CROP_ICON * ps * cropMul;
+      ut.setContentSize(side, side);
+      this.applyCropSpriteAnchor(ut);
       icon.setPosition(px, py);
       const sp = icon.addComponent(Sprite);
       sp.sizeMode = Sprite.SizeMode.CUSTOM;
       sp.spriteFrame = sf;
-      ut.setContentSize(48 * ps, 48 * ps);
+      ut.setContentSize(side, side);
     }
   }
 
@@ -3178,7 +3925,8 @@ export class GameController extends Component {
     iconNode.setPosition(0, 27);
     const sp = iconNode.addComponent(Sprite);
     sp.sizeMode = Sprite.SizeMode.CUSTOM;
-    const sf = this.iconFrames[item.id];
+    const sf =
+      this.bookTab === 'crop' ? this.cropUiFrame(item.id) : this.iconFrames[item.id];
     if (sf) {
       sp.spriteFrame = sf;
       if (!item.discovered) {
@@ -3417,7 +4165,7 @@ export class GameController extends Component {
         g.fillColor = new Color(0xff, 0xff, 0xff, 0x4d); // 顶部受光
         g.roundRect(-sw / 2 + 5, sh / 2 - sh * 0.34 - 4, sw - 10, sh * 0.34, 10);
         g.fill();
-        const sf = this.iconFrames[id];
+        const sf = this.cropUiFrame(id);
         if (sf) {
           const iconN = new Node('icon');
           iconN.layer = Layers.Enum.UI_2D;
@@ -3650,7 +4398,7 @@ export class GameController extends Component {
       cg.fillColor = new Color(0xff, 0xff, 0xff, 0x8c); // 顶部受光
       cg.roundRect(-cw / 2 + 5, ch / 2 - ch * 0.34 - 4, cw - 10, ch * 0.34, 10);
       cg.fill();
-      const sf = this.iconFrames[id];
+      const sf = this.cropUiFrame(id);
       if (sf) {
         const iconN = new Node('icon');
         iconN.layer = Layers.Enum.UI_2D;
@@ -3971,6 +4719,7 @@ export class GameController extends Component {
         () => {
           this.game!.completeTutorial(tutorial.id);
           this.writeSave();
+          this.refreshUI();
           this.maybeTalk(page, trigger, orderNpcId, dishId);
         },
         tutorial.id,
@@ -3978,6 +4727,7 @@ export class GameController extends Component {
       return;
     }
 
+    if (this.game.data.config.affinityStoriesEnabled !== true) return;
     const affinity = this.game.pendingAffinity(place, trigger, orderNpcId, dishId);
     if (!affinity) return;
     if (this.talkStoryId === affinity.id || this.talkQueue.some((q) => q.id === affinity.id)) return;
@@ -3986,6 +4736,7 @@ export class GameController extends Component {
       () => {
         this.game!.completeAffinityStory(affinity.id);
         this.writeSave();
+        this.refreshUI();
         this.maybeTalk(page, trigger, orderNpcId, dishId);
       },
       affinity.id,
@@ -4186,6 +4937,14 @@ export class GameController extends Component {
     // 收集里程碑（M4）：达成即发奖 + 庆祝层（多个时逐个顺序弹，含旧存档补发的一次性批量）
     this.playMilestones(this.game!.drainMilestones());
 
+    for (const g of this.game!.drainMainQuestGrants()) {
+      this.sayAll(`主线完成：${g.title}（已解锁${this.game!.mainUnlockLabel(g.unlock)}）`);
+    }
+    this.refreshQuestBar();
+    this.refreshCornerHud();
+    if (this.bagOverlay?.active) this.refreshBagOverlay();
+    this.refreshNavLockVisual();
+
     // 动态菱形地块三态刷新（fieldLabels 静态按钮已隐藏，不再刷新）
     this.fieldPlots.forEach((plot, i) => {
       const f = save.fields[i];
@@ -4249,7 +5008,7 @@ export class GameController extends Component {
 
   /** 收获动效：作物图标从田畦弹跳飞出、上升消散 */
   private playHarvest(plotNode: Node, cropId: string) {
-    const sf = this.iconFrames[cropId];
+    const sf = this.cropUiFrame(cropId);
     if (!sf) return;
     const n = new Node('HarvestFly');
     n.layer = Layers.Enum.UI_2D;
@@ -4756,6 +5515,31 @@ export class GameController extends Component {
 
   // ---------- 数据与存档 ----------
 
+  private static readonly UI_ICON_IDS = [
+    'map',
+    'bag',
+    'map_place_farm',
+    'map_place_canteen',
+    'map_place_shop',
+    'map_place_orchard',
+  ] as const;
+
+  /** icons/ui 若 meta 非 sprite-frame，loadDir 会空；逐张 load spriteFrame 兜底 */
+  private async loadUiIconFallbacks(): Promise<void> {
+    const loadOne = (name: string) =>
+      new Promise<void>((resolve) => {
+        if (this.uiIconFrames[name]) {
+          resolve();
+          return;
+        }
+        resources.load(`icons/ui/${name}/spriteFrame`, SpriteFrame, (err, frame) => {
+          if (!err && frame?.texture) this.uiIconFrames[name] = frame;
+          resolve();
+        });
+      });
+    await Promise.all(GameController.UI_ICON_IDS.map((id) => loadOne(id)));
+  }
+
   /** 预载全部图标与页面背景（失败时降级为纯文字灰盒/色块底） */
   private async loadIcons(): Promise<void> {
     const loadDir = (dir: string) =>
@@ -4766,8 +5550,24 @@ export class GameController extends Component {
       new Promise<SpriteFrame[]>((resolve) =>
         resources.loadDir('bg', SpriteFrame, (err, frames) => resolve(err ? [] : frames)),
       );
-    const [crops, dishes, field, bgs] = await Promise.all([loadDir('crops'), loadDir('dishes'), loadDir('field'), loadBg()]);
-    for (const f of [...crops, ...dishes, ...field]) this.iconFrames[f.name] = f;
+    const [crops, cropUi, dishes, field, ui, bgs] = await Promise.all([
+      loadDir('crops'),
+      loadDir('crops-ui'),
+      loadDir('dishes'),
+      loadDir('field'),
+      loadDir('ui'),
+      loadBg(),
+    ]);
+    for (const f of [...crops, ...dishes, ...field]) {
+      if (f?.name && f.texture) this.iconFrames[f.name] = f;
+    }
+    for (const f of cropUi) {
+      if (f?.name && f.texture) this.cropUiFrames[f.name] = f;
+    }
+    for (const f of ui) {
+      if (f?.name && f.texture) this.uiIconFrames[f.name] = f;
+    }
+    await this.loadUiIconFallbacks();
     for (const f of bgs) this.bgFrames[f.name] = f;
     resources.load('ui/paper/spriteFrame', SpriteFrame, (err, frame) => {
       if (!err) this.paperFrame = frame;
@@ -4783,13 +5583,30 @@ export class GameController extends Component {
       this.bgmSrc.volume = 0.35; // 背景音量压低，给音效留头顶空间
       this.bgmSrc.play();
     });
-    // UI 字体在页面构建前加载完毕（失败静默降级系统字）
-    await new Promise<void>((resolve) =>
-      resources.load('fonts/ui', TTFFont, (err, f) => {
-        if (!err) this.uiFont = f;
-        resolve();
-      }),
-    );
+    await this.ensureUiFont();
+  }
+
+  /** 预载快乐体（幂等）；失败时 resolve，UI 降级系统字 */
+  private ensureUiFont(): Promise<void> {
+    if (this.uiFont) return Promise.resolve();
+    if (!this.uiFontLoadPromise) {
+      this.uiFontLoadPromise = new Promise((resolve) => {
+        resources.load('fonts/ui', TTFFont, (err, f) => {
+          if (!err) this.uiFont = f;
+          resolve();
+        });
+      });
+    }
+    return this.uiFontLoadPromise;
+  }
+
+  /** 快乐体已挂到遮罩 Label 后，再显示文案（与 ensureUiFont 配对） */
+  private revealSplashText() {
+    if (!this.splash) return;
+    for (const l of this.splash.getComponentsInChildren(Label)) {
+      const op = l.node.getComponent(UIOpacity) ?? l.node.addComponent(UIOpacity);
+      op.opacity = 255;
+    }
   }
 
   /** 把快乐体应用到 root 下所有 Label（含未来状态再刷新的子树——各构建/刷新函数末尾调用）；字体缺失时不动 */
@@ -4830,7 +5647,8 @@ export class GameController extends Component {
           err ? reject(err) : resolve(asset.json),
         ),
       );
-    const [crops, recipes, upgrades, levels, config, milestones, npcs, orders, stories] = await Promise.all([
+    const [crops, recipes, upgrades, levels, config, milestones, npcs, orders, stories, mainQuests] =
+      await Promise.all([
       load('crops'),
       load('recipes'),
       load('upgrades'),
@@ -4840,6 +5658,7 @@ export class GameController extends Component {
       load('npcs'),
       load('orders'),
       load('stories'),
+      load('main_quests').catch(() => ({ quests: [] })),
     ]);
     return {
       crops: crops.crops,
@@ -4853,15 +5672,30 @@ export class GameController extends Component {
       orders: orders.orders,
       stories: stories.stories,
       prologue: stories.prologue,
+      mainQuests: mainQuests.quests ?? [],
     };
   }
 
   private readSave(): SaveData | undefined {
-    // 清掉历史存档 key（v1/v2 已确认废弃，不再保留回退）
     sys.localStorage.removeItem('newgame_save_v1');
     sys.localStorage.removeItem('newgame_save_v2');
-    const raw = sys.localStorage.getItem(SAVE_KEY);
-    return raw ? JSON.parse(raw) : undefined;
+    let raw = sys.localStorage.getItem(SAVE_KEY);
+    if (!raw) {
+      const v3 = sys.localStorage.getItem(SAVE_KEY_V3);
+      if (v3) {
+        raw = v3;
+        sys.localStorage.setItem(SAVE_KEY, v3);
+        sys.localStorage.removeItem(SAVE_KEY_V3);
+      }
+    }
+    if (!raw) return undefined;
+    const save = JSON.parse(raw) as SaveData;
+    save.unlocks ??= {};
+    if ((save.stats?.totalGoldEarned ?? 0) > 0) save.unlocks.shop = true;
+    if (save.readTutorials?.includes('tut_mq_map_tianbo')) save.unlocks.map = true;
+    if (save.readTutorials?.includes('tut_canteen')) save.unlocks.canteen = true;
+    if ((save.stats?.harvestCount ?? 0) >= 1) save.unlocks.bag = true;
+    return save;
   }
 
   private writeSave() {

@@ -2,8 +2,8 @@
  * 即梦场景小样 → 游戏内场景大图（阶段 2）
  * 运行：node sim/import-jimeng-bg.js
  *
- * 输入：docs/参考图/小样/{field_bg,kitchen_bg,shop_bg,loading_bg}.png
- * 输出：assets/resources/bg/{field,kitchen,shop,loading}.jpg（720×1280，JPEG q87，奶油底 cover 裁切）
+ * 输入：docs/参考图/小样/{field_bg,kitchen_bg,shop_bg,loading_bg,map_bg}.png
+ * 输出：assets/resources/bg/{field,kitchen,shop,loading,map}.jpg（720×1280，JPEG q87，奶油底 cover 裁切）
  * meta：仅当 .jpg.meta 不存在时新建（不覆盖已有 uuid）
  */
 'use strict';
@@ -26,6 +26,7 @@ const MAP = [
   { sample: 'kitchen_bg.png', out: 'kitchen' },
   { sample: 'shop_bg.png', out: 'shop' },
   { sample: 'loading_bg.png', out: 'loading' },
+  { sample: 'map_bg.png', out: 'map' },
 ];
 
 const EDGE = [process.env.EDGE,
@@ -73,8 +74,12 @@ img.src='${pngUrl}';
 
 fs.mkdirSync(OUT_DIR, { recursive: true });
 
+const MAP_BG_ALT = path.join(SAMPLE_DIR, 'icons', 'ui', 'map_bg.png');
+
+(async () => {
 for (const { sample, out } of MAP) {
-  const src = path.join(SAMPLE_DIR, sample);
+  let src = path.join(SAMPLE_DIR, sample);
+  if (out === 'map' && fs.existsSync(MAP_BG_ALT)) src = MAP_BG_ALT;
   if (!fs.existsSync(src)) {
     console.warn(`⚠️ 跳过 ${out}：缺少 ${src}`);
     continue;
@@ -90,5 +95,8 @@ for (const { sample, out } of MAP) {
     console.log(`✅ bg/${out}.jpg（${kb}KB），保留已有 meta`);
   }
 }
-
-console.log('阶段 2 完成：field/kitchen/shop/loading 已从即梦小样入库。请在 Cocos 预览各页 UI 对齐；Loading 看进度条是否挡主视觉。');
+console.log('阶段 2 完成：field/kitchen/shop/loading/map 已从即梦小样入库。');
+})().catch((e) => {
+  console.error(e);
+  process.exit(1);
+});

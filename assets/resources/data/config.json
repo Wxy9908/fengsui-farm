@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "releaseVersion": "0.6.0",
-  "releaseNotes": "M5-P1 收官：即梦四场景、UI 对齐、前期三人薄好感；方案重排 M6 小镇扩展",
+  "releaseVersion": "0.7.0",
+  "releaseNotes": "M6-P0：丰穗镇地图、主线功能锁、背包抽屉、右下角 bag/map 入口；章一主线教学",
   "startGold": 50,
   "maxComboSlots": 3,
   "offlineCapHours": 8,
@@ -18,5 +18,7 @@
   "darkCuisineRefundUntilDiscovered": 10,
   "fertilizeCost": 200,
   "dailySpecialMult": 1.2,
-  "sellDishXpCap": 50
+  "sellDishXpCap": 50,
+  "hideOrdersTab": true,
+  "affinityStoriesEnabled": false
 }

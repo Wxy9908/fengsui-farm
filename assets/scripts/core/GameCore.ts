@@ -6,14 +6,24 @@
 import {
   CropDef,
   DataTables,
+  MainQuestDef,
+  MainQuestComplete,
   MilestoneDef,
   OrderDef,
   RecipeDef,
   SaveData,
   StoryDef,
+  UnlockKey,
   UpgradeDef,
   UpgradeEffectType,
 } from './types';
+
+/** 主线步骤完成并发放 unlock 时入队，UI 可 drain 后弹 toast */
+export interface MainQuestGrantEvent {
+  questId: string;
+  title: string;
+  unlock: UnlockKey;
+}
 
 export interface CookResult {
   recipe: RecipeDef;
@@ -102,6 +112,8 @@ export class GameCore {
   private xpEvents: XpEvent[] = [];
   /** 待 UI 消费的里程碑达成事件队列（drainMilestones 取走即清空） */
   private milestoneEvents: MilestoneDef[] = [];
+  /** 主线 grant 事件（drainMainQuestGrants 取走即清空） */
+  private mainQuestGrantEvents: MainQuestGrantEvent[] = [];
 
   constructor(
     private data: DataTables,
@@ -129,6 +141,10 @@ export class GameCore {
       }
     }
     this.save.readAffinityStories ??= [];
+    this.save.unlocks ??= {};
+    this.save.completedMainQuestIds ??= [];
+    this.save.stats.harvestCount ??= 0;
+    this.save.stats.plantCount ??= 0;
     // 旧存档迁移：后加的升级线（如便利线）缺省 = Lv1 初始级（Lv1 无解锁门控，缺省会永远锁死）
     for (const line of this.upgradeLines()) this.save.upgrades[line] ??= 1;
     // 数据腐蚀自愈：金币非有限数（如 NaN 被 JSON 存成 null）时重置为初始金，避免脏值无限传播
@@ -138,6 +154,8 @@ export class GameCore {
     this.settleOffline();
     // 旧存档补发：已超门槛的里程碑在上线时一次性发放（事件入队，UI 逐个弹层）
     this.checkMilestones();
+    // 旧存档若已读过对应 story，补发主线 unlock（如 legacy 一次性标记全部 tutorial）
+    this.checkMainQuests();
   }
 
   // ---------- 存档 ----------
@@ -168,8 +186,90 @@ export class GameCore {
       readTutorials: [],
       readAffinityStories: [],
       prologueSeen: false,
-      stats: { totalGoldEarned: 0, recipesDiscovered: 0 },
+      stats: { totalGoldEarned: 0, recipesDiscovered: 0, harvestCount: 0, plantCount: 0 },
+      unlocks: {},
+      completedMainQuestIds: [],
     };
+  }
+
+  // ---------- 主线任务（M6-P0-0） ----------
+
+  hasUnlock(key: UnlockKey): boolean {
+    return this.save.unlocks?.[key] === true;
+  }
+
+  /** 能否进入绑定了该 unlock 的地点（含章一食堂「先进门再读引导」例外） */
+  canAccessUnlock(key: UnlockKey): boolean {
+    if (this.hasUnlock(key)) return true;
+    const q = this.getCurrentMainQuest();
+    if (!q) return false;
+    if (key === 'canteen' && q.id === 'mq_ch1_canteen') {
+      const c = q.complete;
+      return c.type === 'storyRead' && c.storyId === 'tut_canteen';
+    }
+    return false;
+  }
+
+  /** 主线 unlock 键 → 玩家可见名 */
+  mainUnlockLabel(key: UnlockKey): string {
+    const map: Record<UnlockKey, string> = {
+      map: '丰穗镇地图',
+      canteen: '食堂',
+      shop: '小铺',
+      bag: '背包',
+      orchard: '果园',
+      orders: '订单',
+    };
+    return map[key] ?? key;
+  }
+
+  /** 当前应追踪的第一条未完成主线；全部完成则 null */
+  getCurrentMainQuest(): MainQuestDef | null {
+    const quests = this.data.mainQuests ?? [];
+    const done = new Set(this.save.completedMainQuestIds ?? []);
+    return quests.find((q) => !done.has(q.id)) ?? null;
+  }
+
+  private isStoryRead(storyId: string): boolean {
+    return (
+      this.save.readTutorials.includes(storyId) || this.save.readAffinityStories.includes(storyId)
+    );
+  }
+
+  private isMainQuestComplete(cond: MainQuestComplete): boolean {
+    if (cond.type === 'storyRead') return this.isStoryRead(cond.storyId);
+    if (cond.type === 'harvestCount') return (this.save.stats.harvestCount ?? 0) >= cond.count;
+    if (cond.type === 'plantCount') return (this.save.stats.plantCount ?? 0) >= cond.count;
+    if (cond.type === 'recipeDiscovered') return this.save.discoveredRecipes.includes(cond.recipeId);
+    if (cond.type === 'farmLevel') return this.level >= cond.level;
+    return false;
+  }
+
+  /** 按表顺序检查并完成所有已达标的主线步骤（可一次链式完成多条） */
+  checkMainQuests(): void {
+    const quests = this.data.mainQuests ?? [];
+    if (quests.length === 0) return;
+    this.save.completedMainQuestIds ??= [];
+    this.save.unlocks ??= {};
+    for (;;) {
+      const q = this.getCurrentMainQuest();
+      if (!q || !this.isMainQuestComplete(q.complete)) break;
+      this.save.completedMainQuestIds.push(q.id);
+      if (q.grant?.unlock) {
+        this.save.unlocks[q.grant.unlock] = true;
+        this.mainQuestGrantEvents.push({
+          questId: q.id,
+          title: q.title,
+          unlock: q.grant.unlock,
+        });
+      }
+    }
+  }
+
+  drainMainQuestGrants(): MainQuestGrantEvent[] {
+    const out = this.mainQuestGrantEvents;
+    this.mainQuestGrantEvents = [];
+    return out;
   }
 
   prologuePending(): boolean {
@@ -184,17 +284,39 @@ export class GameCore {
     this.save.prologueSeen = true;
   }
 
+  /** 该 story 是否为当前主线步骤要求的 storyRead 目标 */
+  private isStoryForCurrentMainQuest(storyId: string): boolean {
+    const q = this.getCurrentMainQuest();
+    const c = q?.complete;
+    return c?.type === 'storyRead' && c.storyId === storyId;
+  }
+
+  private tutorialPrereqsMet(s: StoryDef): boolean {
+    const need = s.afterTutorialIds;
+    if (!need?.length) return true;
+    return need.every((id) => this.save.readTutorials.includes(id));
+  }
+
   /** 该地点、该触发下第一条未读引导；没有则 null */
   pendingTutorial(place: string, trigger: string) {
     return (
-      (this.data.stories ?? []).find(
-        (s) => s.type === 'tutorial' && s.place === place && s.trigger === trigger && !this.save.readTutorials.includes(s.id),
-      ) ?? null
+      (this.data.stories ?? []).find((s) => {
+        if (s.type !== 'tutorial' || s.place !== place || s.trigger !== trigger) return false;
+        if (this.save.readTutorials.includes(s.id)) return false;
+        if (this.isStoryForCurrentMainQuest(s.id) && !this.tutorialPrereqsMet(s)) return false;
+        if ((this.data.mainQuests ?? []).some(
+          (q) => q.complete.type === 'storyRead' && q.complete.storyId === s.id,
+        )) {
+          return this.isStoryForCurrentMainQuest(s.id) && this.tutorialPrereqsMet(s);
+        }
+        return true;
+      }) ?? null
     );
   }
 
   completeTutorial(id: string): void {
     if (!this.save.readTutorials.includes(id)) this.save.readTutorials.push(id);
+    this.checkMainQuests();
   }
 
   /**
@@ -221,6 +343,7 @@ export class GameCore {
 
   completeAffinityStory(id: string): void {
     if (!this.save.readAffinityStories.includes(id)) this.save.readAffinityStories.push(id);
+    this.checkMainQuests();
   }
 
   isDarkDish(id: string): boolean {
@@ -384,6 +507,7 @@ export class GameCore {
       this.save.gold += rewardGold;
       this.xpEvents.push({ type: 'levelup', level: l, rewardGold, unlocks: def?.unlocks ?? [] });
     }
+    if (after > before) this.checkMainQuests();
   }
 
   /** 取走并清空经验/升级事件队列（UI 每次 refreshUI 时调用） */
@@ -490,6 +614,8 @@ export class GameCore {
     if (this.save.gold < c.seedPrice) throw new Error('金币不足');
     this.save.gold -= c.seedPrice;
     this.save.fields[fieldIndex] = { cropId, plantedAt: this.nowFn() };
+    this.save.stats.plantCount = (this.save.stats.plantCount ?? 0) + 1;
+    this.checkMainQuests();
   }
 
   /** 成熟则收获入库存并返回作物 id，否则返回 null。拥有自动重播升级时收获后自动重播同种作物（种子费从金币扣，与手动种植等价；金币不足则只收获不重播） */
@@ -500,8 +626,10 @@ export class GameCore {
     const inv = this.save.inventory.crops;
     inv[f.cropId] = (inv[f.cropId] ?? 0) + 1;
     if (!this.save.seenCrops.includes(f.cropId)) this.save.seenCrops.push(f.cropId); // 作物图鉴点亮
+    this.save.stats.harvestCount = (this.save.stats.harvestCount ?? 0) + 1;
     this.gainXp(5 * this.crop(f.cropId).tier, '收获');
     this.checkMilestones(); // 作物点亮可能达成里程碑
+    this.checkMainQuests();
     this.autoReplant(fieldIndex, f.cropId);
     return f.cropId;
   }
@@ -625,6 +753,7 @@ export class GameCore {
       this.gainXp(2 * this.recipe(c.dishId).tier, 'repeat_cook');
     }
     this.checkMilestones(); // 食谱发现数可能达成里程碑（无新增即空转）
+    if (isNew) this.checkMainQuests();
     return { dishId: c.dishId, refund, isNew };
   }
 

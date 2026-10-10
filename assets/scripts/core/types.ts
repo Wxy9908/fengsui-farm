@@ -106,6 +106,10 @@ export interface GameConfig {
   dailySpecialMult: number;
   /** 卖菜经验封顶：单次卖出获得经验不超过该值 */
   sellDishXpCap: number;
+  /** M6：底栏隐藏订单 tab（默认 true） */
+  hideOrdersTab?: boolean;
+  /** M6-P2 前：不主动展开好感薄剧情（默认 false） */
+  affinityStoriesEnabled?: boolean;
 }
 
 /** 农场等级表条目（data/levels.json）：xp 为累计经验，unlocks 为字符串门控清单 */
@@ -150,6 +154,28 @@ export interface StoryDef {
   dishId?: string;
   /** 策划备注，不进游戏 */
   note?: string;
+  /** 须已读的引导 id（主线认路等，避免抢在首条教学之前弹出） */
+  afterTutorialIds?: string[];
+}
+
+/** 主线发放的功能解锁（data/main_quests.json grant.unlock） */
+export type UnlockKey = 'map' | 'canteen' | 'shop' | 'orchard' | 'bag' | 'orders';
+
+export type MainQuestComplete =
+  | { type: 'storyRead'; storyId: string }
+  | { type: 'harvestCount'; count: number }
+  | { type: 'plantCount'; count: number }
+  | { type: 'recipeDiscovered'; recipeId: string }
+  | { type: 'farmLevel'; level: number };
+
+export interface MainQuestDef {
+  id: string;
+  title: string;
+  desc: string;
+  complete: MainQuestComplete;
+  /** 省略则只推进 completedMainQuestIds，不发 unlock */
+  grant?: { unlock: UnlockKey };
+  npcId?: string;
 }
 
 /** NPC 求购单（data/orders.json）。与小铺直卖分开结算。 */
@@ -180,6 +206,8 @@ export interface DataTables {
   stories?: StoryDef[];
   /** 新档序章；缺省则不播 */
   prologue?: TalkLine[];
+  /** M6 线性主线；缺省则无主线 */
+  mainQuests?: MainQuestDef[];
 }
 
 // ---------- 存档（运行时状态） ----------
@@ -233,8 +261,16 @@ export interface SaveData {
   readAffinityStories: string[];
   /** 序章是否已看过或跳过。旧存档缺字段时视为已看过 */
   prologueSeen: boolean;
+  /** M6 功能解锁（缺省 = 均未解锁） */
+  unlocks?: Partial<Record<UnlockKey, boolean>>;
+  /** 已完成的主线 id（按 main_quests 顺序） */
+  completedMainQuestIds?: string[];
   stats: {
     totalGoldEarned: number;
     recipesDiscovered: number;
+    /** 累计收获次数（主线 harvestCount 条件用） */
+    harvestCount?: number;
+    /** 累计播种次数（主线 plantCount 条件用） */
+    plantCount?: number;
   };
 }

@@ -121,3 +121,12 @@ doc_kind: changelog
 | 2026-10-09 | **P1 体验底线收尾验收**：V3（无装修/任务板；potFx 为既有烹饪层改版）+ A1（resources 4.92MB、BGM/SFX 文件与加载路径）+ W1（无新菜名）；§4.2 全勾。真机听感留发布前抽查。 |
 | 2026-10-09 | **里程碑重排（用户定案 B）**：M5 收口；新增 M6 小镇扩展（地图/背包/果园硬指标/人物先于订单）；提审顺延 **M7**。`crops.type`（farm/orchard）；四水果迁果园；香菇花生仍 farm。新建 `planning/m6-town-expansion.md`；同步 `development-plan` §6.6、`data-schema` §2、`parking-lot` 出队、叙事/体验/发布清单。 |
 | 2026-10-09 | **release 0.6.0**：`config`/`package` 版本号；合并 M5-P1 玩法/UI/文档入库；`game-releases.md` 更新。 |
+| 2026-10-10 | **release 0.7.0**：M6-P0 地图/主线/背包 MVP/右下角入口；`game-releases.md` §0.7.0。 |
+| 2026-10-09 | **M6-P0-0 主线**：`main_quests.json` + `tut_mq_map_tianbo`；`GameCore` unlock/checkMainQuests/drainMainQuestGrants；sim 断言；`main-quest-design.md`。 |
+| 2026-10-09 | **主线章一设计**：全锁矩阵 + 种菜/做菜任务表（卖菜 §7 待定）；`main_quests` v2 五条；`plantCount`/`recipeDiscovered`/可选 grant/`canteen` unlock。 |
+| 2026-10-09 | **M6-P0 落地（首包）**：`hasUnlock` 门控底栏/地图热点；地图页 + 田地「地图」钮；主线任务条 + grant toast；`hideOrdersTab`/`affinityStoriesEnabled`；存档 `newgame_save_v4`。 |
+| 2026-10-09 | **M6 即梦**：`jimeng-prompts` §6.3C 地图/背包入口 icon + §6.4 `map_bg`；`import-jimeng-bg` 增 map；`import-jimeng-ui-icons`。 |
+| 2026-10-09 | **§6.3B 作物 UI 贴纸首批 7 ✅**：`docs/参考图/小样/icons/crops-ui/`（wheat～cabbage 解锁序前 7）；`jimeng-prompts`/`jimeng-workflow` 表内勾选；potato 内容行改禁拟人；余 8 作物 ☐。 |
+| 2026-10-09 | **M6-P0 背包**：`mq_ch1_bag` 收菜后链式 grant；顶栏「背包」+ 作物/菜品分类 overlay；旧档 `harvestCount≥1` 补 `bag`。 |
+| 2026-10-09 | **M6-P0 路由/地图**：`map_place_*` 热点叠层；厨房/小铺/图鉴左下「地图」；`import-jimeng-bg` 支持 `icons/ui/map_bg`；`experience-roadmap` §4.4 正式表。 |
+| 2026-10-10 | **背包内页规格**：`gameplay/bag-ui-design.md`（tab+网格、H4b 验收）；M6 收口增 **M6-P0′** / **P0-B2**；H4 拆 H4a 功能 MVP ✅ / H4b 视觉 ☐。实现暂缓。 |
