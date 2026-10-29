@@ -49,6 +49,14 @@ related:
 - **未改**：`book` 仍矢量管线；图标仍为程序化矢量。  
 - **待做**：P1-A1 真机听感/包体；P1 宣称完成前余下体验底线。P1-V2 小样拼版 ✅；薄好感前期三人已入库。  
 
+## 代做事项
+
+发体验版前可顺手做的小项（不挡玩法批次勾选；做完可从表删除或标 ✅）。
+
+| 事项 | 记录日期 | 说明 |
+|------|----------|------|
+| Loading 页版本角标 | 2026-10-10 | **下次**：在加载页**右上角**用**白色小字**显示 `data/config.json` 的 `releaseVersion`（如 `v0.7.0`）。实现：`GameController.makeSplash` / `splashVerLabel`（`loadData` 后写入 `v${releaseVersion}`）；当前在进度条附近、棕色小字，需改锚点与样式。 |
+
 ## 版本号改法（下次发体验版）
 
 1. 改 `data/config.json`：`releaseVersion`、`releaseNotes`。  
