@@ -27,3 +27,13 @@
 | 机器可读目录 | `docs/_meta/doc-registry.yaml` |
 
 资产图（非 md）：`docs/mockups/`、`docs/参考图/`。
+
+## Cursor Cloud specific instructions
+
+镜像不包含 Cocos Creator 编辑器。可自动验证的循环在 Node 里，工作目录是仓库根：
+
+- 安装：`npm ci`（lockfile；`typescript`、`sharp`、`fonteditor-core`）。使用镜像自带的 Node，不必装 nvm。
+- 核心玩法：`npm run sim`。它按 `tsconfig.sim.json` 编译后，在 Node 里跑「种菜 → 收获 → 做菜 → 卖钱 → 升级」断言。
+- 场景接线：`npm run check-scene`，解析 `assets/Main.scene`。
+- 数值：`npm run balance`，理想玩家 bot 经营 30 天。
+- 验证入口就是这些 npm 脚本。`node_modules/` 与 `dist-sim/` 已在 `.gitignore`。图像脚本用 `sharp` 的预编译二进制，`npm ci` 会装上。
